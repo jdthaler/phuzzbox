@@ -6,6 +6,9 @@ same principles, same shape of code, with an effect contract in place of Forte's
 JavaScript pages, no build step; the physics is C++ in `native/`, built as committed WebAssembly
 and as CLAP/VST3/AU plugins through clap-wrapper.
 
+The site is <https://phuzzbox.jthaler.net>, served by GitHub Pages from the `live` branch, as
+Forte's is. `main` is where work lands; `live` moves only when the owner asks for a release.
+
 Read first:
 - `README.md`: what the project is and how to play it.
 - `docs/PEDAL_GUIDE.md`: the anatomy of a pedal, the effect contract, parameters, tests.
@@ -41,7 +44,7 @@ Read first:
 
 ## Making a change
 
-1. Work on a branch off `main`.
+1. Work on a branch off `main`, never directly on `main` or `live`.
 2. Verify: `npm test` passes; for a page change, open it in a browser (Playwright headless will
    do) at phone (390×664), tablet and desktop (1440×900) sizes, with no console errors and no
    sideways scrolling.
@@ -49,3 +52,15 @@ Read first:
 4. Pull request into `main` with *Why*, *What changed* and *Testing*.
 
 Listening with a real bass and interface is the owner's job; say in the pull request what needs it.
+
+## Releasing `main` to `live`
+
+Only when the owner asks for a release. Merging into `main` publishes nothing; the owner hears
+`main` (with `npm run serve`, or a branch's pages) before each release.
+
+1. Open a pull request from `main` into `live` titled `Release YYYY-MM-DD: <what is new>`, whose
+   body lists what changed since the last release.
+2. CI runs on it as on any pull request. Whatever fails is fixed on `main` first.
+3. Merge it with a merge commit when the owner asks. GitHub Pages publishes `live` at once, and
+   installed copies pick it up on their next load (`sw.js` asks the server first).
+4. `live` only ever takes `main`, so it never needs merging back.

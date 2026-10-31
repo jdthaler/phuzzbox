@@ -26,8 +26,8 @@ nothing is plugged in, and that the tests and demos use as their signal.
 
 ## Playing
 
-The pedals play at **<https://phuzzbox.jthaler.net>**, served by GitHub Pages from `main`; it
-installs as a web app from the browser's menu. Open a pedal's page and press **Start audio**. Then either:
+The pedals play at **<https://phuzzbox.jthaler.net>**, served by GitHub Pages from the `live`
+branch, which takes `main` at each release; it installs as a web app from the browser's menu. Open a pedal's page and press **Start audio**. Then either:
 
 - **Plug in.** Connect your bass to an audio interface's instrument (Hi-Z) input, choose the
   interface in the source menu, and allow the browser to use it. Pick **In 1** or **In 2** for the

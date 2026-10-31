@@ -2,7 +2,7 @@ name: native
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, live]
 jobs:
   wasm:
     runs-on: ubuntu-latest
