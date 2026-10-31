@@ -56,7 +56,7 @@ Listening with a real bass and interface is the owner's job; say in the pull req
 ## Releasing `main` to `live`
 
 Only when the owner asks for a release. Merging into `main` publishes nothing; the owner hears
-`main` (with `npm run serve`, or a branch's pages) before each release.
+`main` with `npm run serve` before each release.
 
 1. Open a pull request from `main` into `live` titled `Release YYYY-MM-DD: <what is new>`, whose
    body lists what changed since the last release.
