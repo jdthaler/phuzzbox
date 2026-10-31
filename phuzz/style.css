@@ -1,0 +1,6 @@
+/* the Phuzz's enclosure: a round-cornered box in a deep red, as the germanium fuzzes of the
+   sixties often were */
+:root { --enclosure: #8c2f1f; --enclosure-ink: #f7efe6; }
+/* the transistors' view: two plots side by side, stacked on a phone */
+.card .canvas.transistors { height: 260px; }
+@media (max-width: 560px) { .card .canvas.transistors { height: 440px; } }
