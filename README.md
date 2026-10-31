@@ -38,15 +38,7 @@ Open a pedal's page and press **Start audio**. Then either:
   `Z` row is the low E, then the `A` row, the `Q` row and the number row, each from the open
   string to the ninth fret. **Play a riff** loops a short line.
 
-`Space` is the footswitch. **MIDI pedals**: a MIDI foot controller (a Roland FC-300 through a USB
-MIDI interface, in Control Change mode) works the page in Chrome or Edge: press **Connect MIDI** in
-the MIDI pedals card. Out of the box its expression pedal 1 (CC 7) is a volume pedal, expression
-pedal 2 (CC 1) the pedal's expression control (the Wah's rocker), number pedal 1 (CC 65) the
-footswitch and number pedal 2 (CC 66) the tuner's mute; **Learn** teaches any pedal any control.
-The plugins take the same CCs on their MIDI input ([shared/midi.js](shared/midi.js),
-`native/core/include/phuzzbox/midi.h`).
-
-**Full scale** (in Controls) says how many volts at the input jack make
+`Space` is the footswitch. **Full scale** (in Controls) says how many volts at the input jack make
 a full-scale signal in the browser; set it so your bass and the test bass read alike on the In
 meter. It doesn't matter to the Buffer, but it will to every pedal that distorts.
 
@@ -58,6 +50,14 @@ among them, which on a low E can read 5 to 20 cents sharp. The tuner finds the p
 name the note, then the peak of the fundamental's own spectral line, to a hundredth of a cent
 ([shared/tuner.js](shared/tuner.js), tested in `test/tuner-tests.mjs`). **Mute while tuning**
 silences the output, as a tuner pedal does.
+
+**MIDI pedals.** A MIDI foot controller (a Roland FC-300 through a USB
+MIDI interface, in Control Change mode) works the page in Chrome or Edge: press **Connect MIDI** in
+the MIDI pedals card. Out of the box its expression pedal 1 (CC 7) is a volume pedal, expression
+pedal 2 (CC 1) the pedal's expression control (the Wah's rocker), number pedal 1 (CC 65) the
+footswitch and number pedal 2 (CC 66) the tuner's mute; **Learn** teaches any pedal any control.
+The plugins take the same CCs on their MIDI input ([shared/midi.js](shared/midi.js),
+`native/core/include/phuzzbox/midi.h`).
 
 Your settings stay in your browser.
 

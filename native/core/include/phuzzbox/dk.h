@@ -104,6 +104,7 @@ class Circuit {
   Mat A, B, C, D, E, F, Do, Eo, Fo; // the DK matrices at the sample rate
   Mat Edc, Fdc;                    // and the junctions' at DC
   std::vector<double> z, vx, vn, in, p, r, Jd, Jm, dv, dcV, iDC;
+  std::vector<int> blockLo, blockHi; // each junction's device: its first junction and one past its last
   std::vector<double> nvtQ, vcritQ; // each junction's n·Vt, and where its limiting starts
   bool dirty = true;
 };

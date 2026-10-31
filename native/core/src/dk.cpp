@@ -33,6 +33,7 @@ constexpr double XMAX = 80;      // exp(x) beyond this is continued as a straigh
 
 // exp, continued linearly past XMAX so that Newton's first guesses cannot overflow
 inline void expLin(double x, double &e, double &de) {
+  if (x < -40) { e = de = 0; return; } // a junction reverse biased past 1 V: e^x < 5e-18, nothing
   if (x < XMAX) { e = std::exp(x); de = e; return; }
   const double m = std::exp(XMAX);
   e = m * (1 + x - XMAX);
@@ -96,6 +97,12 @@ Circuit::Circuit(const Netlist &n, double fs) : net(n), fs(fs), T(1 / fs) {
   }
   for (const Netlist::Diode &d : net.diodes) { na[q] = d.a; nb[q++] = d.k; }
   for (int k = 0; k < nO; k++) oa[k] = net.outputs[k];
+  blockLo.assign(nN, 0); blockHi.assign(nN, 0);
+  for (int k = 0; k < nN; k++) {
+    const int nb2 = 2 * (int)net.bjts.size();
+    blockLo[k] = k < nb2 ? k - k % 2 : k;
+    blockHi[k] = k < nb2 ? blockLo[k] + 2 : k + 1;
+  }
   nvtQ.assign(nN, 0); vcritQ.assign(nN, 0);
   for (int k = 0; k < nN; k++) {
     const int nb2 = 2 * (int)net.bjts.size();
@@ -248,9 +255,9 @@ bool Circuit::newton(const double *pp, const Mat &FF, double *v, int maxIter, do
       double s = v[a] - pp[a];
       for (int b = 0; b < nN; b++) s -= FF(a, b) * in[b];
       r[a] = -s;
-      for (int b = 0; b < nN; b++) {
+      for (int b = 0; b < nN; b++) { // ∂i/∂v is block diagonal: only b's own block contributes
         double m = a == b ? 1.0 : 0.0;
-        for (int c = 0; c < nN; c++) m -= FF(a, c) * Jd[c * nN + b];
+        for (int c = blockLo[b]; c < blockHi[b]; c++) m -= FF(a, c) * Jd[c * nN + b];
         Jm[a * nN + b] = m;
       }
     }

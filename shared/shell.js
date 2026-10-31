@@ -9,12 +9,12 @@
 //            analyser (the output), on(event, fn) } and events are 'params' and 'audio'
 
 import { params, defaults, fmt, toUnit, fromUnit } from './params.js';
+import { midiPanel } from './midi-panel.js';
 import { fetchBytes } from './wasm.js';
 import { TESTBASS_URL } from './testbass.js';
 import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
 import { renderMarkdown } from './markdown.js';
 import { byId } from './registry.js';
-import { midiPanel } from './midi-panel.js';
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -136,7 +136,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, value: state.fullScale, 'aria-label': 'Volts at full scale' });
   fsInput.addEventListener('change', () => { state.fullScale = Math.max(0.05, +fsInput.value || 1); store.set('phuzzbox.fullScale', state.fullScale); send({ type: 'fullScale', volts: state.fullScale }); });
   const volInput = h('input', { type: 'range', min: 0, max: 1.5, step: 0.01, value: state.volume, 'aria-label': 'Volume' });
-  volInput.addEventListener('input', () => setVolume(+volInput.value));
+  volInput.addEventListener('input', () => { state.volume = +volInput.value; store.set('phuzzbox.volume', state.volume); if (volume) volume.gain.value = state.volume; });
   controls.append(h('div', { class: 'controls-bar' }, h('b', {}, 'Controls'), presetSel,
     h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale signal in the browser. Set it so the test bass and your bass read alike on the In meter; it matters for the pedals that distort.' }, 'Full scale ', fsInput, ' V'),
     h('label', { class: 'inline' }, 'Volume ', volInput)));
@@ -206,7 +206,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     refresh();
     emit('params');
   }
-  // the volume after the pedal; a pedal's sweep glides over 10 ms rather than stepping
+  // the volume after the pedal, from a MIDI volume pedal: it glides over 10 ms rather than stepping
   function setVolume(g) {
     state.volume = g;
     store.set('phuzzbox.volume', g);
