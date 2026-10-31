@@ -11,8 +11,8 @@ export function fit(canvas) {
 }
 export const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-// A log-frequency, decibel plot area with its grid: { x(f), y(db), box }.
-export function freqAxes(g, w, h, { fmin = 20, fmax = 20000, dbMin = -30, dbMax = 12 } = {}) {
+// A log-frequency, decibel plot area with its grid (a line every `step` dB): { x(f), y(db), box }.
+export function freqAxes(g, w, h, { fmin = 20, fmax = 20000, dbMin = -30, dbMax = 12, step = 6 } = {}) {
   const box = { l: 40, r: w - 10, t: 10, b: h - 22 };
   const x = (f) => box.l + ((box.r - box.l) * Math.log(f / fmin)) / Math.log(fmax / fmin);
   const y = (d) => box.t + ((box.b - box.t) * (dbMax - d)) / (dbMax - dbMin);
@@ -24,7 +24,7 @@ export function freqAxes(g, w, h, { fmin = 20, fmax = 20000, dbMin = -30, dbMax 
     if (w > 320 || [100, 1000, 10000].includes(f)) g.fillText(f >= 1000 ? `${f / 1000}k` : `${f}`, x(f), h - 6);
   }
   g.textAlign = 'right';
-  for (let d = Math.ceil(dbMin / 6) * 6; d <= dbMax; d += 6) {
+  for (let d = Math.ceil(dbMin / step) * step; d <= dbMax; d += step) {
     g.beginPath(); g.moveTo(box.l, y(d)); g.lineTo(box.r, y(d)); g.stroke();
     g.fillText(`${d}`, box.l - 6, y(d) + 4);
   }

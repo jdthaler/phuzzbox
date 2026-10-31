@@ -6,7 +6,9 @@
 //
 //   createPedal({ PEDAL, worklet: new URL('./x-worklet.js', import.meta.url), views: [view, …] })
 //   view = { title, caption, perform?: true, mount(canvasHolder, api) }  where api = { P, ctx,
-//            analyser (the output), on(event, fn) } and events are 'params' and 'audio'
+//            analyser (the output, in full-scale units), input (an analyser of the input, in volts),
+//            fullScale() (volts), on(event, fn) } and events are 'params' and 'audio' (fn(api)),
+//            and 'pedal' (fn(messages, api): what the pedal posted, [{ type, values }])
 
 import { params, defaults, fmt, toUnit, fromUnit } from './params.js';
 import { fetchBytes } from './wasm.js';
@@ -51,8 +53,8 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const P = { ...defaults(PEDAL.groups), ...store.get(`${key}.params`, {}) };
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
   const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: 0, mute: false };
-  const listeners = { params: [], audio: [] };
-  const api = { P, PEDAL, ctx: null, analyser: null, on: (ev, fn) => listeners[ev].push(fn) };
+  const listeners = { params: [], audio: [], pedal: [] };
+  const api = { P, PEDAL, ctx: null, analyser: null, input: null, fullScale: () => state.fullScale, on: (ev, fn) => listeners[ev].push(fn) };
   let ctx = null, node = null, volume = null, micSource = null, micStream = null, tunerAnalyser = null, splitter = null;
   const send = (m) => node?.port.postMessage(m);
   const emit = (ev) => listeners[ev].forEach((fn) => fn(api));
@@ -302,7 +304,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       node.connect(analyser);
       tunerAnalyser = new AnalyserNode(ctx, { fftSize: 16384 });
       node.connect(tunerAnalyser, 1);
-      api.ctx = ctx; api.analyser = analyser;
+      api.ctx = ctx; api.analyser = analyser; api.input = tunerAnalyser;
       send({ type: 'params', P: { ...P } });
       send({ type: 'bypass', on: state.bypass });
       send({ type: 'fullScale', volts: state.fullScale });
@@ -403,7 +405,8 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       status.textContent = '';
       measured = m.ms;
       showLatency();
-    } else if (m.type === 'error') status.textContent = m.message;
+    } else if (m.type === 'pedal') for (const fn of listeners.pedal) fn(m.messages, api);
+    else if (m.type === 'error') status.textContent = m.message;
   }
   // the tuner, ten times a second
   function setMute(on) {
