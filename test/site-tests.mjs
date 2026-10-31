@@ -33,4 +33,16 @@ for (const p of ready) {
   check(perform >= 1 && perform <= 5, `${p.name}: one to five knobs on the pedal's face`, `${perform}`);
 }
 check(/^## Prior art and references/m.test(readFileSync(`${root}testbass/README.md`, 'utf8')), 'the test bass\'s README credits prior art');
+
+// the installable app: a manifest whose icons exist, a service worker at the root, every page linked
+{
+  const m = JSON.parse(readFileSync(`${root}manifest.webmanifest`, 'utf8'));
+  const sizes = m.icons.filter((i) => i.type === 'image/png').map((i) => i.sizes);
+  check(m.display === 'standalone' && m.start_url && sizes.includes('192x192') && sizes.includes('512x512') && m.icons.every((i) => existsSync(`${root}${i.src}`)),
+    'the app manifest is standalone with 192 and 512 px icons that exist');
+  const pages = ['index.html', ...ready.map((p) => `${p.id}/index.html`)];
+  check(existsSync(`${root}sw.js`) && pages.every((f) => /rel="manifest"/.test(readFileSync(`${root}${f}`, 'utf8'))), 'every page links the manifest, and the service worker sits at the root', pages.join(', '));
+  const sw = readFileSync(`${root}sw.js`, 'utf8');
+  check(ready.every((p) => sw.includes(`'./${p.id}/'`)), 'the service worker keeps every ready pedal\'s page');
+}
 done();

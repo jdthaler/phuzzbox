@@ -39,8 +39,19 @@ Open a pedal's page and press **Start audio**. Then either:
   string to the ninth fret. **Play a riff** loops a short line.
 
 `Space` is the footswitch. **Full scale** (in Controls) says how many volts at the input jack make
-a full-scale signal in the browser; set it so your bass and the test bass read alike on the In
-meter. It doesn't matter to the Buffer, but it will to every pedal that distorts.
+a full-scale signal in the browser. It doesn't matter to the Buffer, but it will to every pedal
+that distorts. Choose your interface beside it and type its gain, and the page works it out from
+the maker's specification ([shared/interfaces.js](shared/interfaces.js)). The maximum input level
+in dBu at minimum gain is the sine that just reaches full scale, so full scale's peak is
+√0.6 V × 10^(dBu/20) × √2, less one decibel for each decibel of gain. A Scarlett 2i2 (4th gen)
+at 20 dB of gain is 0.436 V. Choosing the interface also sets the Buffer's *Your interface's
+input* to its impedance. With an interface that isn't listed, type Full scale in: set it so your
+bass and the test bass read alike on the In meter.
+
+**Install as an app.** In Chrome or Edge, **Install app** (on the landing page, or in the
+browser's address bar) puts Phuzzbox in a window of its own, with its own Dock icon. A service
+worker ([sw.js](sw.js)) keeps a copy of every file it has loaded, so the app opens even with
+`npm run serve` stopped. Open each page once with the server running so that its files are kept.
 
 The **tuner** above the plots reads whatever is coming in, your bass or the test bass, in cents
 from the nearest note, against a reference A4 you can set (440 Hz unless you change it). It reads

@@ -8,7 +8,9 @@ same C++. The full write-up is the [Phuzzbox plan](https://claude.ai/artifact/A2
 1. **Scaffold** — done: `native/` (effect contract, parameter tables generated from the
    descriptors, the CLAP effect plugin, the WebAssembly API), the page shell (audio input or the
    test bass, the pedal's face, meters, tuner, latency, Controls, How it works), the **test
-   bass**, and the **Buffer** as the template pedal.
+   bass**, and the **Buffer** as the template pedal. Since then: the latency work (smallest
+   browser buffer, output picker, loopback measurement), a tuner that reads a string's first
+   partial, Full scale from the interface's specification, and Phuzzbox as an installable web app.
 2. **Phuzz**, end to end: a two-transistor germanium fuzz (Ebers–Moll, temperature, battery sag,
    the input impedance that loads the pickup through the Buffer's circuit), solved implicitly and
    oversampled; views of the transistors' operating points; plugins.
@@ -24,8 +26,14 @@ same C++. The full write-up is the [Phuzzbox plan](https://claude.ai/artifact/A2
 5. **The rest**: envelope filter, octave down, sympathetic strings, black hole, Doppler; a
    hardware pedal (Electrosmith Daisy Seed) if wanted.
 
+## The standalone app
+
+Decided 2026-10-31: the owner plays a passive four-string through a Scarlett 2i2 and finds
+MainStage too much, so Phuzzbox gets a simple app of its own. First the installable web app (done).
+Next a native Mac app with the same face in a window, with audio in C++ through CoreAudio at small
+buffers, a few milliseconds' round trip against Chrome's 15–25. The same face then becomes the
+plugins' panel in MainStage and Logic.
+
 ## Open
 
-- The GitHub repository (`jdthaler/phuzzbox`) and the site (`phuzzbox.jthaler.net`).
-- The owner's rig (bass, interface, DAW) to set latency targets and Full scale.
-- CI: `.github/workflows/` is written but has not yet run.
+- The site (`phuzzbox.jthaler.net`), so the app installs from a URL rather than `localhost`.
