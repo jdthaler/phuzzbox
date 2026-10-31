@@ -18,6 +18,16 @@ native/pedals/<slug>/<slug>-params.h    generated from the descriptor (tools/gen
 test/<slug>-tests.mjs
 ```
 
+A descriptor may name its `expression` parameter (the Wah's `position`): a MIDI expression pedal
+(CC 1) moves it by default on the page and in the plugins. Every page also has the MIDI pedals card
+(`shared/midi-panel.js`), and every plugin a MIDI input with Bypass and Volume pedal parameters
+(`native/plugin/plugin.cpp`).
+
+A nonlinear circuit can be written as a netlist for `phuzzbox::dk::Circuit` (`phuzzbox/dk.h`):
+resistors, capacitors, inductors, sources, diodes and transistors, solved by the nodal DK method
+with Newton on the junctions only; `response(f)` gives its small-signal response for the views and
+tests. The Wah (`native/pedals/wah/wah-model.cpp`) is the example.
+
 Add the pedal to `shared/registry.js` (`ready: true`, `version`, a unique four-letter
 `plugin.code`) and to `native/CMakeLists.txt`.
 

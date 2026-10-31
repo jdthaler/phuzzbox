@@ -14,6 +14,7 @@ import { TESTBASS_URL } from './testbass.js';
 import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
 import { renderMarkdown } from './markdown.js';
 import { byId } from './registry.js';
+import { midiPanel } from './midi-panel.js';
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -135,7 +136,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, value: state.fullScale, 'aria-label': 'Volts at full scale' });
   fsInput.addEventListener('change', () => { state.fullScale = Math.max(0.05, +fsInput.value || 1); store.set('phuzzbox.fullScale', state.fullScale); send({ type: 'fullScale', volts: state.fullScale }); });
   const volInput = h('input', { type: 'range', min: 0, max: 1.5, step: 0.01, value: state.volume, 'aria-label': 'Volume' });
-  volInput.addEventListener('input', () => { state.volume = +volInput.value; store.set('phuzzbox.volume', state.volume); if (volume) volume.gain.value = state.volume; });
+  volInput.addEventListener('input', () => setVolume(+volInput.value));
   controls.append(h('div', { class: 'controls-bar' }, h('b', {}, 'Controls'), presetSel,
     h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale signal in the browser. Set it so the test bass and your bass read alike on the In meter; it matters for the pedals that distort.' }, 'Full scale ', fsInput, ' V'),
     h('label', { class: 'inline' }, 'Volume ', volInput)));
@@ -166,7 +167,14 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   }
   controls.append(groupsEl);
 
-  app.append(h('div', { class: 'stage' }, face, viewWrap), fret, controls,
+  // MIDI foot controllers (shared/midi-panel.js): what each control change moves
+  const midi = midiPanel({ PEDAL, h, store, key, ui: {
+    setVolume: (g) => { volInput.value = g; setVolume(g); }, bypassed: () => state.bypass, setBypass, muted: () => state.mute, setMute,
+    value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
+  } });
+  api.midi = midi;
+
+  app.append(h('div', { class: 'stage' }, face, viewWrap), fret, controls, midi.el,
     h('footer', {}, `${PEDAL.name} ${reg.version ?? ''} · Phuzzbox · physics, not samples · `,
       h('a', { href: '../' }, 'all pedals')));
 
@@ -197,6 +205,12 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     send({ type: 'params', P: { ...P } });
     refresh();
     emit('params');
+  }
+  // the volume after the pedal; a pedal's sweep glides over 10 ms rather than stepping
+  function setVolume(g) {
+    state.volume = g;
+    store.set('phuzzbox.volume', g);
+    if (volume) volume.gain.setTargetAtTime(g, ctx.currentTime, 0.01);
   }
   function setBypass(on) {
     state.bypass = on;

@@ -11,6 +11,11 @@ export const PEDALS = [
     after: 'the cable and the input your bass plugs into',
     blurb: 'Your pickup is an inductor: hear its resonance move as the cable gets longer and the input it drives gets hungrier.',
   },
+  {
+    id: 'wah', name: 'Wah', version: '0.1.0', ready: true, plugin: { code: 'Wahh' },
+    after: 'the inductor wah of the late 1960s, swept low for bass',
+    blurb: 'Two transistors and a coil resonating with a capacitor; your foot, or a MIDI expression pedal, turns the pot that sets how hard the loop pushes back.',
+  },
   { id: 'phuzz', name: 'Phuzz', ready: false, after: 'two-transistor germanium fuzz (1966)', blurb: 'Ebers–Moll transistors that drift with temperature, a sagging battery, and an input that loads your pickup.' },
   { id: 'preamp', name: 'Tube Preamp', ready: false, after: 'all-tube bass amp', blurb: 'Triodes with grid conduction, a passive tone stack, and an output transformer that saturates at the bottom first.' },
   { id: 'opto', name: 'Opto Compressor', ready: false, after: 'electro-optical leveler', blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.' },

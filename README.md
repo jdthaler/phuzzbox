@@ -12,6 +12,7 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | | Pedal | after | the physics |
 |---|---|---|---|
 | ✅ | [Buffer](buffer/) | the cable and input your bass plugs into | the pickup's coil, the cable's capacitance and the input's resistance as a circuit: hear the pickup resonance move as the cable gets longer and the input hungrier |
+| ✅ | [Wah](wah/) | the inductor wah of the late 1960s, swept low for bass | two Ebers–Moll transistors and a 500 mH coil, solved node by node; a MIDI expression pedal rocks it |
 | 🛠 | Phuzz | two-transistor germanium fuzz (1966) | Ebers–Moll transistors that drift with temperature, a sagging battery, an input that loads the pickup |
 | 🛠 | Tube Preamp | all-tube bass amp | triodes with grid conduction, a passive tone stack, an output transformer that saturates at the bottom first |
 | 🛠 | Opto Compressor | electro-optical leveler | an electroluminescent panel and a photocell with memory |
@@ -37,7 +38,15 @@ Open a pedal's page and press **Start audio**. Then either:
   `Z` row is the low E, then the `A` row, the `Q` row and the number row, each from the open
   string to the ninth fret. **Play a riff** loops a short line.
 
-`Space` is the footswitch. **Full scale** (in Controls) says how many volts at the input jack make
+`Space` is the footswitch. **MIDI pedals**: a MIDI foot controller (a Roland FC-300 through a USB
+MIDI interface, in Control Change mode) works the page in Chrome or Edge: press **Connect MIDI** in
+the MIDI pedals card. Out of the box its expression pedal 1 (CC 7) is a volume pedal, expression
+pedal 2 (CC 1) the pedal's expression control (the Wah's rocker), number pedal 1 (CC 65) the
+footswitch and number pedal 2 (CC 66) the tuner's mute; **Learn** teaches any pedal any control.
+The plugins take the same CCs on their MIDI input ([shared/midi.js](shared/midi.js),
+`native/core/include/phuzzbox/midi.h`).
+
+**Full scale** (in Controls) says how many volts at the input jack make
 a full-scale signal in the browser; set it so your bass and the test bass read alike on the In
 meter. It doesn't matter to the Buffer, but it will to every pedal that distorts.
 
