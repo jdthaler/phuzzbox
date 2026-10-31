@@ -1,0 +1,17 @@
+{
+  "name": "Phuzzbox",
+  "short_name": "Phuzzbox",
+  "description": "Effects pedals for bass and other line inputs, built from physics.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ec",
+  "theme_color": "#3f6f5a",
+  "icons": [
+    { "src": "shared/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "shared/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "shared/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "shared/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -23,8 +23,8 @@ const bass = [
 const recorded = [
   { id: 'recCable', label: 'Your cable', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
     hint: 'The cable between your bass and your audio interface now. The pedal takes its effect off, so set it to the cable you are using.' },
-  { id: 'recLoad', label: 'Your interface\'s input', min: 100e3, max: 10e6, def: 1e6, log: true, unit: 'MΩ', scale: 1e-6, decimals: 2,
-    hint: 'The input impedance of the Hi-Z or instrument input you plugged into, usually 1 MΩ (some are 500 kΩ or 2 MΩ).' },
+  { id: 'recLoad', label: 'Your interface\'s input', min: 100e3, max: 10e6, def: 1e6, log: true, unit: 'MΩ', scale: 1e-6, decimals: 2, role: 'interface-input',
+    hint: 'The input impedance of the Hi-Z or instrument input you plugged into, usually 1 MΩ (some are 500 kΩ or 2 MΩ). Choosing your interface beside Full scale, in Controls, sets it.' },
   { id: 'cablePF', label: 'Cable capacitance', min: 30e-12, max: 300e-12, def: 100e-12, log: true, unit: 'pF/m', scale: 1e12, decimals: 0,
     hint: 'The capacitance of a metre of cable: 50–80 pF/m for a good low-capacitance cable, 150 pF/m or more for a cheap one.' },
 ];
