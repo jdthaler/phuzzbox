@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y ninja-build libasound2-dev libjack-jackd2-dev libx11-dev
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libasound2-dev libjack-jackd2-dev libx11-dev libgtk-3-dev libwebkit2gtk-4.1-dev
       - if: runner.os == 'macOS'
         run: brew install ninja
       - name: Build and test (Linux)
@@ -41,3 +41,17 @@ jobs:
           name: plugins-${{ matrix.os }}
           path: native/build/*/plugins/
           retention-days: 14
+      # the app, zipped by the system's own tool so the Mac bundle keeps its permissions and signature
+      - name: Package the app (macOS)
+        if: runner.os == 'macOS'
+        run: ditto -c -k --keepParent native/build/macos/app/Phuzzbox.app Phuzzbox-macos.zip
+      - name: Package the app (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path native/build/windows/app/Release/Phuzzbox.exe -DestinationPath Phuzzbox-windows.zip
+      - uses: actions/upload-artifact@v4
+        if: runner.os != 'Linux'
+        with:
+          name: Phuzzbox-app-${{ matrix.os }}
+          path: Phuzzbox-*.zip
+          retention-days: 30
