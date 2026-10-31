@@ -72,11 +72,29 @@ The plugins take the same CCs on their MIDI input ([shared/midi.js](shared/midi.
 
 Your settings stay in your browser.
 
+## The app
+
+**Phuzzbox.app** (`native/app/`) plays a pedal with no browser and no DAW. It shows the page's face,
+tuner and Controls in a window of its own, built from the same modules. Its audio runs in C++
+through CoreAudio (WASAPI on Windows, ALSA on Linux) at the buffer you choose, 64 samples unless
+you change it. At 48 kHz the buffers then make a round trip of about 3 ms, where Chrome's is
+15–25 ms. Pick your interface for In and Out, the input your bass is on, and the buffer: the
+smallest that plays without clicks. **Measure latency** times the real round trip with a cable from
+the interface's output back to its input. Settings are kept in `~/Library/Application
+Support/Phuzzbox/settings.json` (`%APPDATA%\Phuzzbox` on Windows, `~/.config/phuzzbox` on
+Linux).
+
+CI builds it on every pull request (the `native` workflow's `Phuzzbox-app-macos-15` artifact).
+The app isn't notarised, so after unzipping it, clear the quarantine flag macOS puts on downloads
+(`xattr -dr com.apple.quarantine Phuzzbox.app`), then open it. macOS asks once for the
+microphone: that permission covers the interface's inputs too.
+
 ## Running it locally
 
 ```bash
 npm run serve        # http://localhost:8766 (AudioWorklets need HTTP)
 npm test             # every test/*-tests.mjs
+node tools/bundle-app.mjs   # the app's window, native/app/buffer.html, after changing a module it uses
 ```
 
 The physics is C++ in `native/`, built as WebAssembly (committed, so the site needs no build
