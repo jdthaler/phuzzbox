@@ -23,10 +23,12 @@ same C++. The full write-up is the [Phuzzbox plan](https://claude.ai/artifact/A2
 ## The standalone app
 
 Decided 2026-10-31: the owner plays a passive four-string through a Scarlett 2i2 and finds
-MainStage too much, so Phuzzbox gets a simple app of its own. First the installable web app (done).
-Next a native Mac app with the same face in a window, with audio in C++ through CoreAudio at small
-buffers, a few milliseconds' round trip against Chrome's 15–25. The same face then becomes the
-plugins' panel in MainStage and Logic.
+MainStage too much, so Phuzzbox gets a simple app of its own. First the installable web app (done),
+then **Phuzzbox.app** (`native/app/`, done): the same face in a window, with audio in C++ through
+RtAudio at small buffers, a few milliseconds' round trip against Chrome's 15–25. Its own program
+rather than clap-wrapper's standalone, which fixes the buffer at 256 samples on macOS. Next: the
+same face as the plugins' panel in MainStage and Logic (Forte's editor.cpp), and the app choosing
+among pedals once there is more than one.
 
 ## Open
 
