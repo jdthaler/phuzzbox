@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-24.04, macos-15, windows-2022] # pinned as Forte's: the windows preset's generator is Visual Studio 2022
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
