@@ -11,9 +11,14 @@
 //
 // Messages in: { type: 'params', P }, { type: 'bypass', on }, { type: 'source', which: 'input' |
 // 'bass' }, { type: 'fullScale', volts }, { type: 'note', key, velocity }, { type: 'noteOff', key },
-// { type: 'quality', level }.
+// { type: 'quality', level }, { type: 'measure' } (the loopback test: below).
 // Messages out: { type: 'levels', inPeak, outPeak } in volts (about 20 a second), { type: 'stats',
-// load, latency }, { type: 'error', message }.
+// load, latency }, { type: 'measured', ms } (null when nothing came back), { type: 'error', message }.
+//
+// The loopback test measures the round trip the player hears: with a cable from the interface's
+// output to its input, it listens to the input's noise for 0.2 s, plays a 2 ms click, and counts
+// the samples until the click comes back above the noise. Everything in the path is in that count:
+// the browser's input and output buffers, the interface's converters, and this processor's block.
 
 import { wasmEffect } from './wasm.js';
 import { TestBass } from './testbass.js';
@@ -49,13 +54,36 @@ export function registerPedal(PEDAL) {
           case 'note': this.bass.note(m.key, m.velocity ?? 0.7); break;
           case 'noteOff': this.bass.noteOff(m.key); break;
           case 'quality': this.effect.setQuality(m.level); break;
+          case 'measure': this.measure = { t: 0, floor: 0, sentAt: -1 }; break;
         }
       } catch (err) { this.port.postMessage({ type: 'error', message: err.message }); }
+    }
+    loopback(inp, out, n) {
+      const M = this.measure, quiet = Math.round(0.2 * sampleRate), click = Math.round(0.002 * sampleRate);
+      for (let i = 0; i < n; i++, M.t++) {
+        const x = inp ? Math.abs(inp[i]) : 0;
+        let y = 0;
+        if (M.t < quiet) M.floor = Math.max(M.floor, x);
+        else if (M.sentAt < 0 || M.t - M.sentAt < click) {
+          if (M.sentAt < 0) M.sentAt = M.t;
+          y = 0.3 * Math.sin((2 * Math.PI * 1000 * (M.t - M.sentAt)) / sampleRate);
+        } else if (x > Math.max(0.01, 6 * M.floor)) {
+          this.port.postMessage({ type: 'measured', ms: (1000 * (M.t - M.sentAt)) / sampleRate });
+          this.measure = null;
+        } else if (M.t - M.sentAt > sampleRate) {
+          this.port.postMessage({ type: 'measured', ms: null });
+          this.measure = null;
+        }
+        out[0][i] = y;
+        if (out[1]) out[1][i] = y;
+        if (!this.measure) { for (let j = i + 1; j < n; j++) { out[0][j] = 0; if (out[1]) out[1][j] = 0; } break; }
+      }
     }
     process(inputs, outputs) {
       const out = outputs[0];
       if (!out?.length) return true;
       const n = out[0].length, v = this.v.subarray(0, n), L = this.L.subarray(0, n), R = this.R.subarray(0, n);
+      if (this.measure) { this.loopback(inputs[0]?.[0], out, n); return true; }
       const t0 = now();
       if (this.source === 'bass') this.bass.process(v, n);
       else {

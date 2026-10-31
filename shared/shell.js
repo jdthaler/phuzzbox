@@ -65,6 +65,8 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const chanSel = h('select', { 'aria-label': 'Input channel', class: 'chan', onchange: () => { state.channel = +chanSel.value; connectMic(); } },
     h('option', { value: 0 }, 'In 1'), h('option', { value: 1 }, 'In 2'));
   const latency = h('span', { class: 'pill', title: 'The browser\'s estimate of the delay from input to output' }, 'latency –');
+  const sinkSel = h('select', { 'aria-label': 'Output', class: 'sink', hidden: true, onchange: () => setSink(sinkSel.value) });
+  const measureBtn = h('button', { type: 'button', class: 'ghost', hidden: true, title: 'Measure the real round trip: connect a cable from your interface\'s output to the input you chose, and turn its direct monitoring off', onclick: () => measure() }, 'Measure latency');
   const cpu = h('span', { class: 'pill', title: 'The share of the audio thread\'s time the pedal takes' }, 'CPU –');
   const notesBtn = h('button', { type: 'button', class: 'ghost', onclick: () => showNotes() }, 'How it works');
   app.append(h('header', { class: 'top' },
@@ -72,7 +74,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     h('h1', {}, PEDAL.name),
     notesBtn,
     h('span', { class: 'spacer' }),
-    startBtn, sourceSel, chanSel, latency, cpu, status));
+    startBtn, sourceSel, chanSel, sinkSel, latency, measureBtn, cpu, status));
 
   // the pedal's face
   const led = h('span', { class: 'led', 'aria-hidden': 'true' });
@@ -242,7 +244,8 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     startBtn.disabled = true;
     status.textContent = 'starting…';
     try {
-      ctx = new AudioContext({ latencyHint: 'interactive' });
+      // the smallest buffer the browser will give (a number is seconds; 0 asks for its minimum)
+      ctx = new AudioContext({ latencyHint: 0 });
       const [pedal, bass] = await Promise.all([fetchBytes(PEDAL.wasm.binary()), fetchBytes(TESTBASS_URL())]);
       await ctx.audioWorklet.addModule(worklet);
       node = new AudioWorkletNode(ctx, 'phuzzbox', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], processorOptions: { pedal, bass } });
@@ -274,10 +277,27 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     for (const o of [...sourceSel.options]) if (o.value !== 'bass') o.remove();
     if (devices.length && devices.every((d) => !d.label)) sourceSel.append(h('option', { value: 'ask' }, 'Audio input…'));
     else for (const d of devices) sourceSel.append(h('option', { value: d.deviceId }, d.label || 'Audio input'));
+    // where the sound goes: the interface itself, if it is chosen here, saves the browser resampling
+    // between two devices' clocks (Chrome and Edge; elsewhere the system's output)
+    const outs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'audiooutput' && d.label);
+    if (!ctx?.setSinkId || !outs.length) return;
+    const was = sinkSel.value || store.get('phuzzbox.sink', '');
+    sinkSel.replaceChildren(h('option', { value: '' }, 'System output'), ...outs.filter((d) => d.deviceId !== 'default').map((d) => h('option', { value: d.deviceId }, `→ ${d.label}`)));
+    sinkSel.hidden = false;
+    if ([...sinkSel.options].some((o) => o.value === was)) { sinkSel.value = was; if (was) setSink(was); }
+  }
+  async function setSink(id) {
+    try { await ctx.setSinkId(id); store.set('phuzzbox.sink', id); measured = null; showLatency(); } catch (err) { status.textContent = `Output: ${err.message}`; }
+  }
+  function measure() {
+    if (state.source !== 'input') return;
+    status.textContent = 'Measuring: a click goes out and back…';
+    measureBtn.disabled = true;
+    send({ type: 'measure' });
   }
   async function setSource(v) {
     if (!ctx) await start();
-    if (v === 'bass') { state.source = 'bass'; send({ type: 'source', which: 'bass' }); chanSel.hidden = true; tuner.hidden = true; return; }
+    if (v === 'bass') { state.source = 'bass'; send({ type: 'source', which: 'bass' }); chanSel.hidden = true; tuner.hidden = true; measureBtn.hidden = true; return; }
     try {
       micStream?.getTracks().forEach((t) => t.stop());
       micStream = await navigator.mediaDevices.getUserMedia({
@@ -285,9 +305,10 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       });
       if (v === 'ask') { await listInputs(); const id = micStream.getAudioTracks()[0]?.getSettings().deviceId; if (id) sourceSel.value = id; }
       connectMic();
+      measured = null;
       state.source = 'input';
       send({ type: 'source', which: 'input' });
-      chanSel.hidden = false; tuner.hidden = false;
+      chanSel.hidden = false; tuner.hidden = false; measureBtn.hidden = false;
       showLatency();
     } catch (err) {
       status.textContent = `No input: ${err.message}`;
@@ -309,8 +330,15 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     inAnalyser = new AnalyserNode(ctx, { fftSize: 8192 });
     mono.connect(inAnalyser);
   }
+  let measured = null;
   function showLatency() {
     if (!ctx) return;
+    if (measured != null) {
+      latency.textContent = `round trip ${measured.toFixed(1)} ms (measured)`;
+      latency.title = 'Measured with a cable from the output back to the input';
+      latency.classList.toggle('warn', measured > 15);
+      return;
+    }
     const track = micStream?.getAudioTracks()[0]?.getSettings();
     const ms = 1000 * ((ctx.baseLatency || 0) + (ctx.outputLatency || 0) + (state.source === 'input' ? track?.latency || 0 : 0));
     latency.textContent = ms ? `latency ≈ ${ms.toFixed(0)} ms` : 'latency –';
@@ -322,6 +350,12 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       meterOut.set(m.outPeak, m.outPeak / state.fullScale > 0.98);
     } else if (m.type === 'stats') {
       cpu.textContent = `CPU ${(100 * m.load).toFixed(1)}%`;
+      showLatency();
+    } else if (m.type === 'measured') {
+      measureBtn.disabled = false;
+      if (m.ms == null) { status.textContent = 'Nothing came back: is a cable connected from the output to this input?'; return; }
+      status.textContent = '';
+      measured = m.ms;
       showLatency();
     } else if (m.type === 'error') status.textContent = m.message;
   }
