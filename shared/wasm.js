@@ -90,6 +90,15 @@ export function wasmEffect(PEDAL) {
       }
       return ok;
     }
+    // what the effect posted since the last call (phuzzbox::Message): [{ type, values }]
+    messages() {
+      const out = [];
+      for (let p; (p = x.px_message(this.h));) {
+        const head = new Uint16Array(x.memory.buffer, p, 2);
+        out.push({ type: head[0], values: Float32Array.from(new Float32Array(x.memory.buffer, p + 4, head[1])) });
+      }
+      return out;
+    }
     destroy() { x.px_destroy(this.h); this.h = 0; }
   }
   Object.defineProperty(WasmEffect, 'name', { value: `${PEDAL.name.replace(/\W/g, '')}Effect` });

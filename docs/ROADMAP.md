@@ -11,9 +11,12 @@ same C++. The full write-up is the [Phuzzbox plan](https://claude.ai/artifact/A2
    bass**, and the **Buffer** as the template pedal. Since then: the latency work (smallest
    browser buffer, output picker, loopback measurement), a tuner that reads a string's first
    partial, Full scale from the interface's specification, and Phuzzbox as an installable web app.
-2. **Phuzz**, end to end: a two-transistor germanium fuzz (Ebers–Moll, temperature, battery sag,
-   the input impedance that loads the pickup through the Buffer's circuit), solved implicitly and
-   oversampled; views of the transistors' operating points; plugins.
+2. **Phuzz** — done: a two-transistor germanium fuzz (Ebers–Moll, temperature, battery sag,
+   the input impedance that loads the pickup through the Buffer's circuit), solved by the nodal
+   DK method (Newton on the four junctions) at 4× oversampling between minimum-phase Chebyshev
+   filters; views of the transistors' characteristics with their operating points moving, a
+   scope and the spectra; plugins. Tested against an independent nodal analysis in JavaScript
+   (test/phuzz-circuit.mjs). Next for it: the app playing it, and listening on the owner's bass.
 3. **The rig**: tube preamp, opto compressor, cabinet; the **pedalboard** page, chaining pedals
    with real input and output impedances.
    For the rig, done ahead of it (2026-10-31): **MIDI pedals**, Web MIDI on every page and a MIDI input on the plugins,

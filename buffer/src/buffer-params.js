@@ -1,6 +1,6 @@
 // buffer-params.js — the Buffer's controls. Values in SI units; `scale` shows them in friendlier ones.
 
-const bass = [
+export const bass = [
   { id: 'active', label: 'Active electronics', type: 'checkbox', def: false,
     hint: 'An active bass drives the cable from a preamp\'s few hundred ohms: no inductance, so no resonance, and the cable and load stop mattering.' },
   { id: 'pickupL', label: 'Pickup inductance', min: 0.5, max: 12, def: 3.6, log: true, unit: 'H', decimals: 2,
@@ -20,7 +20,7 @@ const bass = [
     hint: 'What an active bass\'s preamp drives the cable through.' },
 ];
 
-const recorded = [
+export const recorded = [
   { id: 'recCable', label: 'Your cable', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
     hint: 'The cable between your bass and your audio interface now. The pedal takes its effect off, so set it to the cable you are using.' },
   { id: 'recLoad', label: 'Your interface\'s input', min: 100e3, max: 10e6, def: 1e6, log: true, unit: 'MΩ', scale: 1e-6, decimals: 2, role: 'interface-input',

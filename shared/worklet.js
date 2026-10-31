@@ -17,7 +17,8 @@
 // Outputs: 0 is the pedal (stereo, full-scale units, for the speakers); 1 is the input in volts
 // (mono, before the pedal and the mute, for the tuner), from the interface or the test bass alike.
 // Messages out: { type: 'levels', inPeak, outPeak } in volts (about 20 a second), { type: 'stats',
-// load, latency }, { type: 'measured', ms } (null when nothing came back), { type: 'error', message }.
+// load, latency }, { type: 'measured', ms } (null when nothing came back), { type: 'error', message },
+// { type: 'pedal', messages: [{ type, values }] } (what the pedal posted for its views: phuzzbox::Message).
 //
 // The loopback test measures the round trip the player hears: with a cable from the interface's
 // output to its input, it listens to the input's noise for 0.2 s, plays a 2 ms click, and counts
@@ -100,6 +101,8 @@ export function registerPedal(PEDAL) {
         const t = now();
         if (t - this.lastError > 1000) { this.lastError = t; this.port.postMessage({ type: 'error', message: 'The pedal went numerically unstable at these settings and was reset.' }); }
       }
+      const posted = this.effect.messages();
+      if (posted.length) this.port.postMessage({ type: 'pedal', messages: posted });
       const step = 1 / (FADE * sampleRate), k = 1 / this.fullScale, oL = out[0], oR = out[1];
       for (let i = 0; i < n; i++) {
         if (this.wet !== this.target) this.wet = this.target > this.wet ? Math.min(this.target, this.wet + step) : Math.max(this.target, this.wet - step);
