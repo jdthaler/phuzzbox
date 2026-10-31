@@ -1,0 +1,43 @@
+name: native
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 6.0.10
+      - name: Build the WebAssembly and check the committed files are current
+        run: |
+          cd native && cmake --preset wasm && cmake --build --preset wasm && ctest --preset wasm
+          cd .. && git diff --exit-code -- '*.wasm'
+  plugins:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libasound2-dev libjack-jackd2-dev libx11-dev
+      - if: runner.os == 'macOS'
+        run: brew install ninja
+      - name: Build and test (Linux)
+        if: runner.os == 'Linux'
+        run: cd native && cmake --preset linux && cmake --build --preset linux && ctest --preset linux
+      - name: Build and test (macOS)
+        if: runner.os == 'macOS'
+        run: cd native && cmake --preset macos && cmake --build --preset macos && ctest --preset macos
+      - name: Build and test (Windows)
+        if: runner.os == 'Windows'
+        run: cd native && cmake --preset windows && cmake --build --preset windows && ctest --preset windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugins-${{ matrix.os }}
+          path: native/build/*/plugins/
+          retention-days: 14

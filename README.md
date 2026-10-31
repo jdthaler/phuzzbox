@@ -1,0 +1,65 @@
+# Phuzzbox
+
+**Effects pedals built from physics**, for bass guitar and other line inputs. A sibling of
+[Forte](https://github.com/jdthaler/forte), Forte's keyboards turned inside out: instead of keys
+exciting a model, your instrument's signal drives one. Every pedal integrates the equations of a
+real mechanism (a pickup and its cable, germanium transistors, a triode and its transformer, a
+loudspeaker in a box, a spring, a tape) with the signal as the input. No impulse responses, no
+captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
+
+## Pedals
+
+| | Pedal | after | the physics |
+|---|---|---|---|
+| ✅ | [Buffer](buffer/) | the cable and input your bass plugs into | the pickup's coil, the cable's capacitance and the input's resistance as a circuit: hear the pickup resonance move as the cable gets longer and the input hungrier |
+| 🛠 | Phuzz | two-transistor germanium fuzz (1966) | Ebers–Moll transistors that drift with temperature, a sagging battery, an input that loads the pickup |
+| 🛠 | Tube Preamp | all-tube bass amp | triodes with grid conduction, a passive tone stack, an output transformer that saturates at the bottom first |
+| 🛠 | Opto Compressor | electro-optical leveler | an electroluminescent panel and a photocell with memory |
+| 🛠 | Cabinet | 8×10 and 1×15 cabinets | a loudspeaker from its Thiele–Small parameters in a sealed or ported box |
+
+✅ playable · 🛠 in the workshop. The plan and the rest of the lineup are in
+[docs/ROADMAP.md](docs/ROADMAP.md).
+
+The **test bass** ([testbass/](testbass/README.md)) is a bass guitar made of physics (stiff
+strings, a finger pluck, a magnetic pickup) that every page plays from the computer keys when
+nothing is plugged in, and that the tests and demos use as their signal.
+
+## Playing
+
+Open a pedal's page and press **Start audio**. Then either:
+
+- **Plug in.** Connect your bass to an audio interface's instrument (Hi-Z) input, choose the
+  interface in the source menu, and allow the browser to use it. Pick **In 1** or **In 2** for the
+  input your bass is on. Echo cancellation, noise suppression and automatic gain are turned off.
+  Use wired headphones or speakers: Bluetooth adds 100–200 ms. The latency pill shows the
+  browser's estimate of the round trip; Chrome on a Mac with a class-compliant interface does best.
+- **Play the test bass.** The rows of letter keys are its strings, as tablature has them: the
+  `Z` row is the low E, then the `A` row, the `Q` row and the number row, each from the open
+  string to the ninth fret. **Play a riff** loops a short line.
+
+`Space` is the footswitch. **Full scale** (in Controls) says how many volts at the input jack make
+a full-scale signal in the browser; set it so your bass and the test bass read alike on the In
+meter. It doesn't matter to the Buffer, but it will to every pedal that distorts.
+
+Your settings stay in your browser.
+
+## Running it locally
+
+```bash
+npm run serve        # http://localhost:8766 (AudioWorklets need HTTP)
+npm test             # every test/*-tests.mjs
+```
+
+The physics is C++ in `native/`, built as WebAssembly (committed, so the site needs no build
+step) and as plugins (CLAP, VST3, AU and a standalone app, through clap-wrapper):
+
+```bash
+cd native && cmake --preset linux && cmake --build --preset linux && ctest --preset linux   # or macos, windows
+cd native && cmake --preset wasm && cmake --build --preset wasm                             # needs Emscripten 6.0.10
+```
+
+See [CLAUDE.md](CLAUDE.md) and [docs/PEDAL_GUIDE.md](docs/PEDAL_GUIDE.md) for how a pedal is built.
+
+## Licence
+
+MIT. The page code, the build and the plugin follow Forte's (also MIT, same author).

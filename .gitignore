@@ -1,0 +1,4 @@
+native/build/
+node_modules/
+examples/**/*.wav
+.DS_Store
