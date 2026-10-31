@@ -46,8 +46,10 @@ int main() {
   }
   check(worst < 1e-6, "the Buffer at its defaults passes the signal unchanged");
 
-  testbass::Bass bass(48000);
-  const auto ps = testbass::partials(bass.settings, 0, 5, 48000); // A1 on the E string
+  // on the heap: a Bass is about 60 kB, which with main's other locals overflows the WebAssembly
+  // build's 64 kB stack (and an overflow there overwrote libc's tables until the check below)
+  auto bass = std::make_unique<testbass::Bass>(48000);
+  const auto ps = testbass::partials(bass->settings, 0, 5, 48000); // A1 on the E string
   check(std::abs(1200 * std::log2(ps[0].f / 55.0)) < 0.01, "the test bass's fifth fret on E is A1");
 
   // the tuner (tuner.h), on a detuned harmonic tone, as test/tuner-tests.mjs checks shared/tuner.js
