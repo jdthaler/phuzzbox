@@ -14,6 +14,8 @@ import { TESTBASS_URL } from './testbass.js';
 import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
 import { renderMarkdown } from './markdown.js';
 import { byId } from './registry.js';
+import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
+import { registerApp, offerInstall } from './app.js';
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -69,10 +71,14 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const measureBtn = h('button', { type: 'button', class: 'ghost', hidden: true, title: 'Measure the real round trip: connect a cable from your interface\'s output to the input you chose, and turn its direct monitoring off', onclick: () => measure() }, 'Measure latency');
   const cpu = h('span', { class: 'pill', title: 'The share of the audio thread\'s time the pedal takes' }, 'CPU –');
   const notesBtn = h('button', { type: 'button', class: 'ghost', onclick: () => showNotes() }, 'How it works');
+  const installBtn = h('button', { type: 'button', class: 'ghost', title: 'Install Phuzzbox as an app with its own window, which opens without the browser\'s tabs and works without the server' }, 'Install app');
+  registerApp();
+  offerInstall(installBtn);
   app.append(h('header', { class: 'top' },
     h('a', { class: 'home', href: '../' }, 'Phuzzbox'),
     h('h1', {}, PEDAL.name),
     notesBtn,
+    installBtn,
     h('span', { class: 'spacer' }),
     startBtn, sourceSel, chanSel, sinkSel, latency, measureBtn, cpu, status));
 
@@ -136,8 +142,35 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   fsInput.addEventListener('change', () => { state.fullScale = Math.max(0.05, +fsInput.value || 1); store.set('phuzzbox.fullScale', state.fullScale); send({ type: 'fullScale', volts: state.fullScale }); });
   const volInput = h('input', { type: 'range', min: 0, max: 1.5, step: 0.01, value: state.volume, 'aria-label': 'Volume' });
   volInput.addEventListener('input', () => { state.volume = +volInput.value; store.set('phuzzbox.volume', state.volume); if (volume) volume.gain.value = state.volume; });
+  // Full scale from the interface's specification and its gain, or typed in
+  const ifaceSel = h('select', { 'aria-label': 'Audio interface', onchange: () => setInterface() },
+    h('option', { value: '' }, 'Other interface'), ...INTERFACES.map((i) => h('option', { value: i.id }, i.name)));
+  const gainInput = h('input', { type: 'number', min: 0, max: 62, step: 1, value: store.get('phuzzbox.gain', 20), 'aria-label': 'Interface gain in decibels' });
+  gainInput.addEventListener('change', () => setInterface());
+  const gainLabel = h('label', { class: 'inline' }, 'gain ', gainInput, ' dB');
+  ifaceSel.value = store.get('phuzzbox.interface', '');
+  const ifaceInput = all.find((p) => p.role === 'interface-input');
+  function setInterface() {
+    const iface = byInterface(ifaceSel.value);
+    store.set('phuzzbox.interface', ifaceSel.value);
+    gainLabel.hidden = !iface;
+    fsInput.disabled = !!iface;
+    if (!iface) { fsInput.title = ''; return; }
+    gainInput.max = iface.gainRange;
+    const g = Math.min(iface.gainRange, Math.max(0, +gainInput.value || 0));
+    gainInput.value = g;
+    store.set('phuzzbox.gain', g);
+    gainLabel.title = `${iface.note} At 0 dB a sine of +${iface.maxDbu} dBu just reaches full scale.`;
+    state.fullScale = +fullScaleVolts(iface, g).toPrecision(3);
+    fsInput.value = state.fullScale;
+    fsInput.title = `Set from the ${iface.name} at ${g} dB of gain`;
+    store.set('phuzzbox.fullScale', state.fullScale);
+    send({ type: 'fullScale', volts: state.fullScale });
+    if (ifaceInput && P[ifaceInput.id] !== iface.inputZ) set(ifaceInput.id, iface.inputZ);
+  }
   controls.append(h('div', { class: 'controls-bar' }, h('b', {}, 'Controls'), presetSel,
-    h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale signal in the browser. Set it so the test bass and your bass read alike on the In meter; it matters for the pedals that distort.' }, 'Full scale ', fsInput, ' V'),
+    h('span', { class: 'inline', title: 'Choose your interface and type its gain, and the page works out Full scale from the maker\'s specification. Set its instrument input too.' }, ifaceSel, gainLabel),
+    h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale signal in the browser: from your interface and its gain, or typed in. Set it so the test bass and your bass read alike on the In meter; it matters for the pedals that distort.' }, 'Full scale ', fsInput, ' V'),
     h('label', { class: 'inline' }, 'Volume ', volInput)));
   const rows = [];
   const groupsEl = h('div', { class: 'groups' });
@@ -444,6 +477,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   if (location.hash === '#about') showNotes();
 
   setBypass(state.bypass);
+  setInterface();
   chanSel.hidden = true;
   refresh();
   return api;
