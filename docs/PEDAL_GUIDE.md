@@ -43,6 +43,11 @@ Rules of thumb:
   a few samples.
 - **Budget:** one pedal under 5 % of a core at 48 kHz, so a board of eight fits.
 - **Stereo** only for a physical reason (two mics, a rotating speaker).
+- **Oversampling**: `phuzzbox/oversample.h` (Chebyshev IIR up and down, a few samples of
+  latency); report its `delay()` from `latency()`. The Phuzz is the example of a circuit solved
+  by the nodal DK method (`native/pedals/phuzz/phuzz-model.cpp`).
+- **Telling the page what happens inside**: `post()` a `Message` (a type and up to 30 numbers) at
+  a few hundred a second at most; the page's views get them with `api.on('pedal', (messages) => …)`.
 
 ## Parameters
 

@@ -12,7 +12,7 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | | Pedal | after | the physics |
 |---|---|---|---|
 | ✅ | [Buffer](buffer/) | the cable and input your bass plugs into | the pickup's coil, the cable's capacitance and the input's resistance as a circuit: hear the pickup resonance move as the cable gets longer and the input hungrier |
-| 🛠 | Phuzz | two-transistor germanium fuzz (1966) | Ebers–Moll transistors that drift with temperature, a sagging battery, an input that loads the pickup |
+| ✅ | [Phuzz](phuzz/) | two-transistor germanium fuzz (1966) | Ebers–Moll transistors that drift with temperature, a sagging battery, an input that loads the pickup; solved by the nodal DK method at 4× oversampling |
 | 🛠 | Tube Preamp | all-tube bass amp | triodes with grid conduction, a passive tone stack, an output transformer that saturates at the bottom first |
 | 🛠 | Opto Compressor | electro-optical leveler | an electroluminescent panel and a photocell with memory |
 | 🛠 | Cabinet | 8×10 and 1×15 cabinets | a loudspeaker from its Thiele–Small parameters in a sealed or ported box |
@@ -38,8 +38,8 @@ Open a pedal's page and press **Start audio**. Then either:
   string to the ninth fret. **Play a riff** loops a short line.
 
 `Space` is the footswitch. **Full scale** (in Controls) says how many volts at the input jack make
-a full-scale signal in the browser. It doesn't matter to the Buffer, but it will to every pedal
-that distorts. Choose your interface beside it and type its gain, and the page works it out from
+a full-scale signal in the browser. It doesn't matter to the Buffer, but it does to the Phuzz and
+every pedal that distorts: a fuzz clips at a voltage, not at a fraction of full scale. Choose your interface beside it and type its gain, and the page works it out from
 the maker's specification ([shared/interfaces.js](shared/interfaces.js)). The maximum input level
 in dBu at minimum gain is the sine that just reaches full scale, so full scale's peak is
 √0.6 V × 10^(dBu/20) × √2, less one decibel for each decibel of gain. A Scarlett 2i2 (4th gen)
@@ -86,6 +86,7 @@ microphone: that permission covers the interface's inputs too.
 npm run serve        # http://localhost:8766 (AudioWorklets need HTTP)
 npm test             # every test/*-tests.mjs
 node tools/bundle-app.mjs   # the app's window, native/app/buffer.html, after changing a module it uses
+node tools/render-phuzz.mjs # the Phuzz's demos to examples/phuzz/ (and render-buffer.mjs, the Buffer's)
 ```
 
 The physics is C++ in `native/`, built as WebAssembly (committed, so the site needs no build
