@@ -11,7 +11,7 @@
 import { params, defaults, fmt, toUnit, fromUnit } from './params.js';
 import { fetchBytes } from './wasm.js';
 import { TESTBASS_URL } from './testbass.js';
-import { detectPitch, noteOf } from './tuner.js';
+import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
 import { renderMarkdown } from './markdown.js';
 import { byId } from './registry.js';
 
@@ -48,10 +48,10 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const key = `phuzzbox.${PEDAL.id}`;
   const P = { ...defaults(PEDAL.groups), ...store.get(`${key}.params`, {}) };
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
-  const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: 0 };
+  const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: 0, mute: false };
   const listeners = { params: [], audio: [] };
   const api = { P, PEDAL, ctx: null, analyser: null, on: (ev, fn) => listeners[ev].push(fn) };
-  let ctx = null, node = null, volume = null, micSource = null, micStream = null, inAnalyser = null, splitter = null;
+  let ctx = null, node = null, volume = null, micSource = null, micStream = null, tunerAnalyser = null, splitter = null;
   const send = (m) => node?.port.postMessage(m);
   const emit = (ev) => listeners[ev].forEach((fn) => fn(api));
 
@@ -81,16 +81,27 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const foot = h('button', { class: 'footswitch', type: 'button', 'aria-pressed': String(!state.bypass), onclick: () => setBypass(!state.bypass) }, h('span', { class: 'sr' }, 'Engage'));
   const knobs = h('div', { class: 'knobs' });
   const meterIn = meter('In'), meterOut = meter('Out');
-  const tuner = h('div', { class: 'tuner', title: 'The input\'s pitch' }, h('span', { class: 'note' }, '–'), h('span', { class: 'cents' }, ''));
   const face = h('section', { class: 'pedal', 'aria-label': `${PEDAL.name} pedal` },
     h('div', { class: 'jacks' }, meterIn.el, meterOut.el),
     knobs,
     h('div', { class: 'name' }, h('span', {}, PEDAL.name), h('small', {}, reg.after ?? '')),
-    h('div', { class: 'switchrow' }, led, foot),
-    tuner);
+    h('div', { class: 'switchrow' }, led, foot));
+
+  // the tuner: the input's fundamental (the interface's or the test bass's), on a needle
+  const tuning = new Tuner({ a4: store.get('phuzzbox.a4', 440) });
+  const tNote = h('span', {}, '–'), tOct = h('sub', {}, ''), tNeedle = h('span', { class: 't-needle' });
+  const tCents = h('span', { class: 't-cents' }, ''), tHz = h('span', {}, 'Start audio and play a note'), tString = h('span', {}, '');
+  const a4Input = h('input', { type: 'number', min: 415, max: 466, step: 0.5, value: tuning.a4, 'aria-label': 'Reference pitch, A4 in hertz' });
+  a4Input.addEventListener('change', () => { tuning.a4 = Math.min(466, Math.max(415, +a4Input.value || 440)); a4Input.value = tuning.a4; store.set('phuzzbox.a4', tuning.a4); });
+  const muteBtn = h('button', { type: 'button', class: 'ghost mute', 'aria-pressed': 'false', title: 'Silence the output while you tune, as a tuner pedal does; the tuner still hears the input', onclick: () => setMute(!state.mute) }, 'Mute while tuning');
+  const scale = h('div', { class: 't-scale', 'aria-hidden': 'true' }, h('span', { class: 't-zone' }),
+    ...[-50, -25, 0, 25, 50].map((c) => { const t = h('span', { class: 't-tick' }, h('i', {}, c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0')); t.style.left = `${50 + c}%`; return t; }), tNeedle);
+  const tunerCard = h('figure', { class: 'card tunercard idle', 'aria-label': 'Tuner' },
+    h('figcaption', {}, h('b', {}, 'Tuner'), h('span', {}, 'the fundamental, in cents from A4 =', a4Input, 'Hz'), muteBtn),
+    h('div', { class: 't-body' }, h('div', { class: 't-name', role: 'status' }, tNote, tOct), scale, h('div', { class: 't-read' }, tCents, tHz, tString)));
 
   // views
-  const viewWrap = h('section', { class: 'views' });
+  const viewWrap = h('section', { class: 'views' }, tunerCard);
   for (const v of views) {
     const holder = h('div', { class: 'canvas' });
     const card = h('figure', { class: 'card' }, h('figcaption', {}, h('b', {}, v.title), ' ', h('span', {}, v.caption ?? '')), holder);
@@ -248,7 +259,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       ctx = new AudioContext({ latencyHint: 0 });
       const [pedal, bass] = await Promise.all([fetchBytes(PEDAL.wasm.binary()), fetchBytes(TESTBASS_URL())]);
       await ctx.audioWorklet.addModule(worklet);
-      node = new AudioWorkletNode(ctx, 'phuzzbox', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], processorOptions: { pedal, bass } });
+      node = new AudioWorkletNode(ctx, 'phuzzbox', { numberOfInputs: 1, numberOfOutputs: 2, outputChannelCount: [2, 1], processorOptions: { pedal, bass } });
       node.port.onmessage = (e) => onMessage(e.data);
       volume = new GainNode(ctx, { gain: state.volume });
       // a safety limiter before the speakers: a distortion pedal at full tilt shouldn't hurt anyone
@@ -256,11 +267,15 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       const analyser = new AnalyserNode(ctx, { fftSize: 8192, smoothingTimeConstant: 0.6 });
       node.connect(volume).connect(limiter).connect(ctx.destination);
       node.connect(analyser);
+      tunerAnalyser = new AnalyserNode(ctx, { fftSize: 16384 });
+      node.connect(tunerAnalyser, 1);
       api.ctx = ctx; api.analyser = analyser;
       send({ type: 'params', P: { ...P } });
       send({ type: 'bypass', on: state.bypass });
       send({ type: 'fullScale', volts: state.fullScale });
       send({ type: 'source', which: state.source });
+      send({ type: 'mute', on: state.mute });
+      tHz.textContent = 'Play a note';
       startBtn.textContent = 'Audio on';
       status.textContent = '';
       showLatency();
@@ -297,7 +312,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   }
   async function setSource(v) {
     if (!ctx) await start();
-    if (v === 'bass') { state.source = 'bass'; send({ type: 'source', which: 'bass' }); chanSel.hidden = true; tuner.hidden = true; measureBtn.hidden = true; return; }
+    if (v === 'bass') { state.source = 'bass'; send({ type: 'source', which: 'bass' }); chanSel.hidden = true; measureBtn.hidden = true; return; }
     try {
       micStream?.getTracks().forEach((t) => t.stop());
       micStream = await navigator.mediaDevices.getUserMedia({
@@ -308,7 +323,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       measured = null;
       state.source = 'input';
       send({ type: 'source', which: 'input' });
-      chanSel.hidden = false; tuner.hidden = false; measureBtn.hidden = false;
+      chanSel.hidden = false; measureBtn.hidden = false;
       showLatency();
     } catch (err) {
       status.textContent = `No input: ${err.message}`;
@@ -327,8 +342,6 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     const mono = new GainNode(ctx, { channelCount: 1, channelCountMode: 'explicit' });
     splitter.connect(mono, ch);
     mono.connect(node);
-    inAnalyser = new AnalyserNode(ctx, { fftSize: 8192 });
-    mono.connect(inAnalyser);
   }
   let measured = null;
   function showLatency() {
@@ -359,18 +372,27 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       showLatency();
     } else if (m.type === 'error') status.textContent = m.message;
   }
-  // the tuner, ten times a second while the input plays
-  const buf = new Float32Array(8192);
+  // the tuner, ten times a second
+  function setMute(on) {
+    state.mute = on;
+    send({ type: 'mute', on });
+    muteBtn.setAttribute('aria-pressed', String(on));
+    muteBtn.textContent = on ? 'Muted: unmute' : 'Mute while tuning';
+  }
+  const buf = new Float32Array(16384);
   setInterval(() => {
-    if (!inAnalyser || state.source !== 'input') return;
-    inAnalyser.getFloatTimeDomainData(buf);
-    const f = detectPitch(buf, ctx.sampleRate);
-    const [note, cents] = tuner.children;
-    if (!f) { note.textContent = '–'; cents.textContent = ''; tuner.style.setProperty('--off', '0'); return; }
-    const n = noteOf(f);
-    note.textContent = n.name;
-    cents.textContent = `${n.cents >= 0 ? '+' : '−'}${Math.abs(n.cents).toFixed(0)}¢`;
-    tuner.classList.toggle('intune', Math.abs(n.cents) < 3);
+    if (!tunerAnalyser || document.hidden) return;
+    tunerAnalyser.getFloatTimeDomainData(buf);
+    const n = tuning.push(tune(buf, ctx.sampleRate), ctx.currentTime);
+    tunerCard.classList.toggle('idle', !n);
+    tunerCard.classList.toggle('stale', !!n && !n.live);
+    tunerCard.classList.toggle('intune', !!n && Math.abs(n.cents) < 3);
+    if (!n) { tNote.textContent = '–'; tOct.textContent = ''; tCents.textContent = ''; tHz.textContent = 'Play a note'; tString.textContent = ''; return; }
+    tNote.textContent = n.letter; tOct.textContent = n.octave;
+    tCents.textContent = `${n.cents >= 0.05 ? '+' : n.cents <= -0.05 ? '−' : '±'}${Math.abs(n.cents).toFixed(1)}¢`;
+    tHz.textContent = `${n.f.toFixed(2)} Hz, in tune at ${n.target.toFixed(2)}`;
+    tString.textContent = OPEN_STRINGS.includes(n.key) ? `open ${n.letter} string` : '';
+    tNeedle.style.left = `${50 + Math.max(-50, Math.min(50, n.cents))}%`;
   }, 100);
 
   // ---- the test bass
@@ -422,7 +444,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   if (location.hash === '#about') showNotes();
 
   setBypass(state.bypass);
-  chanSel.hidden = true; tuner.hidden = true;
+  chanSel.hidden = true;
   refresh();
   return api;
 }

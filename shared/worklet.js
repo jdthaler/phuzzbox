@@ -11,7 +11,11 @@
 //
 // Messages in: { type: 'params', P }, { type: 'bypass', on }, { type: 'source', which: 'input' |
 // 'bass' }, { type: 'fullScale', volts }, { type: 'note', key, velocity }, { type: 'noteOff', key },
-// { type: 'quality', level }, { type: 'measure' } (the loopback test: below).
+// { type: 'quality', level }, { type: 'mute', on } (silence the output, as a tuner pedal does;
+// the tuner still hears the input), { type: 'measure' } (the loopback test: below).
+//
+// Outputs: 0 is the pedal (stereo, full-scale units, for the speakers); 1 is the input in volts
+// (mono, before the pedal and the mute, for the tuner), from the interface or the test bass alike.
 // Messages out: { type: 'levels', inPeak, outPeak } in volts (about 20 a second), { type: 'stats',
 // load, latency }, { type: 'measured', ms } (null when nothing came back), { type: 'error', message }.
 //
@@ -54,6 +58,7 @@ export function registerPedal(PEDAL) {
           case 'note': this.bass.note(m.key, m.velocity ?? 0.7); break;
           case 'noteOff': this.bass.noteOff(m.key); break;
           case 'quality': this.effect.setQuality(m.level); break;
+          case 'mute': this.mute = !!m.on; break;
           case 'measure': this.measure = { t: 0, floor: 0, sentAt: -1 }; break;
         }
       } catch (err) { this.port.postMessage({ type: 'error', message: err.message }); }
@@ -90,6 +95,7 @@ export function registerPedal(PEDAL) {
         const inp = inputs[0]?.[0];
         if (inp) for (let i = 0; i < n; i++) v[i] = inp[i] * this.fullScale; else v.fill(0);
       }
+      outputs[1]?.[0]?.set(v);
       if (!this.effect.process(v, L, R, n)) {
         const t = now();
         if (t - this.lastError > 1000) { this.lastError = t; this.port.postMessage({ type: 'error', message: 'The pedal went numerically unstable at these settings and was reset.' }); }
@@ -105,6 +111,7 @@ export function registerPedal(PEDAL) {
         oL[i] = l * k;
         if (oR) oR[i] = r * k;
       }
+      if (this.mute) { oL.fill(0); oR?.fill(0); }
       this.busy += now() - t0;
       if (++this.blocks % 18 === 0) {
         this.port.postMessage({ type: 'levels', inPeak: this.inPeak, outPeak: this.outPeak });

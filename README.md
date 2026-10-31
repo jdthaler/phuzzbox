@@ -41,6 +41,15 @@ Open a pedal's page and press **Start audio**. Then either:
 a full-scale signal in the browser; set it so your bass and the test bass read alike on the In
 meter. It doesn't matter to the Buffer, but it will to every pedal that distorts.
 
+The **tuner** above the plots reads whatever is coming in, your bass or the test bass, in cents
+from the nearest note, against a reference A4 you can set (440 Hz unless you change it). It reads
+the string's first partial, not the period of the whole waveform. A real string is stiff, so its
+upper partials run sharp of whole multiples, f_n = n f₁ √(1 + Bn²). The period is a compromise
+among them, which on a low E can read 5 to 20 cents sharp. The tuner finds the period first, to
+name the note, then the peak of the fundamental's own spectral line, to a hundredth of a cent
+([shared/tuner.js](shared/tuner.js), tested in `test/tuner-tests.mjs`). **Mute while tuning**
+silences the output, as a tuner pedal does.
+
 Your settings stay in your browser.
 
 ## Running it locally
