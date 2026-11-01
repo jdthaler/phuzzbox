@@ -105,6 +105,14 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    For every pedal, done 2026-11-01: **How it works** as Forte's (the README in a dialog, with
    contents and tabs for the test bass's and the new tuner's notes) and a **physics tour** of
    each pedal (`shared/tour.js`), checked by `test/tour-tests.mjs`; a new pedal brings its tour.
+   The **test guitar** and guitar support, at Jesse's ask (2026-11-01): the test bass's model with
+   a 10–46 set on a 25.5-inch scale, a pick and a single coil (`testguitar/README.md`); an
+   **Instrument** choice on every page (the Rig, and beside the fretboard) that sets the test
+   instrument, the tuner's range (60–1400 Hz for a guitar) and each pedal's `guitar` values (the
+   pickup; the Wah's 10 nF, the Envelope Filter's 15 nF, the Octave Down's 150 Hz, a 4 × 12 of
+   Eminence Legend 1258s for the Cabinet), each instrument keeping its own settings. The tours stay
+   on the bass. Not yet: the Mac app and the plugins have no Instrument choice (a guitarist sets
+   the pickup by hand, or picks the Cabinet's guitar preset).
 4. **Time and space**: spring reverb (Forte's springs), plate reverb, tape echo, rotary speaker.
 5. **The rest**: envelope filter, octave down, sympathetic strings, black hole, Doppler; a
    hardware pedal (Electrosmith Daisy Seed) if wanted.
@@ -134,6 +142,26 @@ Decided 2026-11-01 (Jesse): every pedal has a Scope and a Spectrum, each with a 
 (`shared/views.js`, `scope/README.md`, `spectrum/README.md`), the input dashed against the output
 solid, in volts. The app's window has the tuner only; giving it the scope and the spectrum would
 need the native host to send it the audio.
+
+Decided 2026-11-01 (Jesse): the views show the physics in action, as Forte's do, sometimes in slow
+motion, not only in How it works. `shared/motion.js` catches each note played at the input (until
+one is, a test bass note rendered on the page) and replays the pedal's own model on it at 1/10 to
+1/1000 of real time: The springs (Spring Reverb), The plate (Plate Reverb), The test masses (Black
+Hole) and The box (Speaker Cabinet). The Tape Echo's tape loop runs live from the engine's
+messages; the Buffer, Wah and Envelope Filter curves carry the note's harmonics as dots
+(`markPartials`, `shared/plot.js`). Already live before: the Phuzz's and Tube Preamp's load-line
+trails, the Opto and Envelope sweeps, the Rotary's rotors, the Doppler's road and the Sympathetic
+Strings.
+
+Decided 2026-11-01 (Jesse): physical choices a builder makes are controls, not constants. Moved out
+of the C++ that day: the Plate Reverb's driver and two pickups (dragged on The plate), the Spring
+Reverb's bead magnets (along the springs or across them) and the Tape Echo's three playback heads
+(1 to 20 cm, dragged on The tape loop). Looked at and left as constants: the Speaker Cabinet's
+microphone distance (1 m; in the far field it only scales the level, which Microphone sensitivity
+already does), the Doppler listener's ear spacing (a human head's), the plate's size and thickness
+(the EMT 140's; they set how many modes the computer must play) and the Sympathetic Strings' bridge
+(where every string is both driven and heard). Candidates for later: the plate's thickness with a
+cap on its modes, and the tape's coating thickness.
 
 Decided 2026-11-01: a pedal gets a **Reversed** switch (plugged in backwards: the bass into its
 output jack, its input jack to the amp) only where its circuit model can honestly drive it from the

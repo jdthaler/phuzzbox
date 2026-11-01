@@ -22,7 +22,7 @@ void Engine::setParams(const double *Pn) {
   for (int i = 0; i < kParamCount; i++) P[i] = Pn[i];
   M = model(P);
   fMax = std::min(pick(8000.0, 6000.0, 4000.0), 0.45 * fs);
-  if (M.tank != built || M.wire != builtWire) build();
+  if (M.tank != built || M.wire != builtWire || M.across != builtAcross) build();
   tune();
 }
 
@@ -31,13 +31,13 @@ void Engine::setParams(const double *Pn) {
 // (−1)ⁿ. The weights are 2/T_D per spring at the low-frequency limit, so that the first arrival of
 // a low note through one spring comes out at the level it went in; the springs are averaged.
 void Engine::build() {
-  built = M.tank; builtWire = M.wire;
+  built = M.tank; builtWire = M.wire; builtAcross = M.across;
   const Tank &T = tankOf(M.tank);
   count = T.count;
   modes = 0;
   for (int s = 0; s < count; s++) {
     Spring &sp = springs[s];
-    sp.set(T.coil[s], M.wire);
+    sp.set(T.coil[s], M.wire, M.across);
     for (int n = 1; modes < MAX_MODES; n++) {
       const double k = n * PI / sp.L;
       const double f = sp.omega(k) / (2 * PI);

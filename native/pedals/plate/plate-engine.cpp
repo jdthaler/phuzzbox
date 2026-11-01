@@ -82,12 +82,16 @@ void Engine::setParams(const double *Pn) {
   for (int i = 0; i < kParamCount; i++) P[i] = Pn[i];
   const double t = std::min({P[plate::top], pick(1e9, 4000.0, 2500.0), 0.2 * fs});
   if (t != builtTop) { builtTop = t; build(); }
+  const double at[6] = {P[driveX], P[driveY], P[leftX], P[leftY], P[rightX], P[rightY]};
+  if (!std::equal(at, at + 6, placed)) { std::copy(at, at + 6, placed); shape(); }
   tune();
 }
 
-// The modes from 20 Hz to the top, with their shapes at the driver and the pickups, and the
-// transducers' gain: set once for the plate so that white noise in, with the damper at 3 s, comes
-// out of each pickup at the power it went in (the plate's own sound is what the modes make of it).
+// The modes from 20 Hz to the top, and the transducers' gain: set once for the plate, with the
+// driver and the pickups where Willemsen has them, so that white noise in, with the damper at 3 s,
+// comes out of each pickup at the power it went in (the plate's own sound is what the modes make of
+// it). The gain is the transducers' own and stays put when they are moved: a pickup moved onto the
+// nodal lines of the loud modes comes out quieter, as it would on the plate.
 void Engine::build() {
   top = builtTop;
   const double k = kappa(), split = FLOW * fs;
@@ -103,8 +107,6 @@ void Engine::build() {
         if (f > top) break;
         if (f < 20 || (f <= split) != (pass == 0)) continue;
         mm[modes] = m; nn[modes] = n; freq[modes] = f;
-        const auto shape = [&](const double *p) { return std::sin(kx * p[0]) * std::sin(ky * p[1]); };
-        shapeD[modes] = shape(DRIVE); shapeL[modes] = shape(PICK[0]); shapeR[modes] = shape(PICK[1]);
         modes++;
       }
     }
@@ -118,12 +120,25 @@ void Engine::build() {
   const double T = 1 / fs, mass = RHO * H * LX * LY / 4, ref = damper(3);
   double energy = 0;
   for (int i = 0; i < modes; i++) {
-    const double a = steel(freq[i]) + ref, c = T * shapeD[i] / mass;
-    energy += 0.5 * c * c * (shapeL[i] * shapeL[i] + shapeR[i] * shapeR[i]) / 2 / (1 - std::exp(-2 * a * T));
+    const double kx = mm[i] * PI / LX, ky = nn[i] * PI / LY;
+    const auto at = [&](const double *p) { return std::sin(kx * p[0]) * std::sin(ky * p[1]); };
+    const double a = steel(freq[i]) + ref, c = T * at(DRIVE) / mass, l = at(PICK[0]), r = at(PICK[1]);
+    energy += 0.5 * c * c * (l * l + r * r) / 2 / (1 - std::exp(-2 * a * T));
   }
   gain = energy > 0 ? 1 / std::sqrt(energy) : 1;
   for (int i = modes; i < MAX_MODES; i++) { zr[i] = zi[i] = 0; pr[i] = pi[i] = b[i] = e[i] = wl[i] = wr[i] = 0; }
+  shape();
   reset();
+}
+
+// Each mode's shape sin(mπx/Lx) sin(nπy/Ly) at the driver and at each pickup, where they are now.
+void Engine::shape() {
+  const double D[2] = {P[driveX], P[driveY]}, Lp[2] = {P[leftX], P[leftY]}, Rp[2] = {P[rightX], P[rightY]};
+  for (int i = 0; i < modes; i++) {
+    const double kx = mm[i] * PI / LX, ky = nn[i] * PI / LY;
+    const auto at = [&](const double *p) { return std::sin(kx * p[0]) * std::sin(ky * p[1]); };
+    shapeD[i] = at(D); shapeL[i] = at(Lp); shapeR[i] = at(Rp);
+  }
 }
 
 // Each mode as a resonator by the impulse invariant: the plate's velocity for a force impulse is

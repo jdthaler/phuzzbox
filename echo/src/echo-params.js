@@ -6,10 +6,21 @@ const tape = [
   { id: 'speed', label: 'Tape speed', min: 0.05, max: 0.4, def: 0.19, log: true, unit: 'cm/s', scale: 100, decimals: 1, perform: true,
     hint: 'How fast the capstan pulls the tape past the heads. The echoes come after the heads\' distances over the speed: faster is shorter, and brighter, since each wavelength on the tape is longer and the heads lose less of it. Turning it while echoes are on the tape bends their pitch as the motor follows.' },
   { id: 'heads', label: 'Playback heads', type: 'select', def: '12',
-    options: [['1', 'Head 1 (4 cm)'], ['2', 'Head 2 (8 cm)'], ['3', 'Head 3 (12 cm)'], ['12', 'Heads 1 and 2'], ['23', 'Heads 2 and 3'], ['13', 'Heads 1 and 3'], ['123', 'All three']],
-    hint: 'Which playback heads are heard. They sit 4, 8 and 12 cm after the record head, so at 19 cm/s they echo after 211, 421 and 632 ms; together they make rhythms of the same tape.' },
+    options: [['1', 'Head 1'], ['2', 'Head 2'], ['3', 'Head 3'], ['12', 'Heads 1 and 2'], ['23', 'Heads 2 and 3'], ['13', 'Heads 1 and 3'], ['123', 'All three']],
+    hint: 'Which playback heads are heard. They sit 4, 8 and 12 cm after the record head unless you move them, so at 19 cm/s they echo after 211, 421 and 632 ms; together they make rhythms of the same tape.' },
   { id: 'repeats', label: 'Repeats', min: 0, max: 1.2, def: 0.35, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of what the heads play is recorded again. Each repeat goes through the tape once more, darker and more saturated each time. Past 100 % the loop grows until the tape saturates and holds it: the runaway these machines are known for.' },
+];
+
+// where the playback heads sit along the tape, as on the page's picture of the loop, where they can
+// be dragged
+const heads = [
+  { id: 'head1', label: 'Head 1', min: 0.01, max: 0.2, def: 0.04, unit: 'cm', scale: 100, decimals: 1,
+    hint: 'How far along the tape after the record head the first playback head sits. Its echo comes after this distance over the tape\'s speed: twice as far, twice as late. Slide it while it plays and the echo jumps to the tape that is there.' },
+  { id: 'head2', label: 'Head 2', min: 0.01, max: 0.2, def: 0.08, unit: 'cm', scale: 100, decimals: 1,
+    hint: 'Where the second playback head sits after the record head. Heads at whole multiples of one distance make even rhythms; others make uneven ones.' },
+  { id: 'head3', label: 'Head 3', min: 0.01, max: 0.2, def: 0.12, unit: 'cm', scale: 100, decimals: 1,
+    hint: 'Where the third playback head sits after the record head, up to 20 cm: at 5 cm/s that is a 4 s echo.' },
 ];
 
 const machine = [
@@ -34,6 +45,7 @@ const mix = [
 
 export const GROUPS = [
   { name: 'The tape', params: tape },
+  { name: 'The heads', params: heads },
   { name: 'The machine', params: machine },
   { name: 'The mix', params: mix },
 ];

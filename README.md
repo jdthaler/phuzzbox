@@ -33,7 +33,12 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 
 The **test bass** ([testbass/](testbass/README.md)) is a bass guitar made of physics (stiff
 strings, a finger pluck, a magnetic pickup) that every page plays from the computer keys when
-nothing is plugged in, and that the tests and demos use as their signal.
+nothing is plugged in, and that the tests and demos use as their signal. The **test guitar**
+([testguitar/](testguitar/README.md)) is its six-string sibling: a 10–46 set on a 25.5-inch
+scale, a pick and a single coil. Choose the **Instrument**, bass or guitar, in the Rig or beside
+the fretboard: it sets the test instrument, the tuner's range, and each pedal's pickup and the
+ranges built for a bass (the Wah's sweep, the Envelope Filter's, the Octave Down's tracking, the
+Cabinet), and each pedal keeps its settings for each instrument.
 
 ## Playing
 
@@ -63,7 +68,8 @@ Then either:
   browser's estimate of the round trip; Chrome on a Mac with a class-compliant interface does best.
 - **Play the test bass.** The rows of letter keys are its strings, as tablature has them: the
   `Z` row is the low E, then the `A` row, the `Q` row and the number row, each from the open
-  string to the ninth fret. **Play a riff** loops a short line. The fretboard shows only while the test bass is the input, and the letter keys play it only then.
+  string to the ninth fret; with the test guitar, Shift moves the rows up to the D, G, B and high E
+  strings. **Play a riff** loops a short line. The fretboard shows only while the test bass is the input, and the letter keys play it only then.
 
 `Space` is the footswitch. **Full scale** (in Controls, under Rig) says how many volts at the input jack make
 a full-scale signal in the browser. It doesn't matter to the Buffer, but it does to the Phuzz and

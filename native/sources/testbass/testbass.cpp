@@ -1,4 +1,4 @@
-// testbass.cpp — the test bass (testbass.h).
+// testbass.cpp — the test bass and the test guitar (testbass.h).
 
 #include "testbass.h"
 
@@ -10,8 +10,32 @@ namespace testbass {
 using phuzzbox::PI;
 using phuzzbox::TAU;
 
-constexpr int kOpenKey[kStrings] = {28, 33, 38, 43}; // E1 A1 D2 G2
-constexpr double kSteelE = 200e9;                   // Pa: Young's modulus of the steel core
+constexpr double kSteelE = 200e9; // Pa: Young's modulus of the steel core
+
+Settings bassSettings() {
+  Settings S;
+  S.kind = Kind::bass;
+  S.strings = 4;
+  for (int s = 0; s < 4; s++) S.spec[s] = kBassStrings[s];
+  return S; // the rest as Settings has them: the bass is the default
+}
+
+Settings guitarSettings() {
+  Settings S;
+  S.kind = Kind::guitar;
+  S.strings = 6;
+  for (int s = 0; s < 6; s++) S.spec[s] = kGuitarStrings[s];
+  S.scale = 0.648;     // 25.5 inches
+  S.pluckAt = 0.12;    // a pick between the pickups
+  S.finger = 0.003;    // a pick's edge, not a finger's pad: a brighter pluck
+  S.pull = 1.0e-3;     // lighter strings, pulled less far
+  S.pickupAt = 0.10;   // a single coil in the middle position
+  S.aperture = 0.015;
+  S.volts = 0.25;
+  S.circuit.L = 2.5;   // a single coil: fewer turns than a bass's P pickup
+  S.circuit.R = 6000;
+  return S;
+}
 
 double inharmonicity(const StringSpec &s, double length) {
   return PI * PI * PI * kSteelE * std::pow(s.core, 4) / (64 * s.T * length * length);
@@ -20,7 +44,7 @@ double inharmonicity(const StringSpec &s, double length) {
 static double sinc(double x) { return std::abs(x) < 1e-9 ? 1 : std::sin(x) / x; }
 
 std::vector<Partial> partials(const Settings &S, int string, int fret, double fs) {
-  const StringSpec &s = kStringSpecs[string];
+  const StringSpec &s = S.spec[string];
   const double len = S.scale / std::pow(2.0, fret / 12.0);
   const double B = inharmonicity(s, len);
   // tuned so that the first partial is the note: f₁ = f₀ √(1 + B)
@@ -41,25 +65,32 @@ std::vector<Partial> partials(const Settings &S, int string, int fret, double fs
   return out;
 }
 
-Bass::Bass(double fs) : fs(fs) { applySettings(); }
+Instrument::Instrument(double fs, Kind kind) : fs(fs) { use(kind); }
 
-void Bass::applySettings() {
+void Instrument::use(Kind kind) {
+  settings = kind == Kind::guitar ? guitarSettings() : bassSettings();
+  for (Voice &V : voices) { V.n = 0; V.key = -1; V.muted = false; }
+  next.fill(0);
+  applySettings();
+}
+
+void Instrument::applySettings() {
   const phuzzbox::PickupCircuit &c = settings.circuit;
   const phuzzbox::AnalogBiquad d = c.section();
   circuit = phuzzbox::bilinear({0, 0, 1, d.a2, d.a1, d.a0}, fs, std::min(c.resonance(), 0.4 * fs)); // an all-pole low-pass: the bilinear transform, prewarped at its resonance
 }
 
-void Bass::pluck(int string, int fret, double velocity) {
-  if (string < 0 || string >= kStrings) return;
+void Instrument::pluck(int string, int fret, double velocity) {
+  if (string < 0 || string >= settings.strings) return;
   mute(string); // the finger stops what was ringing as it plucks again
   const int v = string * 2 + next[string];
   next[string] ^= 1;
   Voice &V = voices[v];
   const std::vector<Partial> ps = partials(settings, string, fret, fs);
-  const double height = 2.0e-3 * std::clamp(velocity, 0.0, 1.0); // m: a firm finger pulls 2 mm
+  const double height = settings.pull * std::clamp(velocity, 0.0, 1.0); // m: a firm finger pulls a bass string 2 mm
   V.n = (int)ps.size();
   V.muted = false;
-  V.key = kOpenKey[string] + fret;
+  V.key = settings.spec[string].key + fret;
   const double T = 1 / fs;
   for (int i = 0; i < V.n; i++) {
     const Partial &p = ps[i];
@@ -73,7 +104,7 @@ void Bass::pluck(int string, int fret, double velocity) {
   }
 }
 
-void Bass::mute(int string) {
+void Instrument::mute(int string) {
   for (int k = 0; k < 2; k++) {
     Voice &V = voices[string * 2 + k];
     if (V.muted || !V.n) continue;
@@ -82,9 +113,9 @@ void Bass::mute(int string) {
   }
 }
 
-int Bass::note(int key, double velocity) {
-  for (int s = kStrings - 1; s >= 0; s--) {
-    const int fret = key - kOpenKey[s];
+int Instrument::note(int key, double velocity) {
+  for (int s = settings.strings - 1; s >= 0; s--) {
+    const int fret = key - settings.spec[s].key;
     if (fret >= 0) {
       if (fret > 24) return -1;
       pluck(s, fret, velocity);
@@ -94,8 +125,8 @@ int Bass::note(int key, double velocity) {
   return -1;
 }
 
-void Bass::noteOff(int key) {
-  for (int s = 0; s < kStrings; s++)
+void Instrument::noteOff(int key) {
+  for (int s = 0; s < settings.strings; s++)
     for (int k = 0; k < 2; k++) {
       Voice &V = voices[s * 2 + k];
       if (V.key == key && !V.muted && V.n) {
@@ -105,7 +136,7 @@ void Bass::noteOff(int key) {
     }
 }
 
-void Bass::process(float *out, int n) {
+void Instrument::process(float *out, int n) {
   for (int j = 0; j < n; j++) {
     double e = 0;
     for (Voice &V : voices) {

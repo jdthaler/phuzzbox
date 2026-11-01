@@ -88,7 +88,7 @@ The controls:
 
 - **Rocker**: the pot's position, heel (0 %) to toe (100 %); **Pot taper** its taper.
 - **Range** (the sweep capacitor C3): 10 nF the original, 22 nF the bass default, up to 100 nF.
-  The sweep moves as 1/√C.
+  The sweep moves as 1/√C. A page set for a guitar (the Rig's **Instrument**) starts at 10 nF.
 - **Q** (R7): the damping across the coil.
 - **Inductor** (L1): the sweep moves as 1/√L; the peak rises a little with it.
 - **Supply**: the transistors' rail.

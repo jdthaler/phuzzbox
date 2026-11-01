@@ -8,6 +8,7 @@ import { loadPedal } from '../tools/engine.mjs';
 import { scratch } from '../shared/wasm.js';
 import { defaults } from '../shared/params.js';
 import { peak, sine } from '../tools/audio-util.mjs';
+import { plateModes, plateBank, GX, GY, LX as PLX, LY as PLY } from '../plate/src/plate-motion.js';
 import { kappa, fCoincidence, lattice, weyl, groupVelocity, thermoelastic, radiation, steel, t60, modalResponse, DRIVE, PICKS } from './plate-circuit.mjs';
 
 const { PEDAL, Effect } = await loadPedal('plate');
@@ -162,6 +163,59 @@ const rms = (a, from = 0, to = a.length) => { let s = 0; for (let i = from; i < 
   const yw = run(wet({ decay: 3, top: 8000 }), white);
   const ratio = Math.hypot(rms(yw.L, 2 * fs), rms(yw.R, 2 * fs)) / Math.SQRT2 / rms(white, 2 * fs);
   check(Math.abs(ratio - 1) < 0.15, 'the pickups\' gain: white noise in comes out of them at about its own level, with the damper at 3 s (to 8 kHz)', `${(20 * Math.log10(ratio)).toFixed(2)} dB`);
+}
+
+// 5b. where the driver and the pickups sit: each a parameter
+{
+  // the engine with all three moved, against the modes summed here with them there
+  const at = { driveX: 1.31, driveY: 0.27, leftX: 0.55, leftY: 0.8, rightX: 1.9, rightY: 0.12 };
+  const P = wet({ top: 3000, ...at }), inf = info(P), inp = burst(1000, 2e-3, 0.01, 0.2);
+  const eng = run(P, inp), ref = modalResponse(inp, fs, { decay: P.decay, top: inf.top, gain: inf.gain, drive: [at.driveX, at.driveY], picks: [[at.leftX, at.leftY], [at.rightX, at.rightY]] });
+  let err = 0, sig = 0;
+  for (let i = 0; i + inf.delay < inp.length; i++) for (const c of ['L', 'R']) { const d = eng[c][i + inf.delay] - ref[c][i]; err += d * d; sig += ref[c][i] ** 2; }
+  check(Math.sqrt(err / sig) < 0.01, 'the driver and the pickups moved: the engine against every mode summed here with them there', `${(100 * Math.sqrt(err / sig)).toFixed(2)} % RMS difference`);
+  check(info(W(at)).gain === info(D).gain, 'moving them leaves the transducers\' gain alone (a pickup on nodal lines comes out quieter, as on the plate)', `${info(D).gain.toExponential(4)}`);
+  // the shapes at the driver, as the engine has them
+  const shapes = (Q) => {
+    const v = Effect.native(Q), s = scratch(x), out = [];
+    for (let from = 0; ; from += 2000) {
+      s.f64(v.length).set(v);
+      const count = x.plate_shapes(s.at, from, 2000), o = s.f64(6000);
+      for (let i = 0; i < Math.min(2000, count - from); i++) out.push([o[3 * i], o[3 * i + 1], o[3 * i + 2]]);
+      if (from + 2000 >= count) return out;
+    }
+  };
+  const ms = modes(D);
+  const silent = (Q) => shapes(Q).map(([d]) => Math.abs(d) < 1e-9);
+  const across = silent(W({ driveX: 1 })), up = silent(W({ driveY: 0.5 }));
+  const evenM = ms.list.map((q) => q.m % 2 === 0), evenN = ms.list.map((q) => q.n % 2 === 0);
+  const share = (a) => a.filter(Boolean).length / a.length;
+  check(across.every((s, i) => s === evenM[i]) && Math.abs(share(across) - 0.5) < 0.02, 'Driver, across: in the middle, 1 m across, every mode with an even number of half-waves across falls silent, half of them', `${(100 * share(across)).toFixed(1)} % of ${across.length} modes`);
+  check(evenN.every((e, i) => !e || up[i]) && Math.abs(share(evenN) - 0.5) < 0.03, 'Driver, up: half way up, 0.5 m, every mode with an even number of half-waves up falls silent, half of them', `${(100 * share(evenN)).toFixed(1)} % of them even up; ${(100 * share(up)).toFixed(1)} % silent with the driver 0.8 m across, which silences every fifth across too`);
+  const same = run(wet({ leftX: 1.3, leftY: 0.6, rightX: 1.3, rightY: 0.6 }), inp);
+  check(same.L.every((v, i) => v === same.R[i]) && peak(same.L) > 1e-3, 'Left and right pickup: put them in the same place and the two channels are the same');
+  const node = shapes(W({ leftX: 1 })).map(([, l]) => Math.abs(l) < 1e-9);
+  check(evenM.every((e, i) => !e || node[i]), 'a pickup hears nothing of a mode with a nodal line through it (the left pickup at 1 m across: the even ones across)');
+}
+
+// 5c. the page's slow motion (plate/src/plate-motion.js): the engine's modes played at the full
+// rate, against the modes summed here; and its picture of the plate, against the shapes directly
+{
+  const P = wet({ top: 3000, driveX: 0.6, leftX: 0.3, rightY: 0.7 }), inf = info(P), inp = burst(800, 2e-3, 0.01, 0.12);
+  const plate = plateModes(x, Effect, P), bank = plateBank(plate, fs, P);
+  const ref = modalResponse(inp, fs, { decay: P.decay, top: inf.top, gain: inf.gain, drive: [P.driveX, P.driveY], picks: [[P.leftX, P.leftY], [P.rightX, P.rightY]] });
+  let err = 0, sig = 0;
+  for (let i = 0; i < inp.length; i++) { bank.bank.seek(i + 1, inp); const [l, r] = bank.pickups(); err += (l - ref.L[i]) ** 2 + (r - ref.R[i]) ** 2; sig += ref.L[i] ** 2 + ref.R[i] ** 2; }
+  check(plate.modes.length === inf.modes && Math.sqrt(err / sig) < 1e-6, 'The plate (slow motion): the engine\'s own modes, played here, hear at the pickups what every mode summed independently does', `${plate.modes.length} modes, ${Math.sqrt(err / sig).toExponential(1)} RMS difference`);
+  const field = bank.field(new Float64Array(GX * GY));
+  let worst = 0, big = 0;
+  for (const [i, j] of [[10, 10], [95, 47], [150, 80], [191, 3]]) {
+    const px = ((i + 0.5) / GX) * PLX, py = ((j + 0.5) / GY) * PLY;
+    let want = 0;
+    plate.modes.forEach((q, k) => { want += (bank.bank.zr[k] - (q.alpha / Math.sqrt((2 * Math.PI * q.f) ** 2 - q.alpha ** 2)) * bank.bank.zi[k]) * Math.sin((q.m * Math.PI * px) / PLX) * Math.sin((q.n * Math.PI * py) / PLY); });
+    worst = Math.max(worst, Math.abs(field[j * GX + i] - want)); big = Math.max(big, Math.abs(want));
+  }
+  check(worst < 1e-9 * Math.max(big, 1e-30) + 1e-18, 'and its picture is the plate\'s velocity, each mode\'s shape times its motion, summed', `worst ${worst.toExponential(1)} against ${big.toExponential(1)}`);
 }
 
 // 6. hygiene

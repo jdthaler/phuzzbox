@@ -38,4 +38,14 @@ PHUZZ_EXPORT int plate_modes(double *io, int from, int max) {
   for (int i = 0; i < std::min(max, count - from); i++) { io[3 * i] = e->mm[from + i]; io[3 * i + 1] = e->nn[from + i]; io[3 * i + 2] = e->freq[from + i]; }
   return count;
 }
+
+// in: P. out: up to max of the modes from the from-th on, as their shapes at the driver and at the
+// left and right pickups, (Φ_d, Φ_l, Φ_r) triples; returns the number of modes
+PHUZZ_EXPORT int plate_shapes(double *io, int from, int max) {
+  auto e = std::make_unique<plate::Engine>(48000);
+  e->setParams(io);
+  const int count = e->modes;
+  for (int i = 0; i < std::min(max, count - from); i++) { io[3 * i] = e->shapeD[from + i]; io[3 * i + 1] = e->shapeL[from + i]; io[3 * i + 2] = e->shapeR[from + i]; }
+  return count;
+}
 }

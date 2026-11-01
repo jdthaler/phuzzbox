@@ -31,7 +31,8 @@
 namespace echo {
 
 constexpr double PI = 3.141592653589793;
-constexpr double HEAD[3] = {0.04, 0.08, 0.12}; // the playback heads, metres after the record head
+constexpr double HEAD[3] = {0.04, 0.08, 0.12}; // the playback heads, metres after the record head, by default
+constexpr double HEAD_MAX = 0.2;               // the farthest a playback head can be moved (m)
 constexpr double CAPSTAN_R = 2.5e-3;           // the capstan's radius (m)
 constexpr double COATING = 8e-6;               // the tape's magnetic coating (m)
 constexpr double MOTOR_TAU = 0.25;             // the motor and flywheel's time constant (s)
@@ -41,6 +42,7 @@ constexpr int TAPS = 255, HALF = 127;
 struct Model {
   double speed = 0.19;
   bool head[3] = {true, true, false};
+  double at[3] = {HEAD[0], HEAD[1], HEAD[2]}; // where the playback heads sit (m after the record head)
   double repeats = 0.35, g = 1, spacing = 4e-6, gap = 5e-6, ecc = 3e-6;
   double dry = 1, wet = 0.5, level = 1;
 };

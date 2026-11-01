@@ -1,6 +1,6 @@
 // plate-model.h — the Plate Reverb's physics: a thin steel plate, simply supported at its edges,
-// shaken by a driver and heard by two contact pickups (an EMT 140's plate and the positions
-// Willemsen gives).
+// shaken by a driver and heard by two contact pickups (an EMT 140's plate; by default the positions
+// Willemsen gives, which the page lets you move).
 //
 // Kirchhoff's thin plate: ρh ẅ + D ∇⁴w = F, D = E h³ / 12(1 − ν²). Its modes on a rectangle with
 // simply supported edges are sin(mπx/Lx) sin(nπy/Ly), at
@@ -30,8 +30,8 @@ constexpr double LX = 2, LY = 1, H = 0.5e-3;            // the plate (m)
 constexpr double E = 2e11, RHO = 7850, NU = 0.3;        // steel
 constexpr double RHO_A = 1.225, C_A = 343;              // air
 constexpr double R1 = 4.94e-3, C1 = 2.98e-4;            // steel's thermoelastic constants (C1 in m²/s)
-constexpr double DRIVE[2] = {0.4 * LX, 0.415 * LY};     // the driver
-constexpr double PICK[2][2] = {{0.1 * LX, 0.45 * LY}, {0.85 * LX, 0.45 * LY}}; // the pickups, left and right
+constexpr double DRIVE[2] = {0.4 * LX, 0.415 * LY};     // the driver, by default (m from the left and bottom edges)
+constexpr double PICK[2][2] = {{0.1 * LX, 0.45 * LY}, {0.85 * LX, 0.45 * LY}}; // the pickups, left and right, by default
 constexpr double F_REF = 100;                           // where the Decay knob's time holds
 constexpr int MAX_MODES = 12288;
 

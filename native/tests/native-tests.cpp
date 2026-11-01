@@ -49,6 +49,9 @@ int main() {
   auto bass = std::make_unique<testbass::Bass>(48000);
   const auto ps = testbass::partials(bass->settings, 0, 5, 48000); // A1 on the E string
   check(std::abs(1200 * std::log2(ps[0].f / 55.0)) < 0.01, "the test bass's fifth fret on E is A1");
+  bass->use(testbass::Kind::guitar);
+  const auto pg = testbass::partials(bass->settings, 5, 5, 48000); // A4 on the high E
+  check(bass->settings.strings == 6 && std::abs(1200 * std::log2(pg[0].f / 440.0)) < 0.01, "the test guitar's fifth fret on the high E is A4");
 
   // the tuner (tuner.h), on a detuned harmonic tone, as test/tuner-tests.mjs checks shared/tuner.js
   {
