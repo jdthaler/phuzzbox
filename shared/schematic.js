@@ -134,13 +134,14 @@ export function schematic({ w, h, title = '' }) {
       });
       return api;
     },
-    // an amplifier: a triangle pointing right, its input at p, its output 3 units on; the label inside
+    // an amplifier: a triangle pointing right (o.left: pointing left), its input at p, its output
+    // o.length (3) units on; the label inside
     amp(p, o) {
       o = opts(o);
-      const [x, y] = px(p), L = (o.length ?? 3) * G, H = (o.height ?? 2.4) * G;
+      const [x, y] = px(p), len = o.length ?? 3, L = len * G * (o.left ? -1 : 1), H = (o.height ?? 2.4) * G;
       line([[x, y - H / 2], [x + L, y], [x, y + H / 2], [x, y - H / 2]], o);
       if (o.label) text(x + L * 0.38, y + 4, o.label, { colour: o.accent ? C.accent : C.ink, size: 11 });
-      return { in: p, out: [p[0] + (o.length ?? 3), p[1]] };
+      return { in: p, out: [p[0] + (o.left ? -len : len), p[1]] };
     },
     // a box: top-left p, w by h units, a label (and a second line) in the middle
     block(p, w, h, o) {

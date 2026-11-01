@@ -15,15 +15,7 @@ the LA-2A: attack 10 ms, release 0.06 s for half, 0.5 to 5 s for all of it.
 
 ## The circuit
 
-```
-in ──[buffer]──┬── Rs 47 kΩ ──┬──[make-up gain]──┬── out (and the Clean blend)
-               │              │                  │
-               │            cell R(n)            │
-               │              ⏚                  │
-               └──(before)──► driver ◄──(after)──┘   the Sense switch picks which it hears
-                                │ ×10 000 · Peak Reduction
-                              panel ⇢ light ⇢ cell
-```
+![The Opto Compressor: a 47 kΩ resistor and the photocell divide the signal; a driver hears what the cell lets through and lights the panel beside it](schematics/circuit.svg)
 
 The input is a 1 MΩ buffer, and the line's voltage passes it unchanged (a passive bass's pickup
 into 1 MΩ is the Buffer pedal's story). The attenuator is a divider:

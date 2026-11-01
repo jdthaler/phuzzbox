@@ -7,7 +7,9 @@ export const TOUR = tour('opto', [
     views: ['The cell', 'Scope'],
     preset: 'Even fingerstyle',
     play: [riff({ times: 2 })],
-    text: `Nothing in the signal path is an amplifier that changes its gain. The bass goes through a 47 kΩ resistor, and a photocell shunts it to ground: the brighter the cell is lit, the lower its resistance and the more it takes away.
+    text: `![The loop: the driver hears what the cell lets through and lights the panel beside it](schematics/circuit.svg)
+
+Nothing in the signal path is an amplifier that changes its gain. The bass goes through a 47 kΩ resistor, and a photocell shunts it to ground: the brighter the cell is lit, the lower its resistance and the more it takes away.
 
 What lights it is an electroluminescent panel, a phosphor that glows when there is voltage across it. A driver amplifies the signal coming out of the cell onto the panel. So the louder you play, the brighter the panel, and the lower the cell's resistance: the bass levels itself. **The cell** shows how far it is turned down (orange), and the panel's light (green).`,
   },
