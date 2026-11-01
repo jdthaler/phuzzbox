@@ -11,6 +11,7 @@ if (NOT PHUZZ_APP OR NOT PHUZZ_PLUGINS)
 endif()
 
 guarantee_rtaudio() # clap-wrapper's: RtAudio 6.0.1 from RTAUDIO_SDK_ROOT, as the target rtaudio
+guarantee_rtmidi()  # and RtMidi 6.0.0 from RTMIDI_SDK_ROOT, as the target rtmidi
 
 set(gen ${CMAKE_CURRENT_BINARY_DIR}/generated)
 set(page native/app/window.html)
@@ -29,8 +30,8 @@ endif()
 
 add_executable(phuzz_app WIN32 MACOSX_BUNDLE main.cpp ${gen}/embedded-files.h ${icon})
 target_include_directories(phuzz_app PRIVATE ${gen})
-target_include_directories(phuzz_app SYSTEM PRIVATE ${choc_SOURCE_DIR} ${RTAUDIO_SDK_ROOT})
-target_link_libraries(phuzz_app PRIVATE phuzz_app_engine rtaudio)
+target_include_directories(phuzz_app SYSTEM PRIVATE ${choc_SOURCE_DIR} ${RTAUDIO_SDK_ROOT} ${RTMIDI_SDK_ROOT})
+target_link_libraries(phuzz_app PRIVATE phuzz_app_engine rtaudio rtmidi)
 file(READ ${PHUZZ_ROOT}/package.json package)
 string(JSON PHUZZ_APP_VERSION GET "${package}" version)
 set_target_properties(phuzz_app PROPERTIES OUTPUT_NAME Phuzzbox RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/app)

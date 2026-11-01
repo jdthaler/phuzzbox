@@ -1,6 +1,6 @@
 // engine.h — the Phuzzbox app's audio, as the page's worklet does it (shared/worklet.js): one of
 // the interface's input channels, in volts (× Full scale), through the pedal, to every output
-// channel; the footswitch's crossfade; Mute; the levels; the input kept for the tuner; and the
+// channel; the footswitch's crossfade; the volume (a MIDI volume pedal's); Mute; the levels; the input kept for the tuner; and the
 // loopback latency test. process() runs on the audio thread and never allocates or locks; the
 // rest runs on the main thread.
 #pragma once
@@ -38,6 +38,7 @@ class Engine {
   std::atomic<bool> bypass{false}, mute{false};
   std::atomic<double> fullScale{1.0}; // volts at the jack for a full-scale sample
   std::atomic<int> channel{0};        // the input channel the bass is on
+  std::atomic<double> gain{1.0};      // after the pedal: a volume pedal's share of the signal, 0…1
 
   // the peak volts in and out since the last call
   void takeLevels(double &in, double &out);
@@ -59,7 +60,7 @@ class Engine {
   std::vector<double> P;
   std::atomic<bool> dirty{true};
   std::vector<float> v, L, R;
-  double wet = 1;
+  double wet = 1, level = 1; // the footswitch's crossfade, and the volume as it glides to gain
 
   std::vector<float> keep;        // a ring of the input, in volts
   std::atomic<int> keepAt{0};     // where the next sample goes

@@ -93,6 +93,17 @@ int main() {
     check(*std::max_element(out.begin(), out.end()) == 0 && *std::min_element(out.begin(), out.end()) == 0, "Mute silences the output");
     a.mute = false;
 
+    // a volume pedal at half: the output glides to half of the Buffer's (its identity), with a
+    // 10 ms time constant
+    a.gain = 0.5;
+    for (int b = 0; b < 90; b++) { // 120 ms
+      for (int i = 0; i < n; i++) { in[2 * i] = 0; in[2 * i + 1] = 0.4f; }
+      a.process(in.data(), 2, out.data(), 2, n);
+    }
+    check(std::abs(out[2 * (n - 1)] - 0.2f) < 1e-4 && std::abs(out[2 * (n - 1) + 1] - 0.2f) < 1e-4, "a volume pedal at half halves the output, gliding there");
+    a.gain = 1;
+    for (int b = 0; b < 90; b++) a.process(in.data(), 2, out.data(), 2, n);
+
     // a loopback cable 300 samples long: what goes out comes back in 300 samples later
     const int D = 300;
     std::vector<float> line(48000 * 2, 0.0f);

@@ -2,11 +2,13 @@
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
 // program's web view as one page, bundled by tools/bundle-app.mjs. The menu in the header picks
-// the pedal: the program swaps it and the window is drawn again for it.
+// the pedal: the program swaps it and the window is drawn again for it. MIDI foot controllers are
+// the site's MIDI card (shared/midi-panel.js), fed by the program's MIDI (window.phuzzMidi).
 
 import { params, defaults, fmt, toUnit, fromUnit, nativeValue } from '../../shared/params.js';
 import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
+import { midiPanel } from '../../shared/midi-panel.js';
 // every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
 import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
 import { PEDAL as PHUZZ } from '../../phuzz/src/phuzz-pedal.js';
@@ -38,7 +40,7 @@ async function main(info, carry = {}) {
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
   // the bass and how it is plugged in are the same whichever pedal it plays
   for (const id of PEDAL.keep ?? []) if (id in carry && all.some((p) => p.id === id)) P[id] = carry[id];
-  const audio = { input: '', output: '', frames: 64, rate: 0, channel: 0, bypass: 0, fullScale: 1, interface: '', gain: 20, ...(S.audio ?? {}) };
+  const audio = { input: '', output: '', frames: 64, rate: 0, channel: 0, bypass: 0, fullScale: 1, interface: '', gain: 20, volume: 1, ...(S.audio ?? {}) };
   const ui = { a4: 440, ...(S.ui ?? {}) };
   let stream = info.stream;
 
@@ -70,6 +72,8 @@ async function main(info, carry = {}) {
   const gainInput = h('input', { type: 'number', min: 0, max: 62, step: 1, 'aria-label': 'Interface gain in decibels' });
   const gainLabel = h('label', { class: 'inline' }, 'gain ', gainInput, ' dB');
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, 'aria-label': 'Volts at full scale' });
+  const volInput = h('input', { type: 'range', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
+  const volOut = h('output', {});
   const audioCard = h('section', { class: 'card audiocard', 'aria-label': 'Audio' },
     h('div', { class: 'audio-row' }, h('b', {}, 'Audio'),
       h('label', { class: 'inline' }, 'In ', inSel), chanSel,
@@ -78,13 +82,24 @@ async function main(info, carry = {}) {
       measureBtn, measured),
     h('div', { class: 'audio-row' },
       h('span', { class: 'inline', title: 'Choose your interface and type its gain, and Full scale comes from the maker\'s specification' }, ifaceSel, gainLabel),
-      h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale sample' }, 'Full scale ', fsInput, ' V')));
+      h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale sample' }, 'Full scale ', fsInput, ' V'),
+      h('label', { class: 'inline', title: 'The level after the pedal, as a volume pedal sets it (a MIDI expression pedal moves it)' }, 'Volume ', volInput, volOut)));
   inSel.value = audio.input || info.inputs[0]?.name || '';
   outSel.value = audio.output || info.outputs[0]?.name || '';
   frameSel.value = audio.frames;
   ifaceSel.value = audio.interface;
   gainInput.value = audio.gain;
   fsInput.value = audio.fullScale;
+  volInput.addEventListener('input', () => setVolume(+volInput.value));
+  let volTimer = null;
+  function setVolume(g) {
+    audio.volume = Math.min(1, Math.max(0, g));
+    volInput.value = audio.volume;
+    volOut.textContent = `${Math.round(100 * audio.volume)} %`;
+    call('volume', audio.volume);
+    clearTimeout(volTimer);
+    volTimer = setTimeout(() => call('store', 'audio', audio), 300);
+  }
 
   function fillChannels() {
     const n = info.inputs.find((d) => d.name === inSel.value)?.channels ?? 2;
@@ -182,7 +197,22 @@ async function main(info, carry = {}) {
   }
   const controls = h('section', { class: 'controls' }, h('div', { class: 'controls-bar' }, h('b', {}, 'Controls'), presetSel), groupsEl);
 
-  app.append(audioCard, h('div', { class: 'stage' }, face, h('section', { class: 'views' }, tunerCard)), controls,
+  // MIDI foot controllers: the site's card, its mappings kept in the settings file for each pedal
+  const midiSaved = { ...(S.midi ?? {}) };
+  const midiStore = {
+    get: (k, d) => (k in midiSaved ? midiSaved[k] : d),
+    set: (k, v) => { midiSaved[k] = v; call('store', 'midi', midiSaved); },
+  };
+  const midi = midiPanel({ PEDAL, h, store: midiStore, key: `phuzzbox.${PEDAL.id}`, ui: {
+    setVolume, bypassed: () => !!audio.bypass, setBypass, muted: () => muted, setMute,
+    value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
+  } });
+  window.phuzzMidi = (status, d1, d2) => midi.feed([status, d1, d2]); // the card's status names the inputs instead
+  const midiStatus = midi.el.querySelector('.midi-status'), midiHelp = midi.el.querySelector('.midi-help');
+  for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
+  midiHelp.textContent = 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and set it to Control Change mode. The app listens to every MIDI input. Learn, then move a pedal, teaches a row that pedal.';
+
+  app.append(audioCard, h('div', { class: 'stage' }, face, h('section', { class: 'views' }, tunerCard)), controls, midi.el,
     h('footer', {}, `${PEDAL.name} ${info.version} · Phuzzbox · physics, not samples. Space is the footswitch.`));
   for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
 
@@ -265,7 +295,7 @@ async function main(info, carry = {}) {
   onSpace = () => setBypass(!audio.bypass);
 
   // ---- the levels, the tuner and the measurement, ten times a second
-  let t = 0, wasMeasuring = false;
+  let t = 0, wasMeasuring = false, midiPorts = null;
   async function tick() {
     if (me !== drawn) return; // a newer window has its own
     const r = await call('poll');
@@ -274,6 +304,8 @@ async function main(info, carry = {}) {
     meterIn.set(r.in, r.in / audio.fullScale > 0.98);
     meterOut.set(r.out, r.out / audio.fullScale > 0.98);
     cpu.textContent = `CPU ${(100 * r.cpu).toFixed(1)}%`;
+    const ports = (r.midi ?? []).join(', ');
+    if (ports !== midiPorts) { midiPorts = ports; midiStatus.textContent = ports ? `listening to ${ports}` : 'no MIDI input: plug in the interface'; }
     if (r.measured === -1) wasMeasuring = true;
     else if (wasMeasuring) {
       wasMeasuring = false;
@@ -301,6 +333,7 @@ async function main(info, carry = {}) {
   if (Object.keys(carry).length) saveParams();
   setBypass(!!audio.bypass);
   setFullScale();
+  setVolume(audio.volume);
   refresh();
   showStream();
   tick();
