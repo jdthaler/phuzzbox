@@ -383,7 +383,12 @@ body.sharing { cursor: row-resize; user-select: none; }
 body.one-screen .views { display: block; grid-row: 2; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .view-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 1), minmax(0, 1fr)); gap: 12px; padding: 12px; height: 100%; min-height: 0; }
 .view-grid .card { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
-body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 90px; }
+body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 60px; }
+/* a view's legend keeps its one line in a short card: the canvas gives way, and a long entry is cut with an ellipsis */
+@media (min-width: 601px) {
+  body.one-screen .view-grid .legend { flex: none; flex-wrap: nowrap; overflow: hidden; }
+  body.one-screen .view-grid .legend > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+}
 body.one-screen .card:not(.notes-open) .caption { display: none; }
 body.one-screen .card.notes-open .caption { flex: none; max-height: 40%; overflow-y: auto; }
 body.one-screen .tunercard .t-body { flex: 1 1 auto; min-height: 0; align-content: safe center; overflow: hidden; }
