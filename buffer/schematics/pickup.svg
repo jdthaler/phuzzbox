@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="260" viewBox="0 0 640 260" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="The pickup and what it plugs into">
+<title>The pickup and what it plugs into</title>
+<rect width="640" height="260" rx="10" fill="#151518" stroke="#2b2a30"/>
+<text x="170" y="24" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">the pickup</text>
+<text x="430" y="24" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">cable and input</text>
+<rect x="10" y="36" width="300" height="184" rx="6" fill="none" stroke="#2b2a30" stroke-width="1.6" stroke-dasharray="5 4"/>
+<rect x="40" y="100" width="40" height="60" rx="6" fill="none" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="60" y="134" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">e</text>
+<path d="M60 100 L60 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M60 60 L92 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M128 60 L160 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(92 60) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="110" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">R</text>
+<text x="110" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">10.5 kΩ</text>
+<path d="M160 60 L202 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M238 60 L280 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(202 60) rotate(0)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="220" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">L</text>
+<text x="220" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">3.6 H</text>
+<path d="M280 60 L580 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M60 160 L60 200 L580 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M440 200 L440 208" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M431 208 L449 208" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M434.5 212 L445.5 212" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M438 216 L442 216" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M360 60 L360 126" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M360 134 L360 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(360 126) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#fb923c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#fb923c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="374" y="127" text-anchor="start" fill="#fb923c" font-size="12" font-weight="400">C</text>
+<text x="374" y="141" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">coil, cable, input</text>
+<path d="M500 60 L500 112" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M500 148 L500 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(500 112) rotate(90)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="514" y="127" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">Rₗ</text>
+<text x="514" y="141" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">pots ∥ input</text>
+<circle cx="360" cy="60" r="3" fill="#ece8e1"/>
+<circle cx="500" cy="60" r="3" fill="#ece8e1"/>
+<circle cx="360" cy="200" r="3" fill="#ece8e1"/>
+<circle cx="500" cy="200" r="3" fill="#ece8e1"/>
+<circle cx="440" cy="200" r="3" fill="#ece8e1"/>
+<circle cx="580" cy="60" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="589" y="64" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">v</text>
+<text x="320" y="248" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">v / e = 1 / (LC s² + (RC + L/Rₗ) s + 1 + R/Rₗ)</text>
+</svg>
