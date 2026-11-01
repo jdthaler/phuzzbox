@@ -6,7 +6,7 @@
 import { bass, recorded } from '../../buffer/src/buffer-params.js';
 
 const rocker = [
-  { id: 'position', label: 'Rocker', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'position', label: 'Rocker', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true, face: 'treadle',
     hint: 'Where your foot has the pedal: heel down (0 %) puts the peak low and sharp, toe down (100 %) high and broad. An expression pedal moves it (MIDI CC 1 unless you teach it another).' },
   { id: 'taper', label: 'Pot taper', type: 'select', options: [['audio', 'Audio (log)'], ['linear', 'Linear']], def: 'audio',
     hint: 'How the pot\'s resistance follows the rocker. A linear pot leaves the sweep\'s top octave for the last fifth of the travel; an audio pot, its lower part 10 % at mid-travel, spreads the sweep more evenly under your foot.' },
@@ -27,7 +27,7 @@ const output = [
   { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
     showIf: (P) => !P.reversed,
     hint: 'A blend pot that mixes your dry signal back in, as bass wahs have: the wah thins out the low end, and this keeps the bottom under the sweep. It is not part of the circuit model, so plugged in backwards it is off.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 1.3, unit: 'dB', decimals: 1,
     hint: 'Gain after the wah, in decibels.' },
 ];
 
@@ -36,7 +36,7 @@ const output = [
 const isAuto = (P) => P.control === 'auto';
 const auto = [
   { id: 'control', label: 'Rocked by', type: 'select', options: [['foot', 'Foot'], ['auto', 'Auto']], def: 'foot',
-    hint: 'Auto: an envelope follower hears how hard you play and moves the rocker for you, from where it rests (the Rocker knob, or your expression pedal) toward the toe or the heel. Each note sweeps the peak as it starts and lets it fall back as it dies away.' },
+    hint: 'Auto: an envelope follower hears how hard you play and moves the rocker for you, from where it rests (the rocker on the pedal, or your expression pedal) toward the toe or the heel. Each note sweeps the peak as it starts and lets it fall back as it dies away.' },
   { id: 'direction', label: 'Direction', type: 'select', options: [['up', 'Up'], ['down', 'Down']], def: 'up', showIf: isAuto,
     hint: 'Which way a harder note moves the rocker. Up, each pluck opens the peak upward and it settles back down as the note fades ("wow"); down, the pluck pulls it low and it rises as the note fades.' },
   { id: 'sens', label: 'Full sweep at', min: 0.02, max: 1, def: 0.15, log: true, unit: 'mV', scale: 1000, decimals: 0, showIf: isAuto,

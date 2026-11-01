@@ -32,7 +32,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"scale", "Scale", "Tuning and output", phuzzbox::ParamKind::choice, 0.0, 5.0, 0.0, 0.0, false, "", 1.0, 2, scaleChoices, 6},
   {"octave", "Lowest string", "Tuning and output", phuzzbox::ParamKind::choice, 0.0, 2.0, 1.0, 0.0, false, "", 1.0, 2, octaveChoices, 3},
   {"wire", "Wire diameter", "Tuning and output", phuzzbox::ParamKind::continuous, 0.0002, 0.001, 0.0003, 0.0, true, "mm", 1000.0, 2},
-  {"level", "Level", "Tuning and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "Tuning and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, -11.5, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{4, 4.0}, {5, 0.0}, {6, 1.0}, {0, 6.0}, {1, 1.0}, {2, 0.5}, {3, 1.0}};

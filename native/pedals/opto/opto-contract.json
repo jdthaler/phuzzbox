@@ -1,7 +1,7 @@
 {"slug": "opto",
  "params": [
   {"id":"peak","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.55},
-  {"id":"gain","kind":"continuous","min":0,"max":40,"step":0,"log":false,"def":10},
+  {"id":"gain","kind":"continuous","min":0,"max":40,"step":0,"log":false,"def":8.5},
   {"id":"sense","kind":"choice","options":["output","input"],"def":"output"},
   {"id":"blend","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0},
   {"id":"panelB","kind":"continuous","min":30,"max":120,"step":0,"log":false,"def":70},

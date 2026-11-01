@@ -1,14 +1,12 @@
 // landing.js — the front page: every pedal drawn as itself (shared/face.js: its enclosure, its
-// knobs where you left them, its footswitch), on boards by the physics it is made of (registry.js's
+// name and its footswitch), on boards by the physics it is made of (registry.js's
 // SECTIONS), a row of links to each section, then the rig (the Pedalboard), and the notes of the
 // test bass, the tuner, the scope and the spectrum.
 
 import { PEDALS, SECTIONS, PHUZZBOX_VERSION, SOURCE } from './shared/registry.js';
 import { BOARD_PEDALS } from './board/src/board-pedals.js';
 import { BOARDS } from './board/src/board-params.js';
-import { defaults } from './shared/params.js';
 import { miniFace } from './shared/face.js';
-import { INSTRUMENT_KEY, paramsKey, instrumentDefaults } from './shared/instruments.js';
 import { registerApp, offerInstall } from './shared/app.js';
 import { howItWorks } from './shared/notes.js';
 
@@ -20,9 +18,6 @@ const h = (tag, attrs = {}, ...kids) => {
   for (const k of kids.flat()) if (k != null) e.append(k);
   return e;
 };
-// a pedal's knobs as you left them, for the instrument you play (bass or guitar: shared/instruments.js)
-const played = (() => { try { return JSON.parse(localStorage.getItem(INSTRUMENT_KEY) ?? '"bass"'); } catch { return 'bass'; } })();
-const stored = (id) => { try { return JSON.parse(localStorage.getItem(paramsKey(id, played)) ?? '{}') ?? {}; } catch { return {}; } };
 
 registerApp();
 offerInstall(document.getElementById('install'));
@@ -36,7 +31,7 @@ const about = (href, title, label, glyph = 'i', cls = '') => h('a', { class: `pz
 // works, and its version
 function tile(p) {
   const D = BOARD_PEDALS[p.id];
-  const face = D ? miniFace({ h, D, P: { ...instrumentDefaults(D, defaults(D.groups), played), ...stored(p.id) }, enclosure: p.enclosure }) : h('div', { class: 'pedal face blank' }, h('div', { class: 'name' }, h('span', {}, p.name)));
+  const face = D ? miniFace({ h, D, enclosure: p.enclosure }) : h('div', { class: 'pedal face blank' }, h('div', { class: 'name' }, h('span', {}, p.name)));
   const el = h('article', { class: `tile${p.ready ? '' : ' soon'}`, 'data-pedal': p.id });
   el.append(
     p.ready ? h('a', { class: 'go', href: `${p.id}/`, 'aria-label': `${p.name}: open the pedal` }, face) : face,
@@ -86,6 +81,6 @@ for (const s of sections) {
     h('div', { class: 'boardwalk' }, ...(s.board ? [boardTile()] : s.list.map(tile)))));
 }
 
-// the test bass's, the test guitar's, the tuner's, the scope's and the spectrum's notes, in the pedals' dialog
+// the test bass's, the test guitar's, the tuner's, the scope's, the spectrum's and the plugins' notes, in the pedals' dialog
 const notes = howItWorks();
-for (const [key, label] of [['testbass', 'The test bass'], ['testguitar', 'The test guitar'], ['tuner', 'The tuner'], ['scope', 'The scope'], ['spectrum', 'The spectrum']]) document.getElementById('also').append(notes.button(key, label));
+for (const [key, label] of [['testbass', 'The test bass'], ['testguitar', 'The test guitar'], ['tuner', 'The tuner'], ['metronome', 'The metronome'], ['rig', 'The rig'], ['scope', 'The scope'], ['spectrum', 'The spectrum'], ['plugins', 'Plugins and the app']]) document.getElementById('also').append(notes.button(key, label));

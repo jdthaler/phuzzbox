@@ -6,7 +6,7 @@ import { bass, recorded } from '../../buffer/src/buffer-params.js';
 const pedal = [
   { id: 'fuzz', label: 'Fuzz', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'The 1 kΩ pot in the second transistor\'s emitter, which sets how much of it the 20 µF capacitor bypasses. Full up, the emitter is grounded for the signal and the pair has all its gain; turning it down brings back negative feedback, and the gain falls fast: about 25 dB less by halfway. The input impedance falls with it, to a few hundred ohms, and loads your pickup harder.' },
-  { id: 'volume', label: 'Volume', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'volume', label: 'Volume', min: 0, max: 1, def: 0.77, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'A 500 kΩ audio-taper pot on the output: halfway passes about a tenth of the voltage (−20 dB). Full up, the peaks come out a few decibels above your bass\'s own, and since the wave is nearly square it sounds a good deal louder.' },
   { id: 'temp', label: 'Temperature', min: -10, max: 50, def: 20, unit: '°C', decimals: 0, perform: true,
     hint: 'Germanium leaks more as it warms, about twice as much every 7 °C. The first transistor\'s leakage takes over from the bias the feedback sets, the second transistor is starved of current and its collector slides toward the battery. Cold, it sits nearer the middle of its swing and clips evenly; hot, it clips lopsided, and near 50 °C most of the gain is gone.' },

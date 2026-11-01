@@ -48,6 +48,26 @@ jobs:
           name: plugins-${{ matrix.os }}
           path: native/build/*/plugins/
           retention-days: 14
+      # What a plugin release ships (the release-plugins workflow publishes live's): the archives
+      # tools/package-plugins.sh packs, on every run so a pull request checks they pack. On a Mac,
+      # every bundle gets an ad-hoc signature first, without which Apple silicon won't load it.
+      - name: Sign the bundles (macOS)
+        if: runner.os == 'macOS'
+        run: find native/build/macos/plugins \( -name '*.component' -o -name '*.vst3' -o -name '*.clap' -o -name '*.app' \) -prune -exec codesign --force --deep --sign - {} \;
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Package the release's archives
+        shell: bash
+        run: |
+          preset=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
+          tools/package-plugins.sh "$preset"
+          echo "PRESET=$preset" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ env.PRESET }}
+          path: dist/
+          retention-days: 30
       # the app, zipped by the system's own tool so the Mac bundle keeps its permissions and signature
       - name: Package the app (macOS)
         if: runner.os == 'macOS'

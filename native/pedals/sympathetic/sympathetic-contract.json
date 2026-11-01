@@ -8,7 +8,7 @@
   {"id":"scale","kind":"choice","options":["major","minor","major-pent","minor-pent","drone","chromatic"],"def":"major"},
   {"id":"octave","kind":"choice","options":["1","2","3"],"def":"2"},
   {"id":"wire","kind":"continuous","min":0.0002,"max":0.001,"step":0,"log":true,"def":0.0003},
-  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":-11.5}
  ],
  "presets": [
   {"name":"Halo in E","values":{"key":"4","scale":"major","octave":"2","sustain":6,"highs":1,"mix":0.5,"dry":1}},

@@ -3,7 +3,7 @@
 Every page has a tuner, under the pedal at the left. It reads whatever is coming in, your bass through the
 interface or the test bass, and shows the nearest note and how far from it the string is, in
 cents, against a reference A4 you can set (440 Hz unless you change it). It is not a pedal: it
-listens to the input before the pedal, so a fuzz or a wah doesn't move the needle. **Mute** silences the output, as a tuner pedal does, and the tuner still hears the input.
+listens to the input before the pedal (after the [rig](../rig/README.md)'s units, with your interface), so a fuzz or a wah doesn't move the needle. **Mute** silences the output, as a tuner pedal does, and the tuner still hears the input.
 
 Part of [PhuzzBox](../README.md).
 

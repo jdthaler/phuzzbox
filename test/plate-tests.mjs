@@ -14,7 +14,8 @@ import { kappa, fCoincidence, lattice, weyl, groupVelocity, thermoelastic, radia
 const { PEDAL, Effect } = await loadPedal('plate');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), level: 0 };
 const W = (over) => ({ ...D, ...over });
 const wet = (over) => W({ dry: 0, reverb: 1, ...over });
 

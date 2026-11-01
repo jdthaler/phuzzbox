@@ -33,7 +33,7 @@ const peakOf = (H) => { let k = 0; H.forEach((v, i) => { if (v > H[k]) k = i; })
 // The filter: where the rocker has it now, and its two ends.
 const filterView = {
   title: 'The sweep',
-  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide. In Auto the envelope follower rocks it: play, and watch each note push the peak and let it fall back. The green line is the note you are playing, and the green dots its harmonics on the curve, each as large as it is loud in your bass now: rock the pedal and watch the peak lift them one after another. Plugged in backwards (Reversed) it is the input jack\'s voltage per volt from the bass, far lower; and where the circuit oscillates on its own there is no response to draw, only the squeal\'s pitch.',
+  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal (drag its rocker up or down, or move your expression pedal) and watch the peak slide. In Auto the envelope follower rocks it: play, and watch each note push the peak and let it fall back. The green line is the note you are playing, and the green dots its harmonics on the curve, each as large as it is loud in your bass now: rock the pedal and watch the peak lift them one after another. Plugged in backwards (Reversed) it is the input jack\'s voltage per volt from the bass, far lower; and where the circuit oscillates on its own there is no response to draw, only the squeal\'s pitch.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -110,4 +110,13 @@ const filterView = {
 // the Spectrum (shared/views.js), with what the wah does to it
 const WAH_SPECTRUM = 'what goes in (dashed) and what comes out (solid), in dB of volts (0 dBV is a sine of 1 V peak): the harmonics near the peak in The sweep ring out above the input\'s. The green line is the note you are playing, as the tuner hears it at the input, and the ticks along the top its harmonics.';
 
-createPedal({ PEDAL, worklet: new URL('./wah-worklet.js', import.meta.url), views: [filterView, spectrumView({ caption: WAH_SPECTRUM })] });
+const api = createPedal({ PEDAL, worklet: new URL('./wah-worklet.js', import.meta.url), views: [filterView, spectrumView({ caption: WAH_SPECTRUM })] });
+
+// in Auto the envelope follower rocks the pedal: its rocker on the face moves with it (the
+// engine's messages, every 10 ms); a change of setting shows where you left it until the next one
+const [treadle] = api.page.controls(['position']).filter((e) => e.classList.contains('treadle'));
+api.on('params', () => treadle?.show(null));
+api.on('pedal', (messages) => {
+  if (api.P.control !== 'auto') return;
+  for (const m of messages) if (m.type === 1) treadle?.show(m.values[0]);
+});

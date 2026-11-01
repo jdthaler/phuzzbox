@@ -40,7 +40,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"bass", "Bass", "The preamp", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.5, 0.0, false, "%", 100.0, 0},
   {"middle", "Middle", "The preamp", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.5, 0.0, false, "%", 100.0, 0},
   {"treble", "Treble", "The preamp", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.5, 0.0, false, "%", 100.0, 0},
-  {"master", "Master", "The preamp", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.4, 0.0, false, "%", 100.0, 0},
+  {"master", "Master", "The preamp", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.24, 0.0, false, "%", 100.0, 0},
   {"tube", "Tubes", "Tubes", phuzzbox::ParamKind::choice, 0.0, 2.0, 0.0, 0.0, false, "", 1.0, 2, tubeChoices, 3},
   {"emission", "Emission", "Tubes", phuzzbox::ParamKind::continuous, 0.4, 1.0, 1.0, 0.0, false, "%", 100.0, 0},
   {"cathodeC", "First stage cathode capacitor", "Tubes", phuzzbox::ParamKind::continuous, 1e-7, 0.00025, 0.000025, 0.0, true, "µF", 1000000.0, 1},

@@ -43,7 +43,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"hornA", "Horn mouth", "The cabinet", phuzzbox::ParamKind::continuous, 0.02, 0.08, 0.04, 0.0, false, "cm", 100.0, 1},
   {"drumR", "Drum radius", "The cabinet", phuzzbox::ParamKind::continuous, 0.08, 0.25, 0.18, 0.0, false, "cm", 100.0, 1},
   {"drumA", "Drum opening", "The cabinet", phuzzbox::ParamKind::continuous, 0.05, 0.2, 0.15, 0.0, false, "cm", 100.0, 1},
-  {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.4, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.0}, {1, 0.0}, {2, 1.0}, {3, 2.0943951023931953}};

@@ -33,7 +33,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"rightX", "Right pickup, across", "Where they sit", phuzzbox::ParamKind::continuous, 0.02, 1.98, 1.7, 0.0, false, "m", 1.0, 2},
   {"rightY", "Right pickup, up", "Where they sit", phuzzbox::ParamKind::continuous, 0.02, 0.98, 0.45, 0.0, false, "m", 1.0, 2},
   {"top", "Modes up to", "Model and output", phuzzbox::ParamKind::continuous, 2000.0, 8000.0, 5000.0, 0.0, true, "Hz", 1.0, 0},
-  {"level", "Level", "Model and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "Model and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, -3.0, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{0, 2.5}, {1, 0.35}, {2, 1.0}};

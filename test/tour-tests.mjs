@@ -37,7 +37,7 @@ const read = (rel) => readFileSync(`${root}${rel}`, 'utf8');
 }
 
 // How it works: every page's tabs are READMEs that exist and render
-for (const dir of ['testbass', 'testguitar', 'tuner', 'scope', 'spectrum']) {
+for (const dir of ['testbass', 'testguitar', 'tuner', 'metronome', 'rig', 'scope', 'spectrum']) {
   const md = read(`${dir}/README.md`);
   let html = '';
   try { html = renderMarkdown(md, { skip: ['Files'] }).html; } catch (e) { console.log(e.message); }

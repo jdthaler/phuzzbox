@@ -25,7 +25,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"track", "Tracking filter", "The divider", phuzzbox::ParamKind::continuous, 40.0, 1000.0, 70.0, 0.0, true, "Hz", 1.0, 0},
   {"hyst", "Hysteresis", "The divider", phuzzbox::ParamKind::continuous, 0.0005, 0.05, 0.005, 0.0, true, "mV", 1000.0, 1},
   {"tone", "Tone", "The divider", phuzzbox::ParamKind::continuous, 150.0, 5000.0, 900.0, 0.0, true, "Hz", 1.0, 0},
-  {"level", "Level", "The divider", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "The divider", phuzzbox::ParamKind::continuous, -24.0, 12.0, 2.7, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.7}, {1, 0.8}, {2, 0.0}, {3, 70.0}, {4, 0.005}, {5, 900.0}};

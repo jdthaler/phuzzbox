@@ -1,20 +1,22 @@
 // notes.js — How it works: a README rendered in a dialog, as Forte's pages have it, so the physics
 // is one tap from the pedal. On a pedal's page the dialog has a tab for the pedal's own README and
 // one for each thing every page has: the test bass (testbass/README.md) and guitar
-// (testguitar/README.md), the tuner
-// (tuner/README.md), the scope (scope/README.md) and the spectrum (spectrum/README.md). The landing
-// page opens all but the pedal's.
+// (testguitar/README.md), the tuner (tuner/README.md), the metronome (metronome/README.md), the rig
+// at the foot of the page (rig/README.md), the scope (scope/README.md) and the spectrum (spectrum/README.md), and the
+// plugins (plugins/README.md, under the downloads: the pedal's on its page, every pedal's and the
+// app's everywhere, from shared/plugins.js). The landing page opens all but the pedal's.
 // A README's "Files" section (for developers) is left out. The notes link only to the site and to
 // sources elsewhere (papers, standards), never to the repository for information (Jesse,
 // 2026-11-01): a link to another README opens its notes (the tab, or that pedal's page), a link to
 // any other file of the repository is left as plain text, and the credits link to the source.
-// Hashes open it straight away: …/#about (the pedal), #testbass, #testguitar, #tuner, #scope, #spectrum.
+// Hashes open it straight away: …/#about (the pedal), #testbass, #testguitar, #tuner, #metronome, #rig, #scope, #spectrum, #plugins.
 //
 //   const notes = howItWorks({ pedal: { id, name, version } });   // on a pedal's page
 //   notes.button(key?, label?)        a "How it works" button (for the header, or for one of them)
-//   notes.open('pedal' | 'testbass' | 'testguitar' | 'tuner' | 'scope' | 'spectrum')
+//   notes.open('pedal' | 'testbass' | 'testguitar' | 'tuner' | 'metronome' | 'rig' | 'scope' | 'spectrum' | 'plugins')
 
 import { renderMarkdown } from './markdown.js';
+import { downloads, latestRelease, releaseLine, APP } from './plugins.js';
 
 const SITE = new URL('../', import.meta.url); // the site's root, wherever it is served
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -36,8 +38,11 @@ export function howItWorks({ pedal = null } = {}) {
     { key: 'testbass', hash: '#testbass', name: 'Test bass', dir: 'testbass/' },
     { key: 'testguitar', hash: '#testguitar', name: 'Test guitar', dir: 'testguitar/' },
     { key: 'tuner', hash: '#tuner', name: 'Tuner', dir: 'tuner/' },
+    { key: 'metronome', hash: '#metronome', name: 'Metronome', dir: 'metronome/' },
+    { key: 'rig', hash: '#rig', name: 'Rig', dir: 'rig/' },
     { key: 'scope', hash: '#scope', name: 'Scope', dir: 'scope/' },
     { key: 'spectrum', hash: '#spectrum', name: 'Spectrum', dir: 'spectrum/' },
+    { key: 'plugins', hash: '#plugins', name: 'Plugins', dir: 'plugins/' },
   ];
   let dialog = null, body = null, heading = null, ver = null, tabs = [], at = null;
   const loaded = new Map();
@@ -134,7 +139,7 @@ export function howItWorks({ pedal = null } = {}) {
           const toc = sections.length > 2
             ? `<nav class="pz-notes-toc" aria-label="Contents">${sections.map((s) => `<a href="#${s.id}">${esc(s.text)}</a>`).join('')}</nav>`
             : '';
-          return `${toc}<article class="pz-notes-text">${siteLinks(html, d)}</article>`;
+          return `${d.key === 'plugins' ? downloadsHtml() : ''}${toc}<article class="pz-notes-text">${siteLinks(html, d)}</article>`;
         })
         .catch(() => {
           loaded.delete(d.key); // try again next time
@@ -142,6 +147,23 @@ export function howItWorks({ pedal = null } = {}) {
         }));
     }
     return loaded.get(d.key);
+  }
+
+  // The downloads, straight from the latest plugin release's files: on a pedal's page that pedal
+  // first, then every pedal with the app, then the app alone; a line under them says which
+  // release they are, once GitHub's API answers.
+  function downloadsHtml() {
+    const row = (title, id) => `<div class="pz-dl-row"><span class="pz-dl-what">${esc(title)}</span>${downloads(id).map((x) =>
+      `<a class="pz-dl" href="${x.url}" download title="${esc(`${title} for ${x.system}: ${x.formats}`)}">↓ ${x.system}</a>`).join('')}</div>`;
+    return `<section class="pz-dls" aria-label="Downloads">${pedal ? row(`The ${pedal.name}`, pedal.id) : ''}${row('Every pedal and the app', null)}${row('The PhuzzBox app', APP)}<p class="pz-dl-status"></p></section>`;
+  }
+  async function releaseStatus() {
+    const rel = await latestRelease();
+    const line = body.querySelector('.pz-dl-status');
+    if (!rel || !line) return;
+    const { ok, text } = releaseLine(rel, pedal);
+    line.textContent = text;
+    if (!ok) for (const a of body.querySelectorAll(rel.none ? 'a.pz-dl' : '.pz-dl-row:first-child a.pz-dl')) a.classList.add('pz-dl-off');
   }
 
   async function open(key = docs[0].key) {
@@ -157,6 +179,7 @@ export function howItWorks({ pedal = null } = {}) {
     const html = await load(d);
     if (at !== d) return;
     body.innerHTML = html;
+    if (d.key === 'plugins') releaseStatus();
     body.scrollTop = 0;
     body.focus({ preventScroll: true });
   }

@@ -200,11 +200,12 @@ button.info::after { content: ""; position: absolute; inset: -5px; border-radius
 .string button.open { background: rgb(0 0 0 / 0.25); border-right: 6px solid #ece3c9; box-shadow: inset -1px 0 0 #a49b81; }
 .string button::after { /* the string */
   content: ""; position: absolute; left: 0; right: -3px; top: 50%; height: var(--gauge); margin-top: calc(var(--gauge) / -2); z-index: 2;
+  transform: translateY(var(--bend, 0px)); /* pushed across the neck, a bend */
   background: linear-gradient(180deg, #fafafa, #9a9a9a); box-shadow: 0 1px 1px rgb(0 0 0 / 0.6);
 }
 .s0 button { --gauge: 3.5px; } .s1 button { --gauge: 3px; } .s2 button { --gauge: 2.4px; } .s3 button { --gauge: 1.8px; }
 .s0 button::after, .s1 button::after { background: repeating-linear-gradient(90deg, #e6e6e6 0 1px, #a5a5a5 1px 2px); }
-.string button.inlay::before { /* the dots between the D and A strings */
+.string button.inlay::before { /* the dots, between the middle two strings: a bass's D and A, a guitar's G and D */
   content: ""; position: absolute; left: 50%; bottom: 0; width: 10px; height: 10px; margin-left: -5px; transform: translateY(50%); z-index: 1; border-radius: 50%;
   background: radial-gradient(circle at 40% 35%, #fffaf0, #d8d2c4 60%, #b7b0a0);
 }
@@ -300,14 +301,20 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
 
 /* ================================================================================================
    The one-screen layout of a pedal's page (shared/layout.js), after Forte's: the header; the pedal
-   on its board at the left; the views' bar, the views, the controls' bar (its top edge the handle
-   that shares the height) and the Controls panel; the test bass pinned to the bottom. Each panel
-   scrolls on its own. Body classes: perform, views-folded, controls-folded, no-rack (the pedal
-   hidden), bass-off (the test bass isn't the input), audio-on, sharing (the handle dragged).
+   on its board at the left, the tuner and the metronome under it; the views' bar, the views, the
+   controls' bar (its top edge the handle that shares the height) and the Controls panel; the rig
+   pinned to the bottom (its bar, then the test bass or the rig's units). Each panel scrolls on its
+   own. Body classes: perform, views-folded, controls-folded, bass-off (the test bass isn't the
+   input), audio-on, sharing (the handle dragged).
    A phone (as layout.js's phoneQuery) scrolls instead, at the end.
    ================================================================================================ */
 body.one-screen { height: 100vh; height: 100dvh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-body.one-screen #app { max-width: none; height: 100%; padding: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+/* a playing surface, not a document: a long press or a drag across the knobs, the fretboard or the
+   views selects no text (a selection that starts there can capture the next drags on a tablet);
+   what is read, a How it works, and what is typed, still select */
+body.one-screen { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+body.one-screen :is(input, textarea, [contenteditable], dialog.notes, .caption, .tour-slot) { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+body.one-screen #app { max-width: none; height: 100%; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; }
 
 /* the header: PhuzzBox, the pedal (its menu), How it works; then the audio */
 body.one-screen header.top { padding: max(8px, env(safe-area-inset-top)) 14px 8px; gap: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); position: relative; z-index: 5; }
@@ -320,8 +327,8 @@ body.one-screen header.top .home:hover { border-color: var(--accent); }
 body.one-screen header.top .audio { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 8px; margin-left: auto; min-width: 0; }
 body.one-screen header.top .audio select { max-width: 220px; text-overflow: ellipsis; }
 body.audio-on .start, body:not(.audio-on) header.top .cpu { display: none; }
-header.top .volume { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 0 4px 0 10px; }
-header.top .volume .fader { width: 110px; height: 24px; }
+.volume { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 0 4px 0 10px; }
+.volume .fader { width: 110px; height: 24px; }
 .pedal-menu { position: relative; min-width: 0; }
 /* the menu's button: PhuzzBox's mark (a little pedal), the pedal's name, a caret, as Forte's */
 .pedal-menu summary {
@@ -363,7 +370,6 @@ body.one-screen .work {
   grid-template-columns: clamp(250px, 22vw, 330px) minmax(0, 1fr);
   grid-template-rows: var(--work-rows, auto minmax(0, 0.6fr) auto minmax(0, 0.4fr));
 }
-body.one-screen.no-rack .work { grid-template-columns: 0 minmax(0, 1fr); }
 /* the pedalboard: hook-and-loop on a dark board */
 body.one-screen .rack {
   grid-column: 1; grid-row: 1 / -1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
@@ -438,16 +444,17 @@ body.one-screen .controls { grid-row: 4; margin: 0; min-height: 0; overflow-y: a
 body.one-screen .groups { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); align-items: start; }
 body.one-screen .groups > .midi { margin: 0; grid-column: 1 / -1; }
 body.one-screen .row:not(.hint-open) .hint { display: none; }
-body.one-screen .rig .row { grid-template-areas: "label label" "input value"; }
-body.one-screen .rig .row > select { grid-area: input; }
-body.one-screen .rig .row > .inline { grid-area: input; font-size: 13px; color: var(--ink-2); }
-body.one-screen .rig .row > label.inline { grid-area: value; }
-body.one-screen .rig .row input[type="number"] { width: 70px; }
+/* the app's Rig group (native/app: the pages have theirs in the rig at the foot) */
+body.one-screen .group.rig .row { grid-template-areas: "label label" "input value"; }
+body.one-screen .group.rig .row > select { grid-area: input; }
+body.one-screen .group.rig .row > .inline { grid-area: input; font-size: 13px; color: var(--ink-2); }
+body.one-screen .group.rig .row > label.inline { grid-area: value; }
+body.one-screen .group.rig .row input[type="number"] { width: 70px; }
 .rig-note { margin: 6px 0 0; font-size: 12px; color: var(--ink-2); }
 .group-empty { margin: 6px 2px; font-size: 13px; color: var(--ink-2); }
 
-/* the dock: a tour's card, then the test bass */
-body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+/* the dock: a tour's card, then the rig */
+body.one-screen .dock { min-width: 0; margin: 0; position: relative; z-index: 4; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
 .tour-slot:empty { display: none; }
 .bass-bar.bar { border-bottom: 0; padding-top: 5px; padding-bottom: 5px; gap: 8px; }
 .bass-bar .spacer { flex: 1; }
@@ -493,7 +500,7 @@ body.perform .controls-bar { cursor: default; }
   body.one-screen header.top .audio { margin-left: 0; justify-content: flex-start; }
   body.one-screen header.top .audio select { max-width: 160px; }
   body.one-screen .work { display: flex; flex-direction: column; overflow: visible; }
-  body.one-screen .views-bar { order: -1; } /* the views' bar, with the pedal's toggle, above the pedal */
+  body.one-screen .views-bar { order: -1; } /* the views' bar above the pedal */
   body.one-screen .rack { border-right: 0; border-bottom: 1px solid var(--line); overflow: visible; padding: 16px 12px; }
   body.one-screen .views, body.one-screen .controls { overflow: visible; }
   .view-grid { grid-template-rows: none; grid-auto-rows: auto; height: auto; }
@@ -504,6 +511,7 @@ body.perform .controls-bar { cursor: default; }
   .split { display: none; }
   body.one-screen .controls-bar { cursor: default; }
   body.one-screen .dock { position: sticky; bottom: 0; }
+  body.one-screen.bass-off .dock { position: static; } /* the rig's units are too tall to stick: they come last */
   .bass-bar .toggles-label { margin-right: 0; }
   .string button { height: 24px; }
 }
@@ -545,6 +553,107 @@ body.perform .controls-bar { cursor: default; }
 .knob.toggle .rocker[aria-pressed="true"] .rocker-led { background: radial-gradient(circle at 40% 35%, #ffd1cc, var(--led) 45%, #b3140c); box-shadow: 0 0 10px 2px rgb(255 59 47 / 0.6); }
 .pedal.mini .knob.toggle .rocker { width: 30px; height: 38px; margin: 6px 0 1px; }
 .pedal.mini .knob.toggle .rocker-led { top: 5px; }
+
+/* ---- the presets, on the pedal: a little window in the enclosure, lit from behind -------------- */
+.preset-window { width: 100%; max-width: 230px; padding: 4px; border-radius: 7px; background: rgb(0 0 0 / 0.45);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.8), 0 1px 0 rgb(255 255 255 / 0.12); }
+.preset-window select.presets {
+  width: 100%; padding: 4px 8px; border-radius: 4px; border: 1px solid rgb(0 0 0 / 0.6); text-overflow: ellipsis;
+  background: linear-gradient(180deg, #17120c, #0e0b07); color: #ffb067; font: 600 13px/1.25 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  text-shadow: 0 0 6px rgb(255 140 40 / 0.55); box-shadow: inset 0 0 10px rgb(255 120 20 / 0.08);
+}
+.preset-window select.presets:hover { border-color: rgb(255 176 103 / 0.5); }
+.preset-window select.presets option, .preset-window select.presets optgroup { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; text-shadow: none; color: var(--ink); }
+
+/* ---- under the pedal: the toggles for the tuner and the metronome, then them ------------------ */
+.rack-toggles { flex: none; justify-content: center; }
+body.perform .rack-toggles { display: flex; }
+
+/* the metronome: its pendulum beside the tempo, the beats as lamps */
+.metrocard { flex: none; padding: 8px 10px 10px; }
+.metrocard figcaption { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.metrocard .play { margin-left: auto; font-size: 12px; padding: 3px 12px; }
+.metrocard .play[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.m-body { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; align-items: center; }
+.m-pendulum { width: 58px; height: auto; display: block; }
+.m-case { fill: #3a2a1c; stroke: #5b4630; stroke-width: 1; }
+.m-scale line { stroke: #d9c8a8; stroke-width: 0.8; }
+.m-scale text { fill: #d9c8a8; font: 5.5px system-ui, sans-serif; }
+.m-stick { stroke: #d0d0d0; stroke-width: 1.6; stroke-linecap: round; }
+.m-weight { fill: #c9c9c9; stroke: #6b6b6b; stroke-width: 0.6; }
+.m-pivot { fill: #9a9a9a; }
+.metrocard.running .m-weight { fill: #e8e8e8; }
+.m-controls { display: grid; gap: 7px; min-width: 0; }
+.m-tempo { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.m-tempo input { width: 58px; padding: 2px 4px; text-align: center; font: 700 18px/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.m-tempo .step { width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; flex: none; }
+.m-tempo .m-unit { font-size: 11px; color: var(--ink-2); white-space: nowrap; }
+.m-row .tap { flex: none; font-size: 12px; padding: 2px 10px; border: 1px solid var(--line); }
+.m-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.m-row select { flex: 1 1 auto; min-width: 0; font-size: 12px; padding: 2px 6px; }
+.m-level { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ink-2); }
+.m-level .fader { width: 50px; min-width: 0; }
+.m-dots { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-start; }
+.m-dots span { width: 10px; height: 10px; border-radius: 50%; background: #2a1514; box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.8); }
+.m-dots span.bell { background: #2a2214; }
+.m-dots span.on { background: radial-gradient(circle at 40% 35%, #ffd1cc, var(--led) 45%, #b3140c); box-shadow: 0 0 8px 2px rgb(255 59 47 / 0.55); }
+.m-dots span.bell.on { background: radial-gradient(circle at 40% 35%, #fff4c8, #facc15 45%, #a16207); box-shadow: 0 0 8px 2px rgb(250 204 21 / 0.55); }
+
+/* ---- the rig, at the foot of the page: its bar, then the test bass or the rig's units ----------- */
+.rig-bar.bar { border-bottom: 0; flex-wrap: wrap; gap: 6px 10px; padding-top: 6px; padding-bottom: 6px; }
+.rig-bar .spacer { flex: 1; }
+.rig-bar .info { margin-left: -4px; }
+.rig-io { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); min-width: 0; }
+.rig-io select { max-width: 220px; text-overflow: ellipsis; color: var(--ink); }
+.rig-bar .fold[aria-expanded="false"] svg { transform: rotate(180deg); }
+.rig-body { border-top: 1px solid var(--line); }
+.rig-body .bass .bass-bar { background: transparent; }
+.rig-chain { display: flex; align-items: stretch; gap: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 10px 14px 12px; scrollbar-width: thin; }
+.rig-chain > * { flex: none; }
+.rig-wire { align-self: center; width: 18px; height: 4px; border-radius: 2px; background: linear-gradient(180deg, #2b2b30, #111); box-shadow: 0 1px 0 rgb(255 255 255 / 0.05); }
+.rig-end { align-self: center; font-size: 11px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 4px; white-space: nowrap; }
+.rig-iface { display: grid; align-content: center; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); font-size: 12px; min-width: 210px; }
+.dock .rig-iface .row { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; grid-template-areas: none; align-items: center; gap: 6px; padding: 0; border: 0; }
+.dock .rig-iface .row > * { grid-area: auto; }
+.rig-iface .row label { color: var(--ink-2); }
+.rig-iface select { min-width: 0; font-size: 12px; padding: 2px 6px; }
+.rig-iface input[type="number"] { width: 64px; padding: 2px 4px; }
+.rig-iface .inline { color: var(--ink-2); white-space: nowrap; }
+.rig-name { font: 700 11px/1.2 system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+.rig-iface .rig-name { text-align: left; color: var(--ink-2); }
+/* each unit a small grey box, its knobs and its switch; dimmed while it is out */
+.dock .pedal.rig-unit { --enclosure: #4a4c52; --enclosure-ink: #eeeae2; padding: 8px 10px 8px; gap: 4px; border-radius: 10px; align-items: center; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; }
+.dock .pedal.rig-unit::before { inset: 4px; background-size: 8px 8px; }
+.dock .rig-unit .knobs { gap: 2px 4px; flex-wrap: nowrap; align-items: flex-start; }
+.dock .rig-unit .knob { width: 56px; gap: 2px; }
+.dock .rig-unit .dial { width: 34px; height: 34px; margin: 5px 0 1px; }
+.dock .rig-unit .dial::before { inset: -6px; }
+.dock .rig-unit .dial .mark { height: 12px; width: 2.5px; }
+.dock .rig-unit .klabel { font-size: 9px; letter-spacing: 0.3px; white-space: nowrap; }
+.dock .rig-unit .kval { font-size: 9.5px; white-space: nowrap; }
+.dock .rig-unit .knob.pick { justify-content: center; align-self: center; }
+.dock .rig-unit .knob.pick select { font-size: 11px; padding: 2px 4px; background: rgb(0 0 0 / 0.4); color: var(--enclosure-ink); border-color: rgb(0 0 0 / 0.5); }
+.rig-foot { display: flex; align-items: center; gap: 10px; }
+.dock .rig-unit .footswitch { width: 26px; height: 26px; margin: 5px; }
+.dock .rig-unit .led { width: 8px; height: 8px; }
+.rig-unit.off .knobs { opacity: 0.55; }
+body.one-screen .dock .bass .frets { margin-top: 2px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  .rig-io select { max-width: 150px; }
+  .rig-bar .volume .fader { width: 80px; }
+  .rig-chain { padding: 8px 10px 10px; }
+}
+
+/* a rocker pedal (shared/treadle.js): the treadle from the side, rubber on top, rocking on its axle
+   over the cast base; it takes the face's width, above the knobs */
+.knob.treadle, body.one-screen .rack .pedal .knob.treadle { width: 100%; max-width: 260px; flex-basis: 100%; gap: 2px; }
+.treadle-pic { width: 100%; touch-action: none; cursor: grab; border-radius: 8px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.treadle-pic:active { cursor: grabbing; }
+.treadle-pic:focus-visible { outline: 2px solid var(--enclosure-ink); outline-offset: 3px; }
+.treadle-pic svg { display: block; width: 100%; height: auto; overflow: visible; }
+.treadle-pic .tr-end { font: 700 7px/1 system-ui, sans-serif; letter-spacing: 0.8px; fill: rgb(255 255 255 / 0.5); }
+.pedal.mini .knob.treadle { max-width: 220px; margin: 0 auto; }
+@media (max-height: 960px) { body.one-screen .rack .pedal .knob.treadle { max-width: 220px; } }
 
 /* ---- buffer/style.css */
 /* the Buffer's enclosure: a plain grey box, as a buffer is */
@@ -1134,25 +1243,26 @@ const __m6 = (() => {
 // shared/layout.js): the page fills the screen, with nothing to scroll but the panels themselves.
 //
 //   header    PhuzzBox, the pedal's name (the menu of pedals), How it works; audio on the right
-//   rack      the pedal itself, on the left, the height of the page (a toggle in the views' bar),
-//             and under it the views that belong beside the pedal (rack: true; the tuner)
+//   rack      the pedal itself, on the left, the height of the page, always there; under it a
+//             toggle for each view that belongs beside the pedal (rack: true: the tuner, the
+//             metronome), and those turned on
 //   views     a bar, then the views turned on, sharing the room in rows. The bar has a toggle for
-//             each (the pedal, the tuner and the page's views), then Discover | Perform and a
-//             button that folds the views away
-//   controls  a bar, then the Controls panel: the pedal's groups of parameters, the rig (the
-//             interface and Full scale) and the MIDI pedals, side by side. The bar has a toggle
-//             for each group, the presets and a fold button; its top edge is a handle that shares
-//             the height between the views and the controls
-//   dock      the test bass, pinned to the bottom, shown while it is the input
+//             each of the page's views, then Discover | Perform and a button that folds the views
+//             away
+//   controls  a bar, then the Controls panel: the pedal's groups of parameters and the MIDI
+//             pedals, side by side. The bar has a toggle for each group and a fold button; its top
+//             edge is a handle that shares the height between the views and the controls
+//   dock      the rig (the input and the output, the rig's units or the test bass), pinned to the
+//             bottom
 //
 // Perform is for playing: the views turned on fill the room with no captions and no text drawn
 // on their canvases, the Controls panel folded away until More controls. A phone has no room to
 // share: there the page scrolls, the rack and the views above the controls, the dock stuck to the
 // bottom. What is turned on is remembered per pedal; the mode and the share for every pedal.
 //
-//   const layout = createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share })
+//   const layout = createLayout({ id, h, store, app, header, rack, views, groups, dock, share })
 //   views  = [{ key, name, card, on, rack }]   (on: shown at first; rack: under the pedal, in the
-//            rack, rather than in the views' stage; its toggle is in the views' bar all the same)
+//            rack, rather than in the views' stage, its toggle there too)
 //   groups = [{ key, name, el }]
 //   share  = the views' share of the height at first (0.6); store = { get(k, d), set(k, v) }
 //   returns { showViews(names | null), viewNames(), tourSlot, arrange() }
@@ -1162,7 +1272,7 @@ const CHEVRON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 1
 const SHARE = 0.6; // the views' usual share of the room the views and the controls have
 const phoneQuery = matchMedia('(max-width: 600px), (max-width: 1050px) and (max-height: 500px)'); // as layout.css
 
-function createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share: first = SHARE }) {
+function createLayout({ id, h, store, app, header, rack, views, groups, dock, share: first = SHARE }) {
   const body = document.body;
   body.classList.add('one-screen');
   const KEY = `phuzzbox.${id}.layout`;
@@ -1195,26 +1305,28 @@ function createLayout({ id, h, store, app, header, rack, views, groups, presets,
     return b;
   };
 
-  // ---- the views: the rack (the pedal) first, then the cards in a stage
+  // ---- the views: the rack (the pedal, always there) first, then the cards in a stage
   const viewsEl = h('section', { class: 'views', id: 'views', 'aria-label': 'Views' });
   const stage = h('div', { class: 'view-grid' });
-  const noView = h('p', { class: 'no-view', hidden: true }, 'Every view is off: turn one on above.');
-  const staged = views.filter((v) => !v.rack);
+  const staged = views.filter((v) => !v.rack), racked = views.filter((v) => v.rack);
+  const noView = h('p', { class: 'no-view', hidden: true }, staged.length ? 'Every view is off: turn one on above.' : 'No views here: the tuner is under the pedal.');
   stage.append(...staged.map((v) => v.card), noView);
   viewsEl.append(stage);
-  // the rack's views go just under the pedal's face (the Pedalboard's chain stays below them)
+  // the rack's views go just under the pedal's face, after their toggles (the Pedalboard's chain
+  // stays below them)
+  const rackRow = h('div', { class: 'toggles rack-toggles', role: 'group', 'aria-label': 'Beside the pedal' });
   const face = rack.querySelector('.pedal') ?? rack.lastElementChild;
-  if (face) face.after(...views.filter((v) => v.rack).map((v) => v.card)); else rack.append(...views.filter((v) => v.rack).map((v) => v.card));
-  const pedalView = { key: 'pedal', name: 'Pedal', card: rack, on: true };
-  const all = [pedalView, ...views];
-  for (const v of all) v.shown = () => (touring && v !== pedalView ? touring.has(v.name.toLowerCase()) : prefs.views[v.key] ?? v.on);
+  const under = [...(racked.length ? [rackRow] : []), ...racked.map((v) => v.card)];
+  if (face) face.after(...under); else rack.append(...under);
+  const all = [...views];
+  for (const v of all) v.shown = () => (touring ? touring.has(v.name.toLowerCase()) : prefs.views[v.key] ?? v.on);
   const vbar = bar('views', 'Views', viewsEl);
   for (const v of all) {
-    v.toggle = toggle(v.name, 'Show or hide this view', v.shown(), () => {
-      if (touring && v !== pedalView) { const n = v.name.toLowerCase(); if (!touring.delete(n)) touring.add(n); } else { prefs.views[v.key] = !v.shown(); save(); }
+    v.toggle = toggle(v.name, v.rack ? `Show or hide the ${v.name.toLowerCase()} under the pedal` : 'Show or hide this view', v.shown(), () => {
+      if (touring) { const n = v.name.toLowerCase(); if (!touring.delete(n)) touring.add(n); } else { prefs.views[v.key] = !v.shown(); save(); }
       apply();
     });
-    vbar.row.append(v.toggle);
+    (v.rack ? rackRow : vbar.row).append(v.toggle);
   }
   // Discover | Perform
   const modeBtns = ['discover', 'perform'].map((m) => toggle(m === 'discover' ? 'Discover' : 'Perform',
@@ -1233,7 +1345,6 @@ function createLayout({ id, h, store, app, header, rack, views, groups, presets,
     g.toggle = toggle(g.name, 'Show or hide these controls', g.shown(), () => { prefs.groups[g.key] = !g.shown(); save(); apply(); });
     cbar.row.append(g.toggle);
   }
-  if (presets) cbar.tools.append(presets);
 
   // the page: the header, the work (the rack beside the views and the controls), the dock
   const work = h('div', { class: 'work' }, rack, vbar.el, viewsEl, cbar.el, controlsEl);
@@ -1346,7 +1457,6 @@ function createLayout({ id, h, store, app, header, rack, views, groups, presets,
     body.classList.toggle('touring', !!touring);
     for (const b of modeBtns) b.setAttribute('aria-pressed', String(b.textContent.toLowerCase() === mode));
     for (const v of all) { v.card.hidden = !v.shown(); v.toggle.setAttribute('aria-pressed', String(v.shown())); }
-    body.classList.toggle('no-rack', !pedalView.shown());
     for (const g of groups) { g.el.hidden = !g.shown(); g.toggle.setAttribute('aria-pressed', String(g.shown())); }
     noGroup.hidden = groups.some((g) => g.shown());
     const v = share();
@@ -1372,7 +1482,7 @@ function createLayout({ id, h, store, app, header, rack, views, groups, presets,
   apply();
 
   // a tour (shared/tour.js) shows only the views it is about (by title, any case), for a while;
-  // the pedal stays
+  // the pedal always stays
   const tourSlot = h('div', { class: 'tour-slot' });
   dock.prepend(tourSlot);
   return {
@@ -1386,8 +1496,99 @@ function createLayout({ id, h, store, app, header, rack, views, groups, presets,
 return { createLayout };
 })();
 
-// ---- shared/registry.js
+// ---- shared/treadle.js
 const __m7 = (() => {
+const { toUnit, fromUnit, fmt } = __m1;
+// treadle.js — a rocker pedal on a pedal's face, for the control a foot rocks (the Wah's Rocker):
+// the treadle seen from the side, its rubber on top, rocking on its axle over the cast base, heel
+// down at 0 and toe down at 1. It is worked as a knob is: drag up or right to rock it toward the
+// toe, Shift for fine, a double tap for its default, arrows too. A parameter asks for one with
+// `face: 'treadle'`; the pages (shared/shell.js), the Pedalboard and the app's window use it.
+//
+//   treadleFor(p, get, put, h) → the element; el.refresh() draws get(), el.show(u) draws u for a
+//   while instead (the Wah's envelope follower rocking it in Auto), el.show(null) gives it back.
+
+
+const SVG = 'http://www.w3.org/2000/svg';
+const TILT = 9; // degrees either side of level, about a real wah's travel
+let ids = 0;
+
+const svg = (tag, attrs = {}, ...kids) => {
+  const e = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+  for (const k of kids) e.append(k);
+  return e;
+};
+
+// the angle of the treadle for a unit position: heel down (left end low) to toe down (right end low)
+const tiltOf = (u) => -TILT + 2 * TILT * Math.min(1, Math.max(0, u));
+
+function treadleFor(p, get, put, h) {
+  const id = `tr${++ids}`;
+  const metal = svg('linearGradient', { id: `${id}m`, x1: 0, y1: 0, x2: 0, y2: 1 },
+    svg('stop', { offset: 0, 'stop-color': '#8d8d94' }), svg('stop', { offset: 0.35, 'stop-color': '#4a4a50' }), svg('stop', { offset: 1, 'stop-color': '#1a1a1d' }));
+  const cast = svg('linearGradient', { id: `${id}c`, x1: 0, y1: 0, x2: 0, y2: 1 },
+    svg('stop', { offset: 0, 'stop-color': '#3c3c42' }), svg('stop', { offset: 1, 'stop-color': '#0c0c0e' }));
+  const shine = svg('linearGradient', { id: `${id}s`, x1: 0, y1: 0, x2: 1, y2: 0 },
+    svg('stop', { offset: 0, 'stop-color': 'rgb(255 255 255 / 0)' }), svg('stop', { offset: 0.45, 'stop-color': 'rgb(255 255 255 / 0.16)' }), svg('stop', { offset: 1, 'stop-color': 'rgb(255 255 255 / 0)' }));
+  // the rubber's ridges, across the treadle
+  const ridges = [];
+  for (let x = 18; x < 202; x += 6.5) ridges.push(svg('rect', { x, y: 15, width: 3.6, height: 4, rx: 1.2, fill: '#1c1c1f' }));
+  // the treadle, about its axle at (110, 40): a casting with rubber on top
+  const treadle = svg('g', {},
+    svg('path', { d: 'M9 26 Q9 19 16 19 L204 19 Q212 19 212 27 L211 34 Q210 40 203 40 L18 40 Q10 40 9 34 Z', fill: `url(#${id}c)`, stroke: '#000', 'stroke-width': 0.8 }),
+    svg('path', { d: 'M12 22 L208 22', stroke: `url(#${id}s)`, 'stroke-width': 1.5 }),
+    svg('rect', { x: 14, y: 17, width: 192, height: 5, rx: 2, fill: '#0b0b0c' }), // the rubber
+    ...ridges);
+  const pic = svg('svg', { viewBox: '0 0 220 84', 'aria-hidden': 'true', focusable: 'false' },
+    svg('defs', {}, metal, cast, shine),
+    svg('ellipse', { cx: 110, cy: 79, rx: 104, ry: 4, fill: 'rgb(0 0 0 / 0.45)' }), // its shadow
+    svg('path', { d: 'M96 58 L103 40 L117 40 L124 58 Z', fill: '#141416' }), // the bracket, between the treadle and the base
+    svg('path', { d: 'M11 78 L17 62 Q19 58 26 58 L194 58 Q201 58 203 62 L209 78 Z', fill: `url(#${id}m)`, stroke: '#000', 'stroke-width': 0.8 }), // the base
+    svg('path', { d: 'M20 60 L200 60', stroke: `url(#${id}s)`, 'stroke-width': 1.2 }),
+    svg('text', { x: 28, y: 73, class: 'tr-end' }, 'HEEL'), svg('text', { x: 192, y: 73, class: 'tr-end', 'text-anchor': 'end' }, 'TOE'),
+    treadle,
+    svg('circle', { cx: 110, cy: 40, r: 3.4, fill: '#d9d9d9', stroke: '#2a2a2a', 'stroke-width': 1 })); // the axle
+  const label = p.label.replace(/\s*\(.*\)$/, '');
+  const plate = h('div', { class: 'treadle-pic', role: 'slider', tabindex: 0, 'aria-label': p.label, title: p.hint ?? '', 'aria-valuemin': '0', 'aria-valuemax': '100' }, pic);
+  const val = h('div', { class: 'kval' });
+  const el = h('div', { class: 'knob treadle', 'data-param': p.id }, plate, h('div', { class: 'klabel' }, label), val);
+  let shown = null; // a position drawn instead of get(), while something else rocks it
+  const draw = () => {
+    const u = shown ?? toUnit(p, get());
+    treadle.setAttribute('transform', `rotate(${tiltOf(u).toFixed(2)} 110 40)`);
+  };
+  el.refresh = () => {
+    const u = toUnit(p, get());
+    plate.setAttribute('aria-valuetext', fmt(p, get()));
+    plate.setAttribute('aria-valuenow', String(Math.round(u * 100)));
+    val.textContent = fmt(p, get());
+    draw();
+  };
+  el.show = (u) => { shown = u; draw(); };
+  let start = null;
+  plate.addEventListener('pointerdown', (e) => { plate.setPointerCapture(e.pointerId); start = { x: e.clientX, y: e.clientY, u: toUnit(p, get()) }; });
+  plate.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    const d = ((e.clientX - start.x) - (e.clientY - start.y)) / (e.shiftKey ? 800 : 200);
+    put(fromUnit(p, start.u + d));
+  });
+  const end = () => { start = null; };
+  plate.addEventListener('pointerup', end);
+  plate.addEventListener('pointercancel', end);
+  plate.addEventListener('dblclick', () => put(p.def));
+  plate.addEventListener('keydown', (e) => {
+    const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
+    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + step * (e.shiftKey ? 0.25 : 1))); }
+  });
+  return el;
+}
+
+return { tiltOf, treadleFor };
+})();
+
+// ---- shared/registry.js
+const __m8 = (() => {
 
 // registry.js — every pedal: the landing page, the menus and the tests read this list.
 //   id: the folder; name; version (semver, bumped only at a release: CLAUDE.md);
@@ -1397,7 +1598,7 @@ const __m7 = (() => {
 //   section: the physics it is made of (SECTIONS), which groups it on the landing page and in the
 //   menu, in the order PEDALS lists them
 
-const PHUZZBOX_VERSION = '0.4.0';
+const PHUZZBOX_VERSION = '0.5.0';
 // the site's credits link to the source; the only link to GitHub on the site (Jesse, 2026-11-01):
 // everything a reader needs is on the site itself, in How it works
 const SOURCE = 'https://github.com/jdthaler/phuzzbox';
@@ -1423,72 +1624,72 @@ const PEDALS = [
     blurb: 'Your pickup is an inductor: hear its resonance move as the cable gets longer and the input it drives gets hungrier.',
   },
   {
-    id: 'phuzz', section: 'circuits', name: 'Phuzz', version: '0.2.0', ready: true, plugin: { code: 'Phuz' }, enclosure: ['#8c2f1f', '#f7efe6'],
+    id: 'phuzz', section: 'circuits', name: 'Phuzz', version: '0.3.0', ready: true, plugin: { code: 'Phuz' }, enclosure: ['#8c2f1f', '#f7efe6'],
     after: 'two-transistor germanium fuzz (1966)',
     blurb: 'Ebers–Moll transistors that drift with temperature, a sagging battery, and an input that loads your pickup.',
   },
   {
-    id: 'wah', section: 'circuits', name: 'Wah', version: '0.2.0', ready: true, plugin: { code: 'Wahh' }, enclosure: ['#2b2b2e', '#f2efe8'],
+    id: 'wah', section: 'circuits', name: 'Wah', version: '0.3.0', ready: true, plugin: { code: 'Wahh' }, enclosure: ['#2b2b2e', '#f2efe8'],
     after: 'the inductor wah of the late 1960s, swept low for bass',
     blurb: 'Two transistors and a coil resonating with a capacitor; your foot, or a MIDI expression pedal, turns the pot that sets how hard the loop pushes back.',
   },
   {
-    id: 'preamp', section: 'circuits', name: 'Tube Preamp', version: '0.2.0', ready: true, plugin: { code: 'Tube' }, enclosure: ['#b08a55', '#2a1d10'],
+    id: 'preamp', section: 'circuits', name: 'Tube Preamp', version: '0.3.0', ready: true, plugin: { code: 'Tube' }, enclosure: ['#b08a55', '#2a1d10'],
     after: 'the 1959 Fender Bassman\'s preamp',
     blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
   },
   {
-    id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.1.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
+    id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
   },
   {
-    id: 'cabinet', section: 'vibration', name: 'Cabinet', version: '0.2.0', ready: true, plugin: { code: 'Cabn' }, enclosure: ['#232326', '#ece8e1'],
+    id: 'cabinet', section: 'vibration', name: 'Cabinet', version: '0.3.0', ready: true, plugin: { code: 'Cabn' }, enclosure: ['#232326', '#ece8e1'],
     after: '8×10 and 1×15 bass cabinets, and a guitar 4×12',
     blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.',
   },
   {
-    id: 'envelope', section: 'light', name: 'Envelope Filter', version: '0.2.0', ready: true, plugin: { code: 'Envf' }, enclosure: ['#4b2f6e', '#f1e9fb'],
+    id: 'envelope', section: 'light', name: 'Envelope Filter', version: '0.3.0', ready: true, plugin: { code: 'Envf' }, enclosure: ['#4b2f6e', '#f1e9fb'],
     after: 'the envelope-controlled filters of the 1970s',
     blurb: 'A resonant state-variable filter whose resistors are photocells, lit by an LED that follows how hard you play.',
   },
   {
-    id: 'octave', section: 'circuits', name: 'Octave Down', version: '0.2.0', ready: true, plugin: { code: 'Octv' }, enclosure: ['#1f4d47', '#e6f4f1'],
+    id: 'octave', section: 'circuits', name: 'Octave Down', version: '0.3.0', ready: true, plugin: { code: 'Octv' }, enclosure: ['#1f4d47', '#e6f4f1'],
     after: 'the analog octave dividers of the 1980s',
     blurb: 'A comparator and two flip-flops that flip your bass\'s polarity once a cycle: an octave below, and two.',
   },
   {
-    id: 'spring', section: 'vibration', name: 'Spring Reverb', version: '0.2.0', ready: true, plugin: { code: 'Sprg' }, enclosure: ['#3a3f47', '#eef1f5'],
+    id: 'spring', section: 'vibration', name: 'Spring Reverb', version: '0.3.0', ready: true, plugin: { code: 'Sprg' }, enclosure: ['#3a3f47', '#eef1f5'],
     after: 'the reverb tanks of guitar and organ amplifiers',
     blurb: 'Steel springs from measured tanks, whose waves travel slower the higher they are: every echo comes back as a chirp.',
   },
   {
-    id: 'echo', section: 'motion', name: 'Tape Echo', version: '0.2.0', ready: true, plugin: { code: 'Tape' }, enclosure: ['#5a4632', '#f6eee2'],
+    id: 'echo', section: 'motion', name: 'Tape Echo', version: '0.3.0', ready: true, plugin: { code: 'Tape' }, enclosure: ['#5a4632', '#f6eee2'],
     after: 'the multi-head tape echoes of the 1970s',
     blurb: 'A loop of tape past a record head and three playback heads: every repeat recorded again, darker and more saturated, wavering with the capstan.',
   },
   {
-    id: 'rotary', section: 'motion', name: 'Rotary Speaker', version: '0.1.0', ready: true, plugin: { code: 'Rtry' }, enclosure: ['#6b3a1e', '#f4e7d6'],
+    id: 'rotary', section: 'motion', name: 'Rotary Speaker', version: '0.2.0', ready: true, plugin: { code: 'Rtry' }, enclosure: ['#6b3a1e', '#f4e7d6'],
     after: 'the rotating-horn organ speakers of the 1960s',
     blurb: 'A horn and a drum spinning past two microphones: the pitch rises as each comes toward you and falls as it goes, heard at the retarded time.',
   },
   {
-    id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.2.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
+    id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
     after: 'the steel plate reverbs of 1960s studios',
     blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',
   },
   {
-    id: 'sympathetic', section: 'vibration', name: 'Sympathetic Strings', version: '0.1.0', ready: true, plugin: { code: 'Symp' }, enclosure: ['#7a5a1f', '#f7efdc'],
+    id: 'sympathetic', section: 'vibration', name: 'Sympathetic Strings', version: '0.2.0', ready: true, plugin: { code: 'Symp' }, enclosure: ['#7a5a1f', '#f7efdc'],
     after: 'the sitar\'s sympathetic strings',
     blurb: 'A frame of steel strings tuned to a key, all on one bridge your bass shakes: the strings whose partials your notes share ring along, a halo that follows the key.',
   },
   {
-    id: 'blackhole', section: 'gravity', name: 'Black Hole', version: '0.2.0', ready: true, plugin: { code: 'BHol' }, enclosure: ['#0d0d12', '#f3d9a4'],
+    id: 'blackhole', section: 'gravity', name: 'Black Hole', version: '0.3.0', ready: true, plugin: { code: 'BHol' }, enclosure: ['#0d0d12', '#f3d9a4'],
     after: 'the ringdown LIGO hears after a merger',
     blurb: 'Your bass perturbs a spinning black hole and it rings in its quasinormal modes: a thud without spin, a bell near the limit. Mass sets the pitch.',
   },
   {
-    id: 'doppler', section: 'motion', name: 'Doppler', version: '0.1.0', ready: true, plugin: { code: 'Dopp' }, enclosure: ['#1f4e5f', '#e9f3f5'],
+    id: 'doppler', section: 'motion', name: 'Doppler', version: '0.2.0', ready: true, plugin: { code: 'Dopp' }, enclosure: ['#1f4e5f', '#e9f3f5'],
     after: 'a car, a train, a jet going by',
     blurb: 'Your bass rides past you on a straight road, again and again, heard at its retarded time: the pitch falls as it goes, and past Mach 1 it arrives as a boom, half of it backwards.',
   },
@@ -1500,7 +1701,7 @@ return { PHUZZBOX_VERSION, SOURCE, SECTIONS, PEDALS, byId };
 })();
 
 // ---- buffer/src/buffer-params.js
-const __m9 = (() => {
+const __m10 = (() => {
 
 // buffer-params.js — the Buffer's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -1566,7 +1767,7 @@ return { bass, recorded, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- shared/instruments.js
-const __m10 = (() => {
+const __m11 = (() => {
 
 // instruments.js — the two instruments a page can be set up for, bass and guitar: their open
 // strings, the tuner's range for each, the test instrument's riff, and the pickup each pedal that
@@ -1582,6 +1783,9 @@ const INSTRUMENTS = {
     // the open strings of four-, five- and six-string basses: B0 E1 A1 D2 G2 C3
     tunerOpen: [23, 28, 33, 38, 43, 48],
     tuner: { fmin: 30, fmax: 500 },
+    // m between strings at the bridge (¾ inch): how far a drag of one string's row on the fretboard
+    // pushes a string across the neck, to bend it
+    spacing: 0.019,
   },
   guitar: {
     id: 'guitar', name: 'Guitar', test: 'Test guitar',
@@ -1590,6 +1794,7 @@ const INSTRUMENTS = {
     tunerOpen: [35, 40, 45, 50, 55, 59, 64],
     // drop C's low C (65 Hz) to the high E's 24th fret (1319 Hz)
     tuner: { fmin: 60, fmax: 1400 },
+    spacing: 0.0105, // m between strings at the bridge (2 1/16 inches, E to E)
   },
 };
 const instrument = (id) => INSTRUMENTS[id] ?? INSTRUMENTS.bass;
@@ -1617,9 +1822,9 @@ return { INSTRUMENTS, instrument, GUITAR_PICKUP, RIFFS, INSTRUMENT_KEY, paramsKe
 })();
 
 // ---- buffer/src/buffer-pedal.js
-const __m8 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m9;
-const { GUITAR_PICKUP } = __m10;
+const __m9 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m10;
+const { GUITAR_PICKUP } = __m11;
 // buffer-pedal.js — the Buffer's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1639,8 +1844,8 @@ return { PEDAL };
 })();
 
 // ---- phuzz/src/phuzz-params.js
-const __m12 = (() => {
-const { bass, recorded } = __m9;
+const __m13 = (() => {
+const { bass, recorded } = __m10;
 // phuzz-params.js — the Phuzz's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
 
@@ -1648,7 +1853,7 @@ const { bass, recorded } = __m9;
 const pedal = [
   { id: 'fuzz', label: 'Fuzz', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'The 1 kΩ pot in the second transistor\'s emitter, which sets how much of it the 20 µF capacitor bypasses. Full up, the emitter is grounded for the signal and the pair has all its gain; turning it down brings back negative feedback, and the gain falls fast: about 25 dB less by halfway. The input impedance falls with it, to a few hundred ohms, and loads your pickup harder.' },
-  { id: 'volume', label: 'Volume', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'volume', label: 'Volume', min: 0, max: 1, def: 0.77, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'A 500 kΩ audio-taper pot on the output: halfway passes about a tenth of the voltage (−20 dB). Full up, the peaks come out a few decibels above your bass\'s own, and since the wave is nearly square it sounds a good deal louder.' },
   { id: 'temp', label: 'Temperature', min: -10, max: 50, def: 20, unit: '°C', decimals: 0, perform: true,
     hint: 'Germanium leaks more as it warms, about twice as much every 7 °C. The first transistor\'s leakage takes over from the bias the feedback sets, the second transistor is starved of current and its collector slides toward the battery. Cold, it sits nearer the middle of its swing and clips evenly; hot, it clips lopsided, and near 50 °C most of the gain is gone.' },
@@ -1705,9 +1910,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- phuzz/src/phuzz-pedal.js
-const __m11 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m12;
-const { GUITAR_PICKUP } = __m10;
+const __m12 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m13;
+const { GUITAR_PICKUP } = __m11;
 // phuzz-pedal.js — the Phuzz's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1727,8 +1932,8 @@ return { PEDAL };
 })();
 
 // ---- wah/src/wah-params.js
-const __m14 = (() => {
-const { bass, recorded } = __m9;
+const __m15 = (() => {
+const { bass, recorded } = __m10;
 // wah-params.js — the Wah's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The parts are the inductor wah's as Holters and Zölzer (DAFx 2011) list them; the sweep
 // capacitor starts at 22 nF for bass, where the original's 10 nF sweeps a guitar's range.
@@ -1736,7 +1941,7 @@ const { bass, recorded } = __m9;
 
 
 const rocker = [
-  { id: 'position', label: 'Rocker', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'position', label: 'Rocker', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true, face: 'treadle',
     hint: 'Where your foot has the pedal: heel down (0 %) puts the peak low and sharp, toe down (100 %) high and broad. An expression pedal moves it (MIDI CC 1 unless you teach it another).' },
   { id: 'taper', label: 'Pot taper', type: 'select', options: [['audio', 'Audio (log)'], ['linear', 'Linear']], def: 'audio',
     hint: 'How the pot\'s resistance follows the rocker. A linear pot leaves the sweep\'s top octave for the last fifth of the travel; an audio pot, its lower part 10 % at mid-travel, spreads the sweep more evenly under your foot.' },
@@ -1757,7 +1962,7 @@ const output = [
   { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
     showIf: (P) => !P.reversed,
     hint: 'A blend pot that mixes your dry signal back in, as bass wahs have: the wah thins out the low end, and this keeps the bottom under the sweep. It is not part of the circuit model, so plugged in backwards it is off.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 1.3, unit: 'dB', decimals: 1,
     hint: 'Gain after the wah, in decibels.' },
 ];
 
@@ -1766,7 +1971,7 @@ const output = [
 const isAuto = (P) => P.control === 'auto';
 const auto = [
   { id: 'control', label: 'Rocked by', type: 'select', options: [['foot', 'Foot'], ['auto', 'Auto']], def: 'foot',
-    hint: 'Auto: an envelope follower hears how hard you play and moves the rocker for you, from where it rests (the Rocker knob, or your expression pedal) toward the toe or the heel. Each note sweeps the peak as it starts and lets it fall back as it dies away.' },
+    hint: 'Auto: an envelope follower hears how hard you play and moves the rocker for you, from where it rests (the rocker on the pedal, or your expression pedal) toward the toe or the heel. Each note sweeps the peak as it starts and lets it fall back as it dies away.' },
   { id: 'direction', label: 'Direction', type: 'select', options: [['up', 'Up'], ['down', 'Down']], def: 'up', showIf: isAuto,
     hint: 'Which way a harder note moves the rocker. Up, each pluck opens the peak upward and it settles back down as the note fades ("wow"); down, the pluck pulls it low and it rises as the note fades.' },
   { id: 'sens', label: 'Full sweep at', min: 0.02, max: 1, def: 0.15, log: true, unit: 'mV', scale: 1000, decimals: 0, showIf: isAuto,
@@ -1820,9 +2025,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- wah/src/wah-pedal.js
-const __m13 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m14;
-const { GUITAR_PICKUP } = __m10;
+const __m14 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m15;
+const { GUITAR_PICKUP } = __m11;
 // wah-pedal.js — the Wah's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1844,8 +2049,8 @@ return { PEDAL };
 })();
 
 // ---- preamp/src/preamp-params.js
-const __m16 = (() => {
-const { bass, recorded } = __m9;
+const __m17 = (() => {
+const { bass, recorded } = __m10;
 // preamp-params.js — the Tube Preamp's controls. Values in SI units; `scale` shows them in friendlier
 // ones. The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
 
@@ -1859,7 +2064,7 @@ const pedal = [
     hint: 'The tone stack\'s 25 kΩ pot to ground. The stack always scoops the middle, deepest near 700 Hz with the knobs at halfway; turning Middle down deepens the scoop, to about 22 dB down near 900 Hz, and turning it up fills it in, about 2.5 dB more at 500 Hz.' },
   { id: 'treble', label: 'Treble', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'The tone stack\'s 250 kΩ pot, fed through 250 pF. From halfway, full up passes about 4.5 dB more at 5 kHz, and all the way down takes about 7.5 dB off it.' },
-  { id: 'master', label: 'Master', min: 0, max: 1, def: 0.4, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'master', label: 'Master', min: 0, max: 1, def: 0.24, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'A 1 MΩ audio pot after the tone stack, which the amp doesn\'t have (its tone stack drives the power amp): it sets how loud the pedal is without changing how hard the tubes are driven. Halfway passes about a tenth of the voltage.' },
 ];
 
@@ -1882,9 +2087,9 @@ const supply = [
   { id: 'cable', label: 'Cable from the bass', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
     hint: 'The cable from your bass to the preamp. Into the tube\'s 1 MΩ grid leak its capacitance tunes the pickup\'s resonance, as it does into an amp: 10 m against 1 m moves the resonance down, and leaves 5 kHz about 9 dB darker.' },
   { id: 'outCable', label: 'Cable to the amp', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
-    hint: 'The cable from the preamp to what it drives. The tone stack and the Master pot drive it from tens of kilohms, so a long cable darkens the top: 30 m takes about 10 dB off 3 kHz.' },
+    hint: 'The cable from the preamp to what it drives. The tone stack and the Master pot drive it from tens of kilohms, so a long cable darkens the top: with the Master at 40 %, 30 m takes about 10 dB off 3 kHz; with it turned down, less.' },
   { id: 'load', label: 'Amp\'s input', min: 10e3, max: 10e6, def: 1e6, log: true, unit: 'kΩ', scale: 0.001, decimals: 0,
-    hint: 'The input impedance of what the preamp drives, usually 1 MΩ. It loads the Master pot and the tone stack behind it: into 100 kΩ the preamp is about 3 dB quieter, into 10 kΩ about 16 dB.' },
+    hint: 'The input impedance of what the preamp drives, usually 1 MΩ. It loads the Master pot and the tone stack behind it: with the Master at 40 %, into 100 kΩ the preamp is about 3 dB quieter and into 10 kΩ about 16 dB; with it turned down, less.' },
 ];
 
 const GROUPS = [
@@ -1912,9 +2117,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- preamp/src/preamp-pedal.js
-const __m15 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m16;
-const { GUITAR_PICKUP } = __m10;
+const __m16 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m17;
+const { GUITAR_PICKUP } = __m11;
 // preamp-pedal.js — the Tube Preamp's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1934,7 +2139,7 @@ return { PEDAL };
 })();
 
 // ---- opto/src/opto-params.js
-const __m18 = (() => {
+const __m19 = (() => {
 
 // opto-params.js — the Opto Compressor's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The fixed parts (the 47 kΩ series resistor, the driver's gain, the cell's
@@ -1943,7 +2148,7 @@ const __m18 = (() => {
 const leveler = [
   { id: 'peak', label: 'Peak Reduction', min: 0, max: 1, def: 0.55, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of the signal reaches the panel\'s driver: an audio pot. Turn it up and the panel lights on quieter notes, so the pedal turns the bass down sooner and further: at 30 % only hard notes (0.3 V and up) reach it; past 70 % even a gentle 30 mV note loses several decibels.' },
-  { id: 'gain', label: 'Gain', min: 0, max: 40, def: 10, unit: 'dB', decimals: 1, perform: true,
+  { id: 'gain', label: 'Gain', min: 0, max: 40, def: 8.5, unit: 'dB', decimals: 1, perform: true,
     hint: 'Make-up gain after the cell, in decibels: it puts back what the cell takes away, and changes nothing about how hard it compresses (the panel listens before it). +6 dB doubles the output.' },
   { id: 'sense', label: 'Sense', type: 'select', def: 'output', options: [['output', 'After the cell (feedback)'], ['input', 'Before the cell (feed-forward)']],
     hint: 'Where the panel\'s driver listens. After the cell, as the classic leveler does, a note lights the panel hardest at its start, before the cell has turned it down, so the cell catches the attack in about 10 ms, and louder in is always a little louder out. Before it, the panel sees only the note, never what the cell has done to it: the cell settles onto it more slowly, so the front of each note gets through (punch), and dug in hard enough, a louder note comes out quieter than a softer one.' },
@@ -1994,8 +2199,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- opto/src/opto-pedal.js
-const __m17 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m18;
+const __m18 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m19;
 // opto-pedal.js — the Opto Compressor's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2013,7 +2218,7 @@ return { PEDAL };
 })();
 
 // ---- cabinet/src/cabinet-params.js
-const __m20 = (() => {
+const __m21 = (() => {
 
 // cabinet-params.js — the Speaker Cabinet's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The bass drivers are Thiele–Small parameters typical of a 10-inch or a 15-inch
@@ -2023,7 +2228,7 @@ const __m20 = (() => {
 const cabinet = [
   { id: 'drive', label: 'Power amp gain', min: 10, max: 46, def: 32, unit: 'dB', decimals: 1, perform: true,
     hint: 'The clean power amp\'s voltage gain, from your bass\'s volts to the cabinet\'s. It sets how hard the cones are pushed: up high, the low notes run the cones out of travel and the sound thickens and compresses, the lowest strings first.' },
-  { id: 'mic', label: 'Microphone sensitivity', min: 1e-3, max: 0.1, def: 15e-3, log: true, unit: 'mV/Pa', scale: 1e3, decimals: 1, perform: true,
+  { id: 'mic', label: 'Microphone sensitivity', min: 1e-3, max: 0.1, def: 18.6e-3, log: true, unit: 'mV/Pa', scale: 1e3, decimals: 1, perform: true,
     hint: 'The volts the microphone at 1 m gives per pascal of sound: a dynamic microphone gives about 2, a condenser about 20. It is the pedal\'s output level and changes nothing else.' },
   { id: 'layout', label: 'Drivers', type: 'select', def: '8x10', options: [['1x15', '1 × 15″'], ['2x10', '2 × 10″, in parallel'], ['4x10', '4 × 10″, 2 series × 2 parallel'], ['8x10', '8 × 10″, 2 series × 4 parallel'],
     ['1x12', '1 × 12″'], ['2x12', '2 × 12″, in parallel'], ['4x12', '4 × 12″, 2 series × 2 parallel']],
@@ -2097,8 +2302,8 @@ return { GROUPS, GUITAR, PRESETS, KEEP };
 })();
 
 // ---- cabinet/src/cabinet-pedal.js
-const __m19 = (() => {
-const { GROUPS, PRESETS, KEEP, GUITAR } = __m20;
+const __m20 = (() => {
+const { GROUPS, PRESETS, KEEP, GUITAR } = __m21;
 // cabinet-pedal.js — the Speaker Cabinet's descriptor: everything a host needs to run it without
 // its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2117,7 +2322,7 @@ return { PEDAL };
 })();
 
 // ---- envelope/src/envelope-params.js
-const __m22 = (() => {
+const __m23 = (() => {
 
 // envelope-params.js — the Envelope Filter's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The filter is a state-variable filter whose two integrators' resistors are
@@ -2155,7 +2360,7 @@ const cell = [
 const output = [
   { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'Your dry signal mixed back in after the filter, so the bass\'s bottom stays under the sweep (most use for band-pass and high-pass).' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 6.1, unit: 'dB', decimals: 1,
     hint: 'Gain after the filter, in decibels.' },
 ];
 
@@ -2180,8 +2385,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- envelope/src/envelope-pedal.js
-const __m21 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m22;
+const __m22 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m23;
 // envelope-pedal.js — the Envelope Filter's descriptor: everything a host needs to run it without
 // its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2200,7 +2405,7 @@ return { PEDAL };
 })();
 
 // ---- octave/src/octave-params.js
-const __m24 = (() => {
+const __m25 = (() => {
 
 // octave-params.js — the Octave Down's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The circuit is the analog octave divider: a tracking filter, a comparator with
@@ -2222,7 +2427,7 @@ const divider = [
     hint: 'How far past zero the filtered signal must swing to flip the comparator. More ignores noise and the wobble of a decaying note, but a note that dies below it stops the dividers: the octave holds one polarity and passes the note at its own pitch.' },
   { id: 'tone', label: 'Tone', min: 150, max: 5000, def: 900, log: true, unit: 'Hz', decimals: 0,
     hint: 'A one-pole low-pass after the switch. The flips are clean at the zero crossings, so the octave is smooth already; lower is rounder and more like a synth\'s sub, higher keeps more of the string\'s edge.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 2.7, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2244,8 +2449,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- octave/src/octave-pedal.js
-const __m23 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m24;
+const __m24 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m25;
 // octave-pedal.js — the Octave Down's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2264,7 +2469,7 @@ return { PEDAL };
 })();
 
 // ---- spring/src/spring-params.js
-const __m26 = (() => {
+const __m27 = (() => {
 
 // spring-params.js — the Spring Reverb's controls. Values in SI units; `scale` shows them in
 // friendlier ones. A reverb tank: helical steel springs hung between magnetic beads, one bead
@@ -2292,7 +2497,7 @@ const mix = [
     hint: 'Your bass as it came in.' },
   { id: 'reverb', label: 'Reverb', min: 0, max: 1, def: 0.3, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of what the pickup bead hears is mixed in: the recovery amplifier\'s gain. At 100 % the first echo of a low note comes out as loud as the note went in.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -0.6, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2315,8 +2520,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- spring/src/spring-pedal.js
-const __m25 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m26;
+const __m26 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m27;
 // spring-pedal.js — the Spring Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2334,7 +2539,7 @@ return { PEDAL };
 })();
 
 // ---- echo/src/echo-params.js
-const __m28 = (() => {
+const __m29 = (() => {
 
 // echo-params.js — the Tape Echo's controls. Values in SI units; `scale` shows them in friendlier
 // ones. A loop of tape passes a record head and three playback heads; the echoes are the distances
@@ -2377,7 +2582,7 @@ const mix = [
     hint: 'Your bass as it came in.' },
   { id: 'wet', label: 'Echo', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of the playback heads is mixed in.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -3.5, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2401,8 +2606,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- echo/src/echo-pedal.js
-const __m27 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m28;
+const __m28 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m29;
 // echo-pedal.js — the Tape Echo's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2420,7 +2625,7 @@ return { PEDAL };
 })();
 
 // ---- rotary/src/rotary-params.js
-const __m30 = (() => {
+const __m31 = (() => {
 
 // rotary-params.js — the Rotary Speaker's controls. Values in SI units (rotation rates in hertz,
 // shown in rpm; angles in radians, shown in degrees). A horn and a drum spin in a cabinet past two
@@ -2468,7 +2673,7 @@ const cabinet = [
 ];
 
 const output = [
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0.4, unit: 'dB', decimals: 1,
     hint: 'Gain after the microphones, in decibels.' },
 ];
 
@@ -2493,8 +2698,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- rotary/src/rotary-pedal.js
-const __m29 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m30;
+const __m30 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m31;
 // rotary-pedal.js — the Rotary Speaker's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2512,7 +2717,7 @@ return { PEDAL };
 })();
 
 // ---- plate/src/plate-params.js
-const __m32 = (() => {
+const __m33 = (() => {
 
 // plate-params.js — the Plate Reverb's controls. Values in SI units. A steel plate, 2 m by 1 m and
 // half a millimetre thick, hung in a frame: a driver shakes it, two contact pickups listen.
@@ -2546,7 +2751,7 @@ const where = [
 const model = [
   { id: 'top', label: 'Modes up to', min: 2000, max: 8000, def: 5000, log: true, unit: 'Hz', decimals: 0,
     hint: 'The highest of the plate\'s modes that is played. The plate has about 1.3 modes in every hertz, so 5 kHz is about 6400 of them; above this it is silent here. Higher is brighter and costs more of the computer.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -3, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2569,8 +2774,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- plate/src/plate-pedal.js
-const __m31 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m32;
+const __m32 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m33;
 // plate-pedal.js — the Plate Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2588,7 +2793,7 @@ return { PEDAL };
 })();
 
 // ---- sympathetic/src/sympathetic-params.js
-const __m34 = (() => {
+const __m35 = (() => {
 
 // sympathetic-params.js — the Sympathetic Strings' controls. Values in SI units. A frame of steel
 // strings tuned to a scale, all across one bridge; a driver moves the bridge with your bass, and a
@@ -2627,7 +2832,7 @@ const tuning = [
     hint: 'The octave of the lowest string (E1 is the bass\'s open E). Octave 1 is the bass\'s own register, and long strings: 3.4 m for E1. Higher strings are shorter and ring to the bass\'s harmonics.' },
   { id: 'wire', label: 'Wire diameter', min: 0.2e-3, max: 1e-3, def: 0.3e-3, log: true, unit: 'mm', scale: 1000, decimals: 2,
     hint: 'The steel wire every string is made of. Each is tensioned to the same stress, 600 MPa, so a thicker wire is stiffer for its tension and its partials go sharp, more for the higher ones: Fletcher\'s inharmonicity B grows as the diameter squared.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -11.5, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2651,8 +2856,8 @@ return { KEYS, SCALES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- sympathetic/src/sympathetic-pedal.js
-const __m33 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m34;
+const __m34 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m35;
 // sympathetic-pedal.js — the Sympathetic Strings' descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2670,7 +2875,7 @@ return { PEDAL };
 })();
 
 // ---- blackhole/src/blackhole-params.js
-const __m36 = (() => {
+const __m37 = (() => {
 
 // blackhole-params.js — the Black Hole's controls. Values in SI units, and the hole's mass in suns:
 // your bass perturbs a spinning black hole, and you hear it ring in its quasinormal modes.
@@ -2691,7 +2896,7 @@ const merger = [
     hint: 'How lopsided the merger that made the hole was, the heavier over the lighter: it sets how strongly each mode rings (Kamaretsos et al.\'s fits). Equal masses leave the odd-m modes, (2,1) and (3,3), silent; a lopsided merger switches them on.' },
   { id: 'inclination', label: 'Inclination', min: 0, max: 90, def: 30, unit: '°', decimals: 0,
     hint: 'Where you hear the hole from: 0° along its spin axis (face-on), 90° in its equator (edge-on). The left channel is h₊ and the right h×: face-on the two are a quarter cycle apart, circularly polarised; edge-on h× of the (2,2) mode vanishes.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -15.1, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2715,8 +2920,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- blackhole/src/blackhole-pedal.js
-const __m35 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m36;
+const __m36 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m37;
 // blackhole-pedal.js — the Black Hole's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2734,7 +2939,7 @@ return { PEDAL };
 })();
 
 // ---- doppler/src/doppler-params.js
-const __m38 = (() => {
+const __m39 = (() => {
 
 // doppler-params.js — the Doppler's controls. Values in SI units: a source plays your bass as it
 // passes you on a straight road, again and again, and you hear it at its retarded time.
@@ -2757,7 +2962,7 @@ const air = [
     hint: 'The air\'s temperature, which sets the speed of sound: 331 m/s at 0 °C, 343 m/s at 20 °C. From the next pass.' },
   { id: 'mix', label: 'Fly-by', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0,
     hint: 'How much of the passing source is heard.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 12, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2782,8 +2987,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- doppler/src/doppler-pedal.js
-const __m37 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m38;
+const __m38 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m39;
 // doppler-pedal.js — the Doppler's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2807,22 +3012,23 @@ const { Tuner, OPEN_STRINGS } = __m2;
 const { INTERFACES, byInterface, fullScaleVolts } = __m3;
 const { midiPanel } = __m4;
 const { createLayout } = __m6;
-const { PEDALS, SECTIONS } = __m7;
-const { PEDAL: BUFFER } = __m8;
-const { PEDAL: PHUZZ } = __m11;
-const { PEDAL: WAH } = __m13;
-const { PEDAL: PREAMP } = __m15;
-const { PEDAL: OPTO } = __m17;
-const { PEDAL: CABINET } = __m19;
-const { PEDAL: ENVELOPE } = __m21;
-const { PEDAL: OCTAVE } = __m23;
-const { PEDAL: SPRING } = __m25;
-const { PEDAL: ECHO } = __m27;
-const { PEDAL: ROTARY } = __m29;
-const { PEDAL: PLATE } = __m31;
-const { PEDAL: SYMPATHETIC } = __m33;
-const { PEDAL: BLACKHOLE } = __m35;
-const { PEDAL: DOPPLER } = __m37;
+const { treadleFor } = __m7;
+const { PEDALS, SECTIONS } = __m8;
+const { PEDAL: BUFFER } = __m9;
+const { PEDAL: PHUZZ } = __m12;
+const { PEDAL: WAH } = __m14;
+const { PEDAL: PREAMP } = __m16;
+const { PEDAL: OPTO } = __m18;
+const { PEDAL: CABINET } = __m20;
+const { PEDAL: ENVELOPE } = __m22;
+const { PEDAL: OCTAVE } = __m24;
+const { PEDAL: SPRING } = __m26;
+const { PEDAL: ECHO } = __m28;
+const { PEDAL: ROTARY } = __m30;
+const { PEDAL: PLATE } = __m32;
+const { PEDAL: SYMPATHETIC } = __m34;
+const { PEDAL: BLACKHOLE } = __m36;
+const { PEDAL: DOPPLER } = __m38;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -2832,6 +3038,7 @@ const { PEDAL: DOPPLER } = __m37;
 // The plugins show the same window for their one pedal (native/plugin/editor.h): describe() says
 // host 'plugin', and the window leaves out what the host does (the audio, the pedal menu, MIDI),
 // takes the parameters as the plugin's numbers, and follows the host's automation in poll().
+
 
 
 
@@ -3011,6 +3218,9 @@ async function main(info, carry = {}) {
   }
 
   // ---- the pedal's face
+  // its presets on the pedal itself, in a window in the enclosure, as the site's pages have them
+  const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
+    h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)), h('option', { value: '__defaults' }, 'Default settings'));
   const led = h('span', { class: 'led', 'aria-hidden': 'true' });
   const foot = h('button', { class: 'footswitch', type: 'button', onclick: () => setBypass(!audio.bypass) }, h('span', { class: 'sr' }, 'Engage'));
   const muteBtn = h('button', { type: 'button', class: 'ghost mute', 'aria-pressed': 'false', title: 'Silence the output while you tune, as a tuner pedal does; the tuner still hears the input', onclick: () => setMute(!muted) }, 'Mute');
@@ -3019,6 +3229,7 @@ async function main(info, carry = {}) {
   const face = h('section', { class: 'pedal', 'aria-label': `${PEDAL.name} pedal` },
     h('div', { class: 'jacks' }, meterIn.el, meterOut.el), knobs,
     h('div', { class: 'name' }, h('span', {}, PEDAL.name), h('small', {}, PEDAL.description ?? '')),
+    h('div', { class: 'preset-window' }, presetSel),
     h('div', { class: 'switchrow' }, led, foot));
 
   // ---- the tuner (as the page's: shared/tuner.js smooths the program's readings)
@@ -3034,8 +3245,6 @@ async function main(info, carry = {}) {
     h('div', { class: 't-body' }, h('div', { class: 't-name', role: 'status' }, tNote, tOct), scale, h('div', { class: 't-read' }, tCents, tHz, tString)));
 
   // ---- Controls
-  const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
-    h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)), h('option', { value: '__defaults' }, 'Default settings'));
   const rows = [];
   const groupList = [];
   for (const g of PEDAL.groups) {
@@ -3084,9 +3293,8 @@ async function main(info, carry = {}) {
     views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }],
     // a plugin's audio and MIDI are the host's (its MIDI pedals are mapped in the plugin: the FC-300's numbers)
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
-    presets: presetSel,
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
-  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
+  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(p.face === 'treadle' ? treadleFor(p, () => P[p.id], (v) => set(p.id, v), h) : knob(p));
 
   // ---- state
   function refresh() {

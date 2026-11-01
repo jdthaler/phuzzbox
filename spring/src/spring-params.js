@@ -24,7 +24,7 @@ const mix = [
     hint: 'Your bass as it came in.' },
   { id: 'reverb', label: 'Reverb', min: 0, max: 1, def: 0.3, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of what the pickup bead hears is mixed in: the recovery amplifier\'s gain. At 100 % the first echo of a low note comes out as loud as the note went in.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -0.6, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 

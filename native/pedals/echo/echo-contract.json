@@ -12,7 +12,7 @@
   {"id":"flutter","kind":"continuous","min":0,"max":0.00002,"step":0,"log":false,"def":0.000003},
   {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
   {"id":"wet","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.5},
-  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":-3.5}
  ],
  "presets": [
   {"name":"Slapback","values":{"speed":0.38,"heads":"1","repeats":0,"record":0,"spacing":0.000003,"gap":0.000005,"flutter":0.000003,"dry":1,"wet":0.6}},

@@ -2,25 +2,26 @@
 // shared/layout.js): the page fills the screen, with nothing to scroll but the panels themselves.
 //
 //   header    PhuzzBox, the pedal's name (the menu of pedals), How it works; audio on the right
-//   rack      the pedal itself, on the left, the height of the page (a toggle in the views' bar),
-//             and under it the views that belong beside the pedal (rack: true; the tuner)
+//   rack      the pedal itself, on the left, the height of the page, always there; under it a
+//             toggle for each view that belongs beside the pedal (rack: true: the tuner, the
+//             metronome), and those turned on
 //   views     a bar, then the views turned on, sharing the room in rows. The bar has a toggle for
-//             each (the pedal, the tuner and the page's views), then Discover | Perform and a
-//             button that folds the views away
-//   controls  a bar, then the Controls panel: the pedal's groups of parameters, the rig (the
-//             interface and Full scale) and the MIDI pedals, side by side. The bar has a toggle
-//             for each group, the presets and a fold button; its top edge is a handle that shares
-//             the height between the views and the controls
-//   dock      the test bass, pinned to the bottom, shown while it is the input
+//             each of the page's views, then Discover | Perform and a button that folds the views
+//             away
+//   controls  a bar, then the Controls panel: the pedal's groups of parameters and the MIDI
+//             pedals, side by side. The bar has a toggle for each group and a fold button; its top
+//             edge is a handle that shares the height between the views and the controls
+//   dock      the rig (the input and the output, the rig's units or the test bass), pinned to the
+//             bottom
 //
 // Perform is for playing: the views turned on fill the room with no captions and no text drawn
 // on their canvases, the Controls panel folded away until More controls. A phone has no room to
 // share: there the page scrolls, the rack and the views above the controls, the dock stuck to the
 // bottom. What is turned on is remembered per pedal; the mode and the share for every pedal.
 //
-//   const layout = createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share })
+//   const layout = createLayout({ id, h, store, app, header, rack, views, groups, dock, share })
 //   views  = [{ key, name, card, on, rack }]   (on: shown at first; rack: under the pedal, in the
-//            rack, rather than in the views' stage; its toggle is in the views' bar all the same)
+//            rack, rather than in the views' stage, its toggle there too)
 //   groups = [{ key, name, el }]
 //   share  = the views' share of the height at first (0.6); store = { get(k, d), set(k, v) }
 //   returns { showViews(names | null), viewNames(), tourSlot, arrange() }
@@ -30,7 +31,7 @@ const CHEVRON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 1
 const SHARE = 0.6; // the views' usual share of the room the views and the controls have
 const phoneQuery = matchMedia('(max-width: 600px), (max-width: 1050px) and (max-height: 500px)'); // as layout.css
 
-export function createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share: first = SHARE }) {
+export function createLayout({ id, h, store, app, header, rack, views, groups, dock, share: first = SHARE }) {
   const body = document.body;
   body.classList.add('one-screen');
   const KEY = `phuzzbox.${id}.layout`;
@@ -63,26 +64,28 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
     return b;
   };
 
-  // ---- the views: the rack (the pedal) first, then the cards in a stage
+  // ---- the views: the rack (the pedal, always there) first, then the cards in a stage
   const viewsEl = h('section', { class: 'views', id: 'views', 'aria-label': 'Views' });
   const stage = h('div', { class: 'view-grid' });
-  const noView = h('p', { class: 'no-view', hidden: true }, 'Every view is off: turn one on above.');
-  const staged = views.filter((v) => !v.rack);
+  const staged = views.filter((v) => !v.rack), racked = views.filter((v) => v.rack);
+  const noView = h('p', { class: 'no-view', hidden: true }, staged.length ? 'Every view is off: turn one on above.' : 'No views here: the tuner is under the pedal.');
   stage.append(...staged.map((v) => v.card), noView);
   viewsEl.append(stage);
-  // the rack's views go just under the pedal's face (the Pedalboard's chain stays below them)
+  // the rack's views go just under the pedal's face, after their toggles (the Pedalboard's chain
+  // stays below them)
+  const rackRow = h('div', { class: 'toggles rack-toggles', role: 'group', 'aria-label': 'Beside the pedal' });
   const face = rack.querySelector('.pedal') ?? rack.lastElementChild;
-  if (face) face.after(...views.filter((v) => v.rack).map((v) => v.card)); else rack.append(...views.filter((v) => v.rack).map((v) => v.card));
-  const pedalView = { key: 'pedal', name: 'Pedal', card: rack, on: true };
-  const all = [pedalView, ...views];
-  for (const v of all) v.shown = () => (touring && v !== pedalView ? touring.has(v.name.toLowerCase()) : prefs.views[v.key] ?? v.on);
+  const under = [...(racked.length ? [rackRow] : []), ...racked.map((v) => v.card)];
+  if (face) face.after(...under); else rack.append(...under);
+  const all = [...views];
+  for (const v of all) v.shown = () => (touring ? touring.has(v.name.toLowerCase()) : prefs.views[v.key] ?? v.on);
   const vbar = bar('views', 'Views', viewsEl);
   for (const v of all) {
-    v.toggle = toggle(v.name, 'Show or hide this view', v.shown(), () => {
-      if (touring && v !== pedalView) { const n = v.name.toLowerCase(); if (!touring.delete(n)) touring.add(n); } else { prefs.views[v.key] = !v.shown(); save(); }
+    v.toggle = toggle(v.name, v.rack ? `Show or hide the ${v.name.toLowerCase()} under the pedal` : 'Show or hide this view', v.shown(), () => {
+      if (touring) { const n = v.name.toLowerCase(); if (!touring.delete(n)) touring.add(n); } else { prefs.views[v.key] = !v.shown(); save(); }
       apply();
     });
-    vbar.row.append(v.toggle);
+    (v.rack ? rackRow : vbar.row).append(v.toggle);
   }
   // Discover | Perform
   const modeBtns = ['discover', 'perform'].map((m) => toggle(m === 'discover' ? 'Discover' : 'Perform',
@@ -101,7 +104,6 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
     g.toggle = toggle(g.name, 'Show or hide these controls', g.shown(), () => { prefs.groups[g.key] = !g.shown(); save(); apply(); });
     cbar.row.append(g.toggle);
   }
-  if (presets) cbar.tools.append(presets);
 
   // the page: the header, the work (the rack beside the views and the controls), the dock
   const work = h('div', { class: 'work' }, rack, vbar.el, viewsEl, cbar.el, controlsEl);
@@ -214,7 +216,6 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
     body.classList.toggle('touring', !!touring);
     for (const b of modeBtns) b.setAttribute('aria-pressed', String(b.textContent.toLowerCase() === mode));
     for (const v of all) { v.card.hidden = !v.shown(); v.toggle.setAttribute('aria-pressed', String(v.shown())); }
-    body.classList.toggle('no-rack', !pedalView.shown());
     for (const g of groups) { g.el.hidden = !g.shown(); g.toggle.setAttribute('aria-pressed', String(g.shown())); }
     noGroup.hidden = groups.some((g) => g.shown());
     const v = share();
@@ -240,7 +241,7 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
   apply();
 
   // a tour (shared/tour.js) shows only the views it is about (by title, any case), for a while;
-  // the pedal stays
+  // the pedal always stays
   const tourSlot = h('div', { class: 'tour-slot' });
   dock.prepend(tourSlot);
   return {

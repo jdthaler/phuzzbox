@@ -35,7 +35,7 @@ const tuning = [
     hint: 'The octave of the lowest string (E1 is the bass\'s open E). Octave 1 is the bass\'s own register, and long strings: 3.4 m for E1. Higher strings are shorter and ring to the bass\'s harmonics.' },
   { id: 'wire', label: 'Wire diameter', min: 0.2e-3, max: 1e-3, def: 0.3e-3, log: true, unit: 'mm', scale: 1000, decimals: 2,
     hint: 'The steel wire every string is made of. Each is tensioned to the same stress, 600 MPa, so a thicker wire is stiffer for its tension and its partials go sharp, more for the higher ones: Fletcher\'s inharmonicity B grows as the diameter squared.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -11.5, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 

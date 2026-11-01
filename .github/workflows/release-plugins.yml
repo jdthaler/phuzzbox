@@ -1,0 +1,110 @@
+name: release-plugins
+
+# Publishes the plugins and the app as a GitHub Release, which the site downloads from
+# (releases/latest/download/<archive>, shared/plugins.js), as Forte's does. It builds nothing: it
+# takes the archives a green `native` run on live packed (its release-<system> artifacts,
+# tools/package-plugins.sh), and creates the tag itself.
+#
+# It runs by itself after every green `native` run on live, and publishes only when what the
+# plugins are built from changed since the latest release (tools/plugin-release.mjs --manifest:
+# PhuzzBox's and each pedal's version, and the native/ tree), so a new port reaches the downloads
+# when main is released to live (CLAUDE.md). It can also be started from the Actions tab on live,
+# which always publishes.
+
+on:
+  workflow_run:
+    workflows: [native]
+    types: [completed]
+    branches: [live]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag for the release (leave empty for plugins-v<PhuzzBox version>)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: release-plugins
+
+jobs:
+  release:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Release from live only
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/live'
+        run: |
+          echo "::error::Start this workflow on live (it releases what live's native run built)."
+          exit 1
+
+      - name: Anything new since the latest release?
+        run: |
+          node tools/plugin-release.mjs --manifest > manifest.txt
+          cat manifest.txt
+          if [ "${{ github.event_name }}" = workflow_run ] &&
+             gh release download --pattern manifest.txt --output latest-manifest.txt 2>/dev/null &&
+             cmp -s manifest.txt latest-manifest.txt; then
+            echo "::notice::The latest release already has these plugins; nothing to publish."
+            echo "SKIP=1" >> "$GITHUB_ENV"
+          fi
+
+      - name: The tag is new
+        if: env.SKIP != '1'
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          taken() { gh release view "$1" >/dev/null 2>&1 || git ls-remote --exit-code --tags origin "refs/tags/$1" >/dev/null; }
+          tag="$INPUT_TAG"
+          if [ -n "$tag" ]; then
+            [[ "$tag" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "::error::Tags are letters, digits, dots, dashes and underscores."; exit 1; }
+            ! taken "$tag" || { echo "::error::$tag already exists. Give another tag."; exit 1; }
+          else
+            # plugins-v<PhuzzBox version>, or -2, -3… when a pedal changed without PhuzzBox's version
+            base=$(node tools/plugin-release.mjs --tag); tag=$base; n=1
+            while taken "$tag"; do n=$((n + 1)); tag="$base-$n"; done
+          fi
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+
+      - name: The archives from the native run
+        if: env.SKIP != '1'
+        run: |
+          run="${{ github.event.workflow_run.id }}"
+          if [ -z "$run" ]; then
+            run=$(gh run list --workflow native.yml --branch live --commit "$SHA" --event push --status success \
+                    --json databaseId --jq '.[0].databaseId')
+          fi
+          if [ -z "$run" ]; then
+            echo "::error::No successful native run for $SHA on live yet. Wait for it to finish green, then start this again."
+            exit 1
+          fi
+          echo "native run $run"
+          gh run download "$run" --pattern 'release-*' --dir dl
+          mkdir dist && find dl -type f -exec mv {} dist/ \;
+          ls -la dist
+          for f in $(node tools/plugin-release.mjs --files); do
+            [ -f "dist/$f" ] || { echo "::error::$f is missing from native run $run"; exit 1; }
+          done
+
+      - name: Release
+        if: env.SKIP != '1'
+        run: |
+          node tools/plugin-release.mjs > notes.md
+          cp manifest.txt dist/
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+          gh release create "$TAG" dist/* --target "$SHA" --title "PhuzzBox plugins ($TAG)" --notes-file notes.md --latest

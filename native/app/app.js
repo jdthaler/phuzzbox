@@ -13,6 +13,7 @@ import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
 import { midiPanel } from '../../shared/midi-panel.js';
 import { createLayout } from '../../shared/layout.js';
+import { treadleFor } from '../../shared/treadle.js';
 import { PEDALS, SECTIONS } from '../../shared/registry.js';
 // every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
 import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
@@ -186,6 +187,9 @@ async function main(info, carry = {}) {
   }
 
   // ---- the pedal's face
+  // its presets on the pedal itself, in a window in the enclosure, as the site's pages have them
+  const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
+    h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)), h('option', { value: '__defaults' }, 'Default settings'));
   const led = h('span', { class: 'led', 'aria-hidden': 'true' });
   const foot = h('button', { class: 'footswitch', type: 'button', onclick: () => setBypass(!audio.bypass) }, h('span', { class: 'sr' }, 'Engage'));
   const muteBtn = h('button', { type: 'button', class: 'ghost mute', 'aria-pressed': 'false', title: 'Silence the output while you tune, as a tuner pedal does; the tuner still hears the input', onclick: () => setMute(!muted) }, 'Mute');
@@ -194,6 +198,7 @@ async function main(info, carry = {}) {
   const face = h('section', { class: 'pedal', 'aria-label': `${PEDAL.name} pedal` },
     h('div', { class: 'jacks' }, meterIn.el, meterOut.el), knobs,
     h('div', { class: 'name' }, h('span', {}, PEDAL.name), h('small', {}, PEDAL.description ?? '')),
+    h('div', { class: 'preset-window' }, presetSel),
     h('div', { class: 'switchrow' }, led, foot));
 
   // ---- the tuner (as the page's: shared/tuner.js smooths the program's readings)
@@ -209,8 +214,6 @@ async function main(info, carry = {}) {
     h('div', { class: 't-body' }, h('div', { class: 't-name', role: 'status' }, tNote, tOct), scale, h('div', { class: 't-read' }, tCents, tHz, tString)));
 
   // ---- Controls
-  const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
-    h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)), h('option', { value: '__defaults' }, 'Default settings'));
   const rows = [];
   const groupList = [];
   for (const g of PEDAL.groups) {
@@ -259,9 +262,8 @@ async function main(info, carry = {}) {
     views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }],
     // a plugin's audio and MIDI are the host's (its MIDI pedals are mapped in the plugin: the FC-300's numbers)
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
-    presets: presetSel,
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
-  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
+  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(p.face === 'treadle' ? treadleFor(p, () => P[p.id], (v) => set(p.id, v), h) : knob(p));
 
   // ---- state
   function refresh() {

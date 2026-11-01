@@ -14,10 +14,12 @@
 // { type: 'slide', string, fret, seconds }, { type: 'lift', string } (the finger off: it mutes),
 // { type: 'fretless', on } (slides glide rather than step), { type: 'fullScale', volts }, { type: 'note', key, velocity }, { type: 'noteOff', key },
 // { type: 'quality', level }, { type: 'mute', on } (silence the output, as a tuner pedal does;
-// the tuner still hears the input), { type: 'measure' } (the loopback test: below).
+// the tuner still hears the input), { type: 'measure' } (the loopback test: below), { type: 'rig', R }
+// (the rig's units, shared/rig.js: they work on the interface's input only, before the pedal).
 //
 // Outputs: 0 is the pedal (stereo, full-scale units, for the speakers); 1 is the input in volts
-// (mono, before the pedal and the mute, for the tuner), from the interface or the test bass alike.
+// (mono, after the rig and before the pedal and the mute, for the tuner and the views), from the
+// interface or the test bass alike.
 // Messages out: { type: 'levels', inPeak, outPeak } in volts (about 20 a second), { type: 'stats',
 // load, latency }, { type: 'measured', ms } (null when nothing came back), { type: 'error', message },
 // { type: 'pedal', messages: [{ type, values }] } (what the pedal posted for its views: phuzzbox::Message).
@@ -29,6 +31,7 @@
 
 import { wasmEffect } from './wasm.js';
 import { TestBass } from './testbass.js';
+import { Rig } from './rig.js';
 
 const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
 const FADE = 0.01; // s: bypass switches over this long, without a click
@@ -49,6 +52,7 @@ export function registerEffect(make) {
       TestBass.load(o.bass);
       this.effect = make(o, sampleRate);
       this.bass = new TestBass(sampleRate);
+      this.rig = new Rig(sampleRate);
       this.source = 'input';
       this.fullScale = 1;
       this.wet = 1; // 1 engaged, 0 bypassed, moving toward target
@@ -72,10 +76,12 @@ export function registerEffect(make) {
           case 'instrument': this.bass.use(m.which); break;
           case 'pluck': this.bass.pluck(m.string, m.fret, m.velocity ?? 0.7); break;
           case 'slide': this.bass.slide(m.string, m.fret, m.seconds ?? 0.15); break;
+          case 'bend': this.bass.bend(m.string, m.across); break;
           case 'lift': this.bass.mute(m.string); break;
           case 'fretless': this.bass.set('fretless', m.on ? 1 : 0); break;
           case 'quality': this.effect.setQuality(m.level); break;
           case 'mute': this.mute = !!m.on; break;
+          case 'rig': this.rig.set(m.R); break;
           case 'measure': this.measure = { t: 0, floor: 0, sentAt: -1 }; break;
           default: this.effect.handle?.(m);
         }
@@ -114,6 +120,7 @@ export function registerEffect(make) {
       else {
         const inp = inputs[0]?.[0];
         if (inp) for (let i = 0; i < n; i++) v[i] = inp[i] * this.fullScale; else v.fill(0);
+        this.rig.process(v, n);
       }
       outputs[1]?.[0]?.set(v);
       if (!this.effect.process(v, L, R, n)) {

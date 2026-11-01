@@ -77,7 +77,7 @@ Then either:
   `Z` row is the low E, then the `A` row, the `Q` row and the number row, each from the open
   string to the ninth fret; with the test guitar, Shift moves the rows up to the D, G, B and high E
   strings. Drag along a string on the fretboard, or hold a key and press another on the same row,
-  to slide between notes; **Fretless** (on the guitar, **Slide bar**) makes a slide glide rather
+  to slide between notes, and drag across a string to bend it; **Fretless** (on the guitar, **Slide bar**) makes a slide glide rather
   than step fret by fret. **Play a riff** loops a short line. The fretboard shows only while the test bass is the input, and the letter keys play it only then.
 
 `Space` is the footswitch. **Full scale** (in Controls, under Rig) says how many volts at the input jack make
@@ -147,7 +147,9 @@ A MIDI foot controller works in the app as on the pages: the app listens to ever
 (expression 1 the **Volume**, expression 2 the Wah's rocker, number pedals 1 and 2 the
 footswitch and the tuner's mute), each pedal keeping its own mappings.
 
-CI builds it on every pull request (the `native` workflow's `PhuzzBox-app-macos-15` artifact).
+Download it, or the plugins, from the Plugins tab of How it works on any page (`plugins/README.md`
+says how to install them); CI builds it on every pull request too (the `native` workflow's
+`PhuzzBox-app-macos-15` artifact).
 The app isn't notarised, so after unzipping it, clear the quarantine flag macOS puts on downloads
 (`xattr -dr com.apple.quarantine PhuzzBox.app`), then open it. macOS asks once for the
 microphone: that permission covers the interface's inputs too.

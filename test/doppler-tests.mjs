@@ -13,7 +13,8 @@ import { EAR, sound, retarded, field, shift, coneLag } from './doppler-circuit.m
 const { PEDAL, Effect } = await loadPedal('doppler');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), level: 0 };
 const W = (over) => ({ ...D, ...over });
 const cents = (r) => 1200 * Math.log2(r);
 

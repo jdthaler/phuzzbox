@@ -39,8 +39,11 @@ resistors, capacitors, inductors, sources, diodes and transistors, solved by the
 with Newton on the junctions only; `response(f)` gives its small-signal response for the views and
 tests. The Wah (`native/pedals/wah/wah-model.cpp`) is the example.
 
-The page lays itself out (`shared/layout.js`, after Forte's): the pedal at the left, a Views bar
-with a toggle for each view, a Controls bar with a toggle for each group, the test bass below. A
+The page lays itself out (`shared/layout.js`, after Forte's): the pedal at the left, always there,
+with its presets in a window on the enclosure and the toggles for the tuner and the metronome under
+it; a Views bar with a toggle for each view, a Controls bar with a toggle for each group, and the
+rig at the foot (`shared/rig-panel.js`, `rig/README.md`): the input, the output, the master volume,
+and the fretboard of the test bass or, with your interface, the rig's units before the pedal. A
 view's `title` names its toggle and its `caption` waits behind ⓘ; `perform: true` shows it at first
 (by default the first two are). A view draws to fill its card, whatever shape it is given, and
 redraws on resize. Every page has a Scope and a Spectrum (`shared/views.js`): the shell adds them
@@ -186,6 +189,15 @@ A plain Node script printing `ok`/`FAIL` lines (`test/harness.mjs`). Load the ef
 against independent physics; the engine against the model; each hint; identity or unity where
 the physics says so; silence, NaN recovery, latency and tail; presets in range; CPU (named
 `CPU: …`, skipped on CI).
+
+**Level.** Every pedal ends in a knob that sets its output without changing anything else (a
+Level in decibels, or the output pot its circuit has: the Phuzz's Volume, the Tube Preamp's
+Master, the Opto's Gain, the Cabinet's microphone). Its default makes the pedal, at its defaults,
+as loud engaged as bypassed on the test bass's riff, so the footswitch doesn't jump:
+`node tools/loudness.mjs` measures it (BS.1770 integrated loudness) and prints the default that
+would, and `test/level-tests.mjs` keeps every pedal within 1 dB (a new pedal names its knob in
+the tool's `KNOB` if it isn't `level`). A pedal's own tests set that knob to unity where they
+compare it with its model.
 
 ## Versions
 

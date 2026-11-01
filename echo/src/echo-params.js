@@ -39,7 +39,7 @@ const mix = [
     hint: 'Your bass as it came in.' },
   { id: 'wet', label: 'Echo', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of the playback heads is mixed in.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -3.5, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 

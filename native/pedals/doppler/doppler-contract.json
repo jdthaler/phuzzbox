@@ -7,7 +7,7 @@
   {"id":"listener","kind":"continuous","min":-50,"max":50,"step":0,"log":false,"def":0},
   {"id":"temp","kind":"continuous","min":-20,"max":40,"step":0,"log":false,"def":20},
   {"id":"mix","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
-  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":12}
  ],
  "presets": [
   {"name":"Car at 90 km/h","values":{"speed":25,"distance":4,"period":4,"listener":0,"dry":0,"mix":1}},
