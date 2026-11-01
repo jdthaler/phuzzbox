@@ -14,7 +14,7 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | ✅ | [Buffer](buffer/) | the cable and input your bass plugs into | the pickup's coil, the cable's capacitance and the input's resistance as a circuit: hear the pickup resonance move as the cable gets longer and the input hungrier |
 | ✅ | [Phuzz](phuzz/) | two-transistor germanium fuzz (1966) | Ebers–Moll transistors that drift with temperature, a sagging battery, an input that loads the pickup; solved by the nodal DK method at 4× oversampling |
 | ✅ | [Wah](wah/) | the inductor wah of the late 1960s, swept low for bass | two Ebers–Moll transistors and a 500 mH coil, solved node by node; a MIDI expression pedal rocks it |
-| 🛠 | Tube Preamp | all-tube bass amp | triodes with grid conduction, a passive tone stack, an output transformer that saturates at the bottom first |
+| ✅ | [Tube Preamp](preamp/) | the 1959 Fender Bassman's preamp | three 12AX7 triodes (Dempwolf–Zölzer, with grid conduction), the passive tone stack and its supply rail, solved node by node at up to 4× oversampling |
 | 🛠 | Opto Compressor | electro-optical leveler | an electroluminescent panel and a photocell with memory |
 | 🛠 | Cabinet | 8×10 and 1×15 cabinets | a loudspeaker from its Thiele–Small parameters in a sealed or ported box |
 

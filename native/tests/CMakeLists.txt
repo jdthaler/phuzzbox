@@ -8,9 +8,9 @@ if (EMSCRIPTEN) # the repository's package.json makes .js an ES module; Emscript
   target_link_options(phuzz_native_tests PRIVATE -sSTACK_OVERFLOW_CHECK=2)
 endif()
 
-# The circuit solver against closed forms, the Wah's engine, and the MIDI map (phuzzbox/midi.h).
+# The circuit solver against closed forms, the Wah's and Tube Preamp's engines, and the MIDI map (phuzzbox/midi.h).
 add_executable(phuzz_circuit_tests circuit-tests.cpp)
-target_link_libraries(phuzz_circuit_tests PRIVATE phuzz_wah)
+target_link_libraries(phuzz_circuit_tests PRIVATE phuzz_wah phuzz_preamp)
 add_test(NAME circuit COMMAND phuzz_circuit_tests)
 if (EMSCRIPTEN)
   set_target_properties(phuzz_circuit_tests PROPERTIES SUFFIX ".cjs")
