@@ -1,13 +1,16 @@
 // markdown.js — a small Markdown renderer, so each instrument page can show its
 // README (shared/notes.js). It covers what the READMEs use: headings,
 // paragraphs, lists (nested, with continuation paragraphs), pipe tables,
-// fenced code, inline code, bold, italics and links. A paragraph indented by
-// two or more spaces is a display equation and is kept exactly as written.
+// fenced code, inline code, bold, italics, links, and figures: an image alone in
+// its paragraph, ![caption](schematics/x.svg), becomes a figure with its caption.
+// A paragraph indented by two or more spaces is a display equation and is kept
+// exactly as written.
 // All text is escaped; no HTML in the source passes through.
 //
-//   renderMarkdown(src, { base, skip, idPrefix })
+//   renderMarkdown(src, { base, assets, skip, idPrefix })
 //     → { title, html, sections: [{ id, text }] }
 //   base      URL that relative links resolve against (e.g. the file's folder on GitHub)
+//   assets    URL that figures resolve against (the file's folder on the site); base if not given
 //   skip      titles of ## sections to leave out (e.g. ['Files'])
 //   idPrefix  prefix for heading ids, so they cannot clash with the page's own
 //   title is the first # heading (not included in html); sections are the ## headings.
@@ -18,6 +21,7 @@ const indentOf = (l) => l.match(/^ */)[0].length;
 const blank = (l) => !l.trim();
 const HEADING = /^ {0,3}(#{1,6})\s+(.*?)(?:\s+#+)?\s*$/;
 const FENCE = /^ {0,3}```/;
+const FIGURE = /^ {0,3}!\[([^\]]*)\]\(\s*<?([^()\s<>]+)>?\s*\)\s*$/;
 const LIST = /^( {0,3})([*+-]|\d{1,9}[.)])( +|$)/;
 const isTableAt = (lines, i) => /^\s*\|/.test(lines[i]) && i + 1 < lines.length && /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(lines[i + 1]);
 // lines that end a paragraph (an ordered list interrupts one only if it starts at 1)
@@ -26,8 +30,8 @@ const interrupts = (lines, i) => {
   return HEADING.test(l) || FENCE.test(l) || isTableAt(lines, i) || (!!m && m[3] !== '' && (!/\d/.test(m[2]) || /^1\D/.test(m[2])));
 };
 
-export function renderMarkdown(src, { base = '', skip = [], idPrefix = '' } = {}) {
-  const ctx = { base, idPrefix, ids: new Set(), title: '', sections: [], held: [] };
+export function renderMarkdown(src, { base = '', assets = '', skip = [], idPrefix = '' } = {}) {
+  const ctx = { base, assets: assets || base, idPrefix, ids: new Set(), title: '', sections: [], held: [] };
   const lines = dropSections(src.replace(/\r\n?/g, '\n').replace(/\t/g, '    ').split('\n'), skip);
   const html = blocks(lines, ctx);
   return { title: ctx.title, html, sections: ctx.sections };
@@ -63,6 +67,7 @@ function blocks(lines, ctx) {
       continue;
     }
     if (isTableAt(lines, i)) { i = table(lines, i, out, ctx); continue; }
+    if ((m = line.match(FIGURE)) && (i + 1 >= lines.length || blank(lines[i + 1]))) { out.push(figure(m[1], m[2], ctx)); i++; continue; }
     if ((m = line.match(LIST)) && m[3] !== '') { i = list(lines, i, out, ctx); continue; }
     const para = [line];
     for (i++; i < lines.length && !blank(lines[i]) && !interrupts(lines, i); i++) para.push(lines[i]);
@@ -70,6 +75,14 @@ function blocks(lines, ctx) {
     else out.push(`<p>${inline(para.map((l) => l.trim()).join('\n'), ctx)}</p>`);
   }
   return out.join('\n');
+}
+
+// A figure: an image on the site (http(s) or relative to ctx.assets only), captioned by its alt text.
+function figure(alt, url, ctx) {
+  let src;
+  try { src = new URL(url, ctx.assets || undefined).href; } catch { return `<p>${inline(alt, ctx)}</p>`; }
+  if (!/^https?:/.test(src)) return `<p>${inline(alt, ctx)}</p>`;
+  return `<figure class="pz-figure"><img src="${esc(src)}" alt="${esc(alt.replace(/[*_`]/g, ''))}" loading="lazy"><figcaption>${inline(alt, ctx)}</figcaption></figure>`;
 }
 
 function dedent(lines) {

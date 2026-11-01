@@ -22,6 +22,9 @@ Read first:
   `native/app/app.js` and the site's modules it imports; `test/native-tests.mjs` fails when stale.
 - `node tools/gen-native-params.mjs` rewrites each pedal's C++ parameter tables from its
   descriptor (after changing parameters or presets); `test/native-tests.mjs` fails when stale.
+- `node tools/gen-schematics.mjs` rewrites each pedal's circuit diagrams (`<slug>/schematics/*.svg`) from
+  its `src/<slug>-schematics.js` (drawn with `shared/schematic.js`); `test/schematics-tests.mjs` fails when stale.
+  A README or tour shows one as a figure: an image alone in its paragraph, `![caption](schematics/x.svg)`.
 - `cd native && cmake --preset wasm && cmake --build --preset wasm` rebuilds the WebAssembly
   (Emscripten 6.0.10, `native/emscripten-version`). Commit the `.wasm` files it writes.
 - `cd native && cmake --preset linux && cmake --build --preset linux && ctest --preset linux`

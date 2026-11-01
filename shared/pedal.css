@@ -452,3 +452,7 @@ body.perform .controls-bar { cursor: default; }
   body.one-screen .groups { grid-template-columns: minmax(0, 1fr); }
   .bar-tools .presets { width: 150px; }
 }
+/* figures in How it works and the tours: a circuit diagram (shared/schematic.js) and its caption */
+.pz-figure { margin: 16px 0; }
+.pz-figure img { display: block; max-width: 100%; height: auto; }
+.pz-figure figcaption { margin-top: 6px; color: var(--ink-2); font-size: 13px; line-height: 1.4; }
