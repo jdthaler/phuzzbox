@@ -14,8 +14,10 @@ import { PEDAL as ECHO } from '../../echo/src/echo-pedal.js';
 import { PEDAL as ROTARY } from '../../rotary/src/rotary-pedal.js';
 import { PEDAL as PLATE } from '../../plate/src/plate-pedal.js';
 import { PEDAL as SYMPATHETIC } from '../../sympathetic/src/sympathetic-pedal.js';
+import { PEDAL as BLACKHOLE } from '../../blackhole/src/blackhole-pedal.js';
+import { PEDAL as DOPPLER } from '../../doppler/src/doppler-pedal.js';
 
-export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC].map((d) => [d.id, d]));
+export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER].map((d) => [d.id, d]));
 
 // each pedal's enclosure and the ink printed on it, as its own page has them (<id>/style.css)
 export const ENCLOSURES = {
@@ -24,4 +26,6 @@ export const ENCLOSURES = {
   envelope: ['#4b2f6e', '#f1e9fb'], octave: ['#1f4d47', '#e6f4f1'], spring: ['#3a3f47', '#eef1f5'],
   echo: ['#5a4632', '#f6eee2'], rotary: ['#6b3a1e', '#f4e7d6'],
   plate: ['#c9c6bd', '#1d1f22'], sympathetic: ['#7a5a1f', '#f7efdc'],
+  blackhole: ['#0d0d12', '#f3d9a4'],
+  doppler: ['#1f4e5f', '#e9f3f5'],
 };
