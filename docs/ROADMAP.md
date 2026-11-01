@@ -34,8 +34,11 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    cone, box air, port air as four coupled equations, by RK4), sealed or ported, 1 × 15 to 8 × 10,
    with the force factor and suspension nonlinear in the cone's travel, heard at 1 m in half
    space; tested against Small's closed box, the Helmholtz tuning, Small's reference efficiency
-   and an independent complex solve (`test/cabinet-circuit.mjs`). Next for it: Wah Auto mode (an
-   envelope follower on the rocker), which Jesse asked for, then the queue.
+   and an independent complex solve (`test/cabinet-circuit.mjs`).
+   The Wah's **Auto** mode landed 2026-11-01, at Jesse's ask: an envelope follower (a capacitor
+   charged through an attack resistor by an ideal-diode rectifier, discharged through a decay
+   resistor) rocks the wah from where the Rocker rests, up or down; tested against the follower's
+   closed forms and an RK4 integration. A separate envelope-swept filter pedal is in the queue.
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.
