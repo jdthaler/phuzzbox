@@ -317,6 +317,9 @@ header.top .volume .fader { width: 110px; height: 24px; }
 .menu-list a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
 .menu-list small { display: block; color: var(--ink-2); font-size: 12px; }
 .menu-list .menu-home { border-top: 1px solid var(--line); border-radius: 0 0 7px 7px; margin-top: 4px; }
+.menu-list .menu-foot { padding: 6px 10px 2px; font-size: 11.5px; color: var(--ink-2); }
+.menu-list .menu-foot a { display: inline; padding: 0; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.menu-list .menu-foot a:hover { background: none; color: var(--ink); }
 
 /* the work: the pedal at the left, the views and the controls sharing the height beside it */
 body.one-screen .work {

@@ -22,7 +22,7 @@ import { TESTBASS_URL, RIFF, RIFF_BPM } from './testbass.js';
 import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
 import { howItWorks } from './notes.js';
 import { scopeView, spectrumView } from './views.js';
-import { byId, PEDALS, PHUZZBOX_VERSION } from './registry.js';
+import { byId, PEDALS, PHUZZBOX_VERSION, SOURCE } from './registry.js';
 import { createLayout } from './layout.js';
 import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
@@ -98,7 +98,9 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     h('summary', { title: 'Choose a pedal' }, h('h1', {}, PEDAL.name), h('span', { class: 'caret', 'aria-hidden': 'true' }, '▾')),
     h('div', { class: 'menu-list' },
       ...PEDALS.filter((p) => p.ready).map((p) => h('a', { href: `../${p.id}/`, 'aria-current': p.id === PEDAL.id ? 'page' : false }, h('b', {}, p.name), h('small', {}, p.after))),
-      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, `PhuzzBox ${PHUZZBOX_VERSION} · physics, not samples`))));
+      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, 'physics, not samples')),
+      // the credits, with the site's only link to GitHub
+      h('div', { class: 'menu-foot' }, `PhuzzBox ${PHUZZBOX_VERSION} · Vibe coded by Jesse Thaler · `, h('a', { href: SOURCE, target: '_blank', rel: 'noopener' }, 'source'))));
   addEventListener('pointerdown', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
   const header = h('header', { class: 'top' },
