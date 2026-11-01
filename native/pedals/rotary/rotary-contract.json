@@ -1,0 +1,27 @@
+{"slug": "rotary",
+ "params": [
+  {"id":"fast","kind":"toggle","def":false},
+  {"id":"balance","kind":"continuous","min":-12,"max":12,"step":0,"log":false,"def":0},
+  {"id":"distance","kind":"continuous","min":0.3,"max":3,"step":0,"log":true,"def":1},
+  {"id":"spread","kind":"continuous","min":0,"max":3.141592653589793,"step":0,"log":false,"def":2.0943951023931953},
+  {"id":"hornSlow","kind":"continuous","min":0.3,"max":1.5,"step":0,"log":false,"def":0.8333333333333334},
+  {"id":"hornFast","kind":"continuous","min":4,"max":8,"step":0,"log":false,"def":6.666666666666667},
+  {"id":"drumSlow","kind":"continuous","min":0.3,"max":1.5,"step":0,"log":false,"def":0.6666666666666666},
+  {"id":"drumFast","kind":"continuous","min":4,"max":8,"step":0,"log":false,"def":5.666666666666667},
+  {"id":"hornTau","kind":"continuous","min":0.1,"max":2,"step":0,"log":true,"def":0.35},
+  {"id":"drumTau","kind":"continuous","min":0.5,"max":6,"step":0,"log":true,"def":1.7},
+  {"id":"crossover","kind":"continuous","min":400,"max":1600,"step":0,"log":true,"def":800},
+  {"id":"hornR","kind":"continuous","min":0.08,"max":0.25,"step":0,"log":false,"def":0.15},
+  {"id":"hornA","kind":"continuous","min":0.02,"max":0.08,"step":0,"log":false,"def":0.04},
+  {"id":"drumR","kind":"continuous","min":0.08,"max":0.25,"step":0,"log":false,"def":0.18},
+  {"id":"drumA","kind":"continuous","min":0.05,"max":0.2,"step":0,"log":false,"def":0.15},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"Chorale","values":{"fast":false,"balance":0,"distance":1,"spread":2.0943951023931953}},
+  {"name":"Tremolo","values":{"fast":true,"balance":0,"distance":1,"spread":2.0943951023931953}},
+  {"name":"Mics up close","values":{"fast":false,"distance":0.35,"spread":3.141592653589793}},
+  {"name":"Drum only","values":{"fast":true,"balance":-12}},
+  {"name":"Horn only","values":{"fast":true,"balance":12,"distance":0.5}},
+  {"name":"Long horn, slow motor","values":{"fast":true,"hornR":0.24,"hornTau":1.5,"drumTau":5}}
+ ]}

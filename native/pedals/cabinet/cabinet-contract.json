@@ -1,0 +1,29 @@
+{"slug": "cabinet",
+ "params": [
+  {"id":"drive","kind":"continuous","min":10,"max":46,"step":0,"log":false,"def":32},
+  {"id":"mic","kind":"continuous","min":0.001,"max":0.1,"step":0,"log":true,"def":0.015},
+  {"id":"layout","kind":"choice","options":["1x15","2x10","4x10","8x10"],"def":"8x10"},
+  {"id":"box","kind":"choice","options":["sealed","ported"],"def":"sealed"},
+  {"id":"volume","kind":"continuous","min":0.02,"max":0.4,"step":0,"log":true,"def":0.2},
+  {"id":"ports","kind":"continuous","min":1,"max":4,"step":1,"log":false,"def":2},
+  {"id":"portD","kind":"continuous","min":0.03,"max":0.2,"step":0,"log":false,"def":0.1},
+  {"id":"portL","kind":"continuous","min":0.01,"max":0.6,"step":0,"log":true,"def":0.09},
+  {"id":"fs","kind":"continuous","min":20,"max":120,"step":0,"log":true,"def":45},
+  {"id":"qes","kind":"continuous","min":0.15,"max":1.5,"step":0,"log":true,"def":0.375},
+  {"id":"qms","kind":"continuous","min":1,"max":15,"step":0,"log":true,"def":5},
+  {"id":"vas","kind":"continuous","min":0.005,"max":0.4,"step":0,"log":true,"def":0.054},
+  {"id":"re","kind":"continuous","min":2,"max":16,"step":0,"log":false,"def":5.6},
+  {"id":"le","kind":"continuous","min":0.0001,"max":0.005,"step":0,"log":true,"def":0.0008},
+  {"id":"sd","kind":"continuous","min":0.005,"max":0.1,"step":0,"log":true,"def":0.035},
+  {"id":"xmax","kind":"continuous","min":0.001,"max":0.02,"step":0,"log":true,"def":0.004},
+  {"id":"ampR","kind":"continuous","min":0.01,"max":20,"step":0,"log":true,"def":0.05}
+ ],
+ "presets": [
+  {"name":"8 × 10 sealed","values":{"fs":45,"qes":0.375,"qms":5,"vas":0.054,"re":5.6,"le":0.0008,"sd":0.035,"xmax":0.004,"layout":"8x10","box":"sealed","volume":0.2,"ampR":0.05,"drive":32,"mic":0.015}},
+  {"name":"4 × 10 ported","values":{"fs":45,"qes":0.375,"qms":5,"vas":0.054,"re":5.6,"le":0.0008,"sd":0.035,"xmax":0.004,"layout":"4x10","box":"ported","volume":0.14,"ports":2,"portD":0.1,"portL":0.09,"ampR":0.05,"drive":32,"mic":0.025}},
+  {"name":"2 × 10 ported","values":{"fs":45,"qes":0.375,"qms":5,"vas":0.054,"re":5.6,"le":0.0008,"sd":0.035,"xmax":0.004,"layout":"2x10","box":"ported","volume":0.07,"ports":1,"portD":0.1,"portL":0.09,"ampR":0.05,"drive":30,"mic":0.04}},
+  {"name":"1 × 15 ported","values":{"fs":38,"qes":0.4,"qms":6,"vas":0.18,"re":5.4,"le":0.0015,"sd":0.0855,"xmax":0.006,"layout":"1x15","box":"ported","volume":0.12,"ports":1,"portD":0.1,"portL":0.05,"ampR":0.05,"drive":32,"mic":0.04}},
+  {"name":"1 × 15 sealed","values":{"fs":38,"qes":0.4,"qms":6,"vas":0.18,"re":5.4,"le":0.0015,"sd":0.0855,"xmax":0.006,"layout":"1x15","box":"sealed","volume":0.12,"ampR":0.05,"drive":32,"mic":0.04}},
+  {"name":"8 × 10 on a tube amp","values":{"fs":45,"qes":0.375,"qms":5,"vas":0.054,"re":5.6,"le":0.0008,"sd":0.035,"xmax":0.004,"layout":"8x10","box":"sealed","volume":0.2,"ampR":4,"drive":32,"mic":0.015}},
+  {"name":"8 × 10, pushed hard","values":{"fs":45,"qes":0.375,"qms":5,"vas":0.054,"re":5.6,"le":0.0008,"sd":0.035,"xmax":0.004,"layout":"8x10","box":"sealed","volume":0.2,"ampR":0.05,"drive":44,"mic":0.004}}
+ ]}

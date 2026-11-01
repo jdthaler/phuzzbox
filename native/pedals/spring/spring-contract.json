@@ -1,0 +1,19 @@
+{"slug": "spring",
+ "params": [
+  {"id":"tank","kind":"choice","options":["leem","olson","one"],"def":"leem"},
+  {"id":"wire","kind":"continuous","min":0.0002,"max":0.0006,"step":0,"log":true,"def":0.00035},
+  {"id":"mounts","kind":"continuous","min":0.05,"max":3,"step":0,"log":true,"def":0.4},
+  {"id":"steel","kind":"continuous","min":0.00001,"max":0.002,"step":0,"log":true,"def":0.0002},
+  {"id":"oil","kind":"continuous","min":0,"max":20,"step":0,"log":false,"def":0},
+  {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
+  {"id":"reverb","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.3},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"Spring under the bass","values":{"tank":"leem","wire":0.00035,"mounts":0.4,"steel":0.0002,"oil":0,"dry":1,"reverb":0.3}},
+  {"name":"Surf drip","values":{"tank":"leem","wire":0.00035,"mounts":0.25,"steel":0.0001,"oil":0,"dry":0.8,"reverb":0.8}},
+  {"name":"Small tank","values":{"tank":"olson","wire":0.00035,"mounts":0.4,"steel":0.0002,"oil":0,"dry":1,"reverb":0.4}},
+  {"name":"One spring, nearly lossless","values":{"tank":"one","wire":0.00035,"mounts":0.05,"steel":0.00001,"oil":0,"dry":0.5,"reverb":1}},
+  {"name":"Thin wire, slow chirps","values":{"tank":"one","wire":0.00022,"mounts":0.15,"steel":0.00005,"oil":0,"dry":0.6,"reverb":1}},
+  {"name":"Oil bath","values":{"tank":"leem","wire":0.00035,"mounts":0.4,"steel":0.0002,"oil":8,"dry":1,"reverb":0.5}}
+ ]}

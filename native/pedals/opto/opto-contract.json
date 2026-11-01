@@ -1,0 +1,23 @@
+{"slug": "opto",
+ "params": [
+  {"id":"peak","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.55},
+  {"id":"gain","kind":"continuous","min":0,"max":40,"step":0,"log":false,"def":10},
+  {"id":"sense","kind":"choice","options":["output","input"],"def":"output"},
+  {"id":"blend","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0},
+  {"id":"panelB","kind":"continuous","min":30,"max":120,"step":0,"log":false,"def":70},
+  {"id":"afterglow","kind":"continuous","min":0.0002,"max":0.01,"step":0,"log":true,"def":0.001},
+  {"id":"swing","kind":"continuous","min":50,"max":300,"step":0,"log":false,"def":150},
+  {"id":"litR","kind":"continuous","min":300,"max":20000,"step":0,"log":true,"def":2000},
+  {"id":"darkR","kind":"continuous","min":500000,"max":50000000,"step":0,"log":true,"def":5000000},
+  {"id":"lifetime","kind":"continuous","min":0.01,"max":0.3,"step":0,"log":true,"def":0.06},
+  {"id":"trapTime","kind":"continuous","min":0.2,"max":10,"step":0,"log":true,"def":1.5}
+ ],
+ "presets": [
+  {"name":"Gentle leveling","values":{"peak":0.45,"gain":6,"sense":"output","blend":0,"panelB":70,"afterglow":0.001,"swing":150,"litR":2000,"darkR":5000000,"lifetime":0.06,"trapTime":1.5}},
+  {"name":"Even fingerstyle","values":{"peak":0.55,"gain":10,"sense":"output","blend":0,"panelB":70,"afterglow":0.001,"swing":150,"litR":2000,"darkR":5000000,"lifetime":0.06,"trapTime":1.5}},
+  {"name":"Squashed","values":{"peak":0.8,"gain":20,"sense":"output","blend":0,"panelB":70,"afterglow":0.001,"swing":150,"litR":2000,"darkR":5000000,"lifetime":0.06,"trapTime":1.5}},
+  {"name":"Parallel (blend)","values":{"peak":0.8,"gain":20,"sense":"output","blend":0.4,"panelB":70,"afterglow":0.001,"swing":150,"litR":2000,"darkR":5000000,"lifetime":0.06,"trapTime":1.5}},
+  {"name":"Feed-forward punch","values":{"peak":0.5,"gain":10,"sense":"input","blend":0,"panelB":70,"afterglow":0.001,"swing":150,"litR":2000,"darkR":5000000,"lifetime":0.06,"trapTime":1.5}},
+  {"name":"Quick cell, short memory","values":{"peak":0.55,"gain":10,"sense":"output","blend":0,"panelB":70,"afterglow":0.001,"swing":150,"litR":2000,"darkR":5000000,"lifetime":0.025,"trapTime":0.4}},
+  {"name":"Slow cell, long memory","values":{"peak":0.55,"gain":10,"sense":"output","blend":0,"panelB":70,"afterglow":0.001,"swing":150,"litR":2000,"darkR":5000000,"lifetime":0.15,"trapTime":6}}
+ ]}
