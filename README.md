@@ -56,6 +56,11 @@ either away with its chevron. **Discover** shows every view with its explanation
 bass sits at the bottom while it is the input. On a phone the page scrolls instead. What you turn
 on is remembered for each pedal.
 
+**Your own presets** live in the same Presets menu, as on Forte. *Save these settings…* keeps the
+pedal's settings under a name in your browser, and *Copy a link to these settings* makes a link
+that opens the page playing them, to send to someone or to bookmark for a song. *Your presets and
+files…* lists yours, and saves them to a file or opens one (`shared/presets.js` gives the format).
+
 Then either:
 
 - **Plug in.** Connect your bass to an audio interface's instrument (Hi-Z) input, choose the
