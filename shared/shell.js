@@ -29,6 +29,7 @@ import { createLayout } from './layout.js';
 import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
 import { safetyCurve, SAFE_SPAN } from './safety.js';
+import { attachPresets } from './user-presets.js';
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -245,6 +246,8 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
     h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)),
     h('option', { value: '__defaults' }, 'Default settings'));
+  // your own presets, links and preset files (shared/user-presets.js), on a pedal's own page
+  if (reg.id) api.presets = attachPresets({ PEDAL, version: reg.version, sel: presetSel, get: () => ({ ...P }), set: (v) => api.page.setAll(v), store });
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, value: state.fullScale, 'aria-label': 'Volts at full scale' });
   fsInput.addEventListener('change', () => { state.fullScale = Math.max(0.05, +fsInput.value || 1); store.set('phuzzbox.fullScale', state.fullScale); send({ type: 'fullScale', volts: state.fullScale }); });
   // Full scale from the interface's specification and its gain, or typed in
