@@ -21,7 +21,8 @@ import { fetchBytes } from './wasm.js';
 import { TESTBASS_URL, RIFF, RIFF_BPM } from './testbass.js';
 import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
 import { howItWorks } from './notes.js';
-import { byId, PEDALS, PHUZZBOX_VERSION } from './registry.js';
+import { scopeView, spectrumView } from './views.js';
+import { byId, PEDALS, PHUZZBOX_VERSION, SOURCE } from './registry.js';
 import { createLayout } from './layout.js';
 import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
@@ -97,7 +98,9 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     h('summary', { title: 'Choose a pedal' }, h('h1', {}, PEDAL.name), h('span', { class: 'caret', 'aria-hidden': 'true' }, '▾')),
     h('div', { class: 'menu-list' },
       ...PEDALS.filter((p) => p.ready).map((p) => h('a', { href: `../${p.id}/`, 'aria-current': p.id === PEDAL.id ? 'page' : false }, h('b', {}, p.name), h('small', {}, p.after))),
-      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, `PhuzzBox ${PHUZZBOX_VERSION} · physics, not samples`))));
+      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, 'physics, not samples')),
+      // the credits, with the site's only link to GitHub
+      h('div', { class: 'menu-foot' }, `PhuzzBox ${PHUZZBOX_VERSION} · Vibe coded by Jesse Thaler · `, h('a', { href: SOURCE, target: '_blank', rel: 'noopener' }, 'source'))));
   addEventListener('pointerdown', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
   const header = h('header', { class: 'top' },
@@ -140,11 +143,16 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
 
   // views
   const viewList = [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true }];
+  // every page has a Scope and a Spectrum (shared/views.js), its own if it brings them
+  const has = (t) => views.some((v) => v.title === t);
+  views = [...views, ...(has('Spectrum') ? [] : [spectrumView()]), ...(has('Scope') ? [] : [scopeView()])];
   views.forEach((v, i) => {
     const holder = h('div', { class: 'canvas' });
     const card = h('figure', { class: 'card', 'data-view': v.title });
-    card.append(h('figcaption', {}, h('b', {}, v.title), v.caption ? info(`What ${v.title} shows`, () => card) : null), holder,
-      v.caption ? h('p', { class: 'caption' }, v.caption.replace(/^./, (c) => c.toUpperCase())) : null);
+    const what = v.title.replace(/^The /, 'the ');
+    card.append(h('figcaption', {}, h('b', {}, v.title), v.caption ? info(`What ${what} shows`, () => card) : null), holder,
+      v.caption ? h('p', { class: 'caption' }, v.caption.replace(/^./, (c) => c.toUpperCase()),
+        v.about ? [' ', h('button', { type: 'button', class: 'link', onclick: () => notes.open(v.about) }, `How the ${v.title.toLowerCase()} works`)] : null) : null);
     viewList.push({ key: v.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: v.title, card, on: v.perform ?? i < 2 });
     v.mount(holder, api);
   });
@@ -222,7 +230,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     if (ifaceInput && P[ifaceInput.id] !== iface.inputZ) set(ifaceInput.id, iface.inputZ);
   }
   const rows = [];
-  const groupList = [];
+  const groupList = [], groupBoxes = [];
   for (const g of PEDAL.groups) {
     const box = h('fieldset', { class: 'group' }, h('legend', {}, g.name));
     for (const p of g.params) {
@@ -244,6 +252,11 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       rows.push({ p, row, input, val });
       box.append(row);
     }
+    // a group whose every control is irrelevant now (showIf) says so rather than standing empty
+    const empty = h('p', { class: 'group-empty' }, 'Not used with these settings.');
+    empty.hidden = true;
+    box.append(empty);
+    groupBoxes.push({ empty, rows: rows.slice(rows.length - g.params.length) });
     groupList.push({ key: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: g.name, el: box });
   }
   // the rig: what turns the browser's numbers into volts at the input jack
@@ -278,6 +291,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       val.textContent = p.type === 'checkbox' ? '' : fmt(p, P[p.id]);
       row.hidden = p.showIf ? !p.showIf(P) : false;
     }
+    for (const g of groupBoxes) g.empty.hidden = g.rows.some((r) => !r.row.hidden);
     for (const k of knobs.children) k.refresh?.();
   }
   function set(id, v, quiet) {
@@ -369,12 +383,18 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       // static, so it adds no delay, where a compressor would look 6 ms ahead (shared/safety.js)
       const span = new GainNode(ctx, { gain: 1 / SAFE_SPAN });
       const safety = new WaveShaperNode(ctx, { curve: safetyCurve(), oversample: 'none' });
-      const analyser = new AnalyserNode(ctx, { fftSize: 8192, smoothingTimeConstant: 0.6 });
       node.connect(volume).connect(span).connect(safety).connect(ctx.destination);
+      // the views' analysers, the output's and the input's alike, so the Spectrum compares like
+      // with like: blocks of about 0.17 s at any sample rate (8192 samples at 44.1 or 48 kHz),
+      // bins about 6 Hz apart (shared/views.js, spectrum/README.md)
+      const N = Math.min(32768, 8192 * 2 ** Math.max(0, Math.round(Math.log2(ctx.sampleRate / 48000))));
+      const analyser = new AnalyserNode(ctx, { fftSize: N, smoothingTimeConstant: 0.6 });
+      const inputAnalyser = new AnalyserNode(ctx, { fftSize: N, smoothingTimeConstant: 0.6 });
       node.connect(analyser);
+      node.connect(inputAnalyser, 1);
       tunerAnalyser = new AnalyserNode(ctx, { fftSize: 16384 });
       node.connect(tunerAnalyser, 1);
-      api.ctx = ctx; api.analyser = analyser; api.input = tunerAnalyser;
+      api.ctx = ctx; api.analyser = analyser; api.input = inputAnalyser;
       send({ type: 'params', P: { ...P } });
       send({ type: 'bypass', on: state.bypass });
       send({ type: 'fullScale', volts: state.fullScale });
@@ -550,7 +570,14 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     if (e.target.closest?.('input, select, textarea, [role=slider]')) return;
     const k = codeKey.get(e.code);
     if (k !== undefined && state.source === 'bass') { e.preventDefault(); held.add(e.code); fretOf.get(e.code)?.classList.add('down'); play(k, 0.75); }
-    else if (e.code === 'Space') { e.preventDefault(); setBypass(!state.bypass); }
+    else if (e.code === 'Space') {
+      // Space is the footswitch, except on a button, menu or link reached with the keyboard
+      // (:focus-visible), which Space presses as usual; one clicked with the mouse keeps focus
+      // without it, and Space there is still the footswitch
+      const t = e.target;
+      if (t !== foot && t.closest?.('button, summary, a[href], [role=button], [role=tab]') && t.matches?.(':focus-visible')) return;
+      e.preventDefault(); setBypass(!state.bypass);
+    }
   });
   addEventListener('keyup', (e) => { const k = codeKey.get(e.code); if (k !== undefined && held.delete(e.code)) { fretOf.get(e.code)?.classList.remove('down'); stop(k); } });
 

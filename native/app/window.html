@@ -54,11 +54,12 @@ header.top .spacer { flex: 1; }
 
 /* an explanation behind ⓘ */
 button.info {
-  display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border-radius: 50%; flex: none;
+  position: relative; z-index: 1; display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border-radius: 50%; flex: none;
   border: 1px solid #4a4950; background: transparent; box-shadow: none; color: var(--ink-2);
   font: italic 700 12px/1 Georgia, "Times New Roman", serif;
 }
 button.info:hover, button.info[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); }
+button.info::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; } /* a 26 px target (WCAG 2.2 asks 24) around the 18 px ring */
 
 /* ---- the enclosure: powder coat over a bent steel box, four screws in the corners -------------- */
 .stage { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 16px; align-items: start; }
@@ -169,6 +170,8 @@ button.info:hover, button.info[aria-expanded="true"] { color: var(--accent); bor
 .card .canvas { height: 230px; }
 .card canvas { width: 100%; height: 100%; display: block; }
 .card .caption { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
+.card .caption button.link { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; min-height: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.card .caption button.link:hover { color: var(--ink); }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
 .legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
 
@@ -324,6 +327,9 @@ header.top .volume .fader { width: 110px; height: 24px; }
 .menu-list a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
 .menu-list small { display: block; color: var(--ink-2); font-size: 12px; }
 .menu-list .menu-home { border-top: 1px solid var(--line); border-radius: 0 0 7px 7px; margin-top: 4px; }
+.menu-list .menu-foot { padding: 6px 10px 2px; font-size: 11.5px; color: var(--ink-2); }
+.menu-list .menu-foot a { display: inline; padding: 0; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.menu-list .menu-foot a:hover { background: none; color: var(--ink); }
 
 /* the work: the pedal at the left, the views and the controls sharing the height beside it */
 body.one-screen .work {
@@ -380,7 +386,7 @@ body.one-screen .views { display: block; grid-row: 2; min-height: 0; overflow-y:
 body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 90px; }
 body.one-screen .card:not(.notes-open) .caption { display: none; }
 body.one-screen .card.notes-open .caption { flex: none; max-height: 40%; overflow-y: auto; }
-body.one-screen .tunercard .t-body { flex: 1 1 auto; min-height: 0; align-content: center; }
+body.one-screen .tunercard .t-body { flex: 1 1 auto; min-height: 0; align-content: safe center; overflow: hidden; }
 body.one-screen .tunercard .t-name { font-size: clamp(40px, 7vh, 72px); }
 body.one-screen .tunercard .a4 { color: var(--ink-2); font-size: 12px; }
 .no-view { color: var(--ink-2); font-size: 13px; padding: 12px 14px; margin: 0; grid-column: 1 / -1; }
@@ -396,6 +402,7 @@ body.one-screen .rig .row > .inline { grid-area: input; font-size: 13px; color: 
 body.one-screen .rig .row > label.inline { grid-area: value; }
 body.one-screen .rig .row input[type="number"] { width: 70px; }
 .rig-note { margin: 6px 0 0; font-size: 12px; color: var(--ink-2); }
+.group-empty { margin: 6px 2px; font-size: 13px; color: var(--ink-2); }
 
 /* the dock: a tour's card, then the test bass */
 body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
@@ -420,7 +427,8 @@ body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: v
 @container (max-width: 400px) {
   .t-body { grid-template-columns: auto 1fr; grid-template-areas: "name read" "scale scale"; row-gap: 8px; }
   .t-scale { margin: 0 12px 18px; }
-  .t-read { flex-direction: column; margin: 0; }
+  .t-read { flex-direction: column; margin: 0; font-size: 12px; line-height: 1.35; }
+  body.one-screen .tunercard .t-name { font-size: clamp(36px, 5vh, 52px); }
 }
 
 /* Perform: the views fill the room with no text in them; the controls wait behind More controls */
@@ -458,6 +466,24 @@ body.perform .controls-bar { cursor: default; }
   body.one-screen .groups { grid-template-columns: minmax(0, 1fr); }
   .bar-tools .presets { width: 150px; }
 }
+/* on a phone a long pedal name gives way to the buttons beside it, and the menu stays on screen */
+@media (max-width: 600px) {
+  .pedal-menu, .pedal-menu summary { min-width: 0; }
+  .pedal-menu summary h1 { font-size: 16px; overflow: hidden; text-overflow: ellipsis; }
+  .menu-list { min-width: min(290px, calc(100vw - 24px)); }
+}
+/* figures in How it works and the tours: a circuit diagram (shared/schematic.js) and its caption */
+.pz-figure { margin: 16px 0; }
+.pz-figure img { display: block; max-width: 100%; height: auto; }
+.pz-figure figcaption { margin-top: 6px; color: var(--ink-2); font-size: 13px; line-height: 1.4; }
+/* in a tour's card a figure stays small, beside the text where there is room */
+.pz-tour-text .pz-figure { margin: 8px 0; }
+.pz-tour-text .pz-figure img { max-height: 200px; width: auto; }
+.pz-tour-text .pz-figure figcaption { display: none; }
+@media (min-width: 900px) {
+  .pz-tour-text .pz-figure { float: right; margin: 0 0 8px 16px; }
+  .pz-tour-text::after { content: ''; display: block; clear: both; }
+}
 
 /* ---- buffer/style.css */
 /* the Buffer's enclosure: a plain grey box, as a buffer is */
@@ -484,6 +510,39 @@ body.perform .controls-bar { cursor: default; }
 body.one-screen .card .canvas.tubes { flex: 1 1 0; height: auto; min-height: 90px; }
 @media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
   body.one-screen .card .canvas.tubes { flex: none; height: 300px; }
+}
+
+/* ---- opto/style.css */
+/* the Opto Compressor's enclosure: the grey of a rack leveler's panel */
+:root[data-pedal="opto"] { --enclosure: #8a9096; --enclosure-ink: #16181b; }
+/* the cell's history: a strip chart that takes the view's height */
+body.one-screen .card .canvas.history { flex: 1 1 0; height: auto; min-height: 90px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.history { flex: none; height: 260px; }
+}
+
+/* ---- cabinet/style.css */
+/* the Cabinet's enclosure: black tolex, a grille's weave in the grain */
+:root[data-pedal="cabinet"] { --enclosure: #232326; --enclosure-ink: #ece8e1; }
+
+/* ---- envelope/style.css */
+/* the Envelope Filter's enclosure: a deep violet enamel, as the funk boxes of the 1970s */
+:root[data-pedal="envelope"] { --enclosure: #4b2f6e; --enclosure-ink: #f1e9fb; }
+/* the sweep's history: a strip chart that takes the view's height; on a phone, a fixed one */
+.card .canvas.history { height: 220px; }
+body.one-screen .card .canvas.history { flex: 1 1 0; height: auto; min-height: 90px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.history { flex: none; height: 240px; }
+}
+
+/* ---- octave/style.css */
+/* the Octave Down's enclosure: a dark teal, as the octave boxes of the 1980s */
+:root[data-pedal="octave"] { --enclosure: #1f4d47; --enclosure-ink: #e6f4f1; }
+/* the divider's lanes: on a phone, where the views stack at their own heights, a fixed height */
+.card .canvas.lanes { height: 240px; }
+body.one-screen .card .canvas.lanes { flex: 1 1 0; height: auto; min-height: 120px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.lanes { flex: none; height: 260px; }
 }
 
 /* ---- native/app/app.css */
@@ -746,7 +805,8 @@ const { params } = __m1;
 
 // Roland FC-300 in Control Change mode, as it leaves the factory (its owner's manual, pp. 21–22):
 // expression pedal 1 sends CC 7 and expression pedal 2 CC 1, 0–127; number pedals 1–10 send CC
-// 65–74 and the control pedals CTL 1 and 2 CC 80 and 81, all latching (0–127).
+// 65–74, latching (127, then 0 on the next press); the control pedals CTL 1 and 2 send CC 80 and
+// 81, momentary (127 while held, 0 on release).
 const FC300 = { exp1: 7, exp2: 1, pedals: [65, 66, 67, 68, 69, 70, 71, 72, 73, 74], ctl: [80, 81] };
 
 const SWITCH_MODES = [['latch', 'latching (127, then 0)'], ['momentary', 'momentary (held)']];
@@ -1381,10 +1441,12 @@ return { PEDAL };
 
 // ---- wah/src/wah-params.js
 const __m12 = (() => {
-
+const { bass, recorded } = __m8;
 // wah-params.js — the Wah's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The parts are the inductor wah's as Holters and Zölzer (DAFx 2011) list them; the sweep
 // capacitor starts at 22 nF for bass, where the original's 10 nF sweeps a guitar's range.
+// Plugged in backwards, the bass is the Buffer's pickup circuit, driving the output jack.
+
 
 const rocker = [
   { id: 'position', label: 'Rocker', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
@@ -1406,25 +1468,66 @@ const circuit = [
 
 const output = [
   { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
-    hint: 'A blend pot that mixes your dry signal back in, as bass wahs have: the wah thins out the low end, and this keeps the bottom under the sweep.' },
+    showIf: (P) => !P.reversed,
+    hint: 'A blend pot that mixes your dry signal back in, as bass wahs have: the wah thins out the low end, and this keeps the bottom under the sweep. It is not part of the circuit model, so plugged in backwards it is off.' },
   { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
     hint: 'Gain after the wah, in decibels.' },
+];
+
+// Auto: an envelope follower moves the rocker, from where it rests, as your foot would. Its own
+// group at the end, so the plugins' earlier parameters keep their places.
+const isAuto = (P) => P.control === 'auto';
+const auto = [
+  { id: 'control', label: 'Rocked by', type: 'select', options: [['foot', 'Foot'], ['auto', 'Auto']], def: 'foot',
+    hint: 'Auto: an envelope follower hears how hard you play and moves the rocker for you, from where it rests (the Rocker knob, or your expression pedal) toward the toe or the heel. Each note sweeps the peak as it starts and lets it fall back as it dies away.' },
+  { id: 'direction', label: 'Direction', type: 'select', options: [['up', 'Up'], ['down', 'Down']], def: 'up', showIf: isAuto,
+    hint: 'Which way a harder note moves the rocker. Up, each pluck opens the peak upward and it settles back down as the note fades ("wow"); down, the pluck pulls it low and it rises as the note fades.' },
+  { id: 'sens', label: 'Full sweep at', min: 0.02, max: 1, def: 0.15, log: true, unit: 'mV', scale: 1000, decimals: 0, showIf: isAuto,
+    hint: 'The follower\'s voltage, close to the note\'s peak, that takes the rocker all the way. Lower is more sensitive: softer notes sweep further, and hard ones go the whole way and stay there for longer.' },
+  { id: 'attack', label: 'Attack', min: 1e-3, max: 0.1, def: 5e-3, log: true, unit: 'ms', scale: 1000, decimals: 1, showIf: isAuto,
+    hint: 'The follower\'s charging time constant, its attack resistor times its capacitor. Short, the peak jumps with the pluck; long, it slides up as the note sounds.' },
+  { id: 'decay', label: 'Decay', min: 0.02, max: 2, def: 0.25, log: true, unit: 'ms', scale: 1000, decimals: 0, showIf: isAuto,
+    hint: 'The follower\'s discharging time constant, its decay resistor times its capacitor. Short, the peak follows each note down as it fades; long, it hangs up between notes.' },
+];
+
+// Plugged in backwards: the switch, then the cables, the amp and the bass that it brings into the
+// circuit (shown only when it is on)
+const onlyBackwards = (p) => ({ ...p, showIf: (P) => !!P.reversed && (!p.showIf || p.showIf(P)) });
+const backwards = [
+  { id: 'reversed', label: 'Reversed (plugged in backwards)', type: 'checkbox', def: false,
+    hint: 'Your bass into the wah\'s output jack, and its input jack to the amp. The pickup\'s coil now hangs on the loop that makes the resonance, and from a passive bass the loop breaks into a squeal of its own, the seagull of a wah plugged in backwards: about 880 Hz heel down, rising to 1.16 kHz at 60 % and quietening, gone past three quarters of the way to the toe. From an active bass it does not squeal: it is a filter whose peak still rises with the rocker and fades toward the toe. The footswitch is a true bypass, so bypassed it plays the same either way round.' },
+  ...[
+    { id: 'cable', label: 'Cable from the bass', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
+      hint: 'The cable from your bass to the wah\'s output jack. Its capacitance is across a jack the circuit loads heavily, so it hardly matters: 30 m lowers the squeal\'s pitch by about 2 %.' },
+    { id: 'outCable', label: 'Cable to the amp', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
+      hint: 'The cable from the wah\'s input jack to the amp. The jack drives it through the circuit\'s 68 kΩ, so a long cable is a low-pass: 30 m takes the squeal down by about 7 dB.' },
+    { id: 'load', label: 'Amp\'s input', min: 10e3, max: 10e6, def: 1e6, log: true, unit: 'kΩ', scale: 0.001, decimals: 0,
+      hint: 'The input impedance of what the input jack drives, usually 1 MΩ. With the 68 kΩ in front of it, a lower one is quieter: into 10 kΩ the squeal is about 18 dB down.' },
+    ...bass,
+    ...recorded,
+  ].map(onlyBackwards),
 ];
 
 const GROUPS = [
   { name: 'Rocker', params: rocker },
   { name: 'Circuit', params: circuit },
   { name: 'Output', params: output },
+  { name: 'Auto', params: auto },
+  { name: 'Plugged in backwards', params: backwards },
 ];
 
 const PRESETS = {
-  'Bass wah (22 nF)': { sweepC: 22e-9, qR: 33e3, inductor: 0.5, blend: 0 },
-  'Bass wah, bottom kept': { sweepC: 22e-9, qR: 33e3, inductor: 0.5, blend: 0.4 },
-  'Guitar wah as built (10 nF)': { sweepC: 10e-9, qR: 33e3, inductor: 0.5, blend: 0 },
-  'Deep and vocal (47 nF, 100 kΩ)': { sweepC: 47e-9, qR: 100e3, inductor: 0.5, blend: 0.2 },
-  'Gentle (15 kΩ)': { sweepC: 22e-9, qR: 15e3, inductor: 0.5, blend: 0.2 },
+  'Bass wah (22 nF)': { control: 'foot', sweepC: 22e-9, qR: 33e3, inductor: 0.5, blend: 0, reversed: false },
+  'Bass wah, bottom kept': { control: 'foot', sweepC: 22e-9, qR: 33e3, inductor: 0.5, blend: 0.4, reversed: false },
+  'Guitar wah as built (10 nF)': { control: 'foot', sweepC: 10e-9, qR: 33e3, inductor: 0.5, blend: 0, reversed: false },
+  'Deep and vocal (47 nF, 100 kΩ)': { control: 'foot', sweepC: 47e-9, qR: 100e3, inductor: 0.5, blend: 0.2, reversed: false },
+  'Gentle (15 kΩ)': { control: 'foot', sweepC: 22e-9, qR: 15e3, inductor: 0.5, blend: 0.2, reversed: false },
+  'Auto: funky envelope': { control: 'auto', direction: 'up', position: 0, sens: 0.15, attack: 5e-3, decay: 0.25, sweepC: 22e-9, qR: 68e3, inductor: 0.5, blend: 0.15, reversed: false },
+  'Auto: slow bloom': { control: 'auto', direction: 'up', position: 0.1, sens: 0.3, attack: 40e-3, decay: 0.6, sweepC: 22e-9, qR: 33e3, inductor: 0.5, blend: 0.2, reversed: false },
+  'Auto: downward': { control: 'auto', direction: 'down', position: 0.9, sens: 0.15, attack: 3e-3, decay: 0.3, sweepC: 22e-9, qR: 47e3, inductor: 0.5, blend: 0.15, reversed: false },
+  'Plugged in backwards': { control: 'foot', sweepC: 22e-9, qR: 33e3, inductor: 0.5, blend: 0, reversed: true },
 };
-const KEEP = ['position', 'vcc', 'level'];
+const KEEP = ['position', 'vcc', 'level', 'active', 'pickupL', 'pickupR', 'pickupC', 'pots', 'activeR', 'recCable', 'recLoad', 'cablePF', 'cable', 'outCable', 'load'];
 
 return { GROUPS, PRESETS, KEEP };
 })();
@@ -1535,6 +1638,321 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- opto/src/opto-params.js
+const __m16 = (() => {
+
+// opto-params.js — the Opto Compressor's controls. Values in SI units; `scale` shows them in
+// friendlier ones. The fixed parts (the 47 kΩ series resistor, the driver's gain, the cell's
+// recombination and traps) are in native/pedals/opto/opto-model.h and the README.
+
+const leveler = [
+  { id: 'peak', label: 'Peak Reduction', min: 0, max: 1, def: 0.55, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of the signal reaches the panel\'s driver: an audio pot. Turn it up and the panel lights on quieter notes, so the pedal turns the bass down sooner and further: at 30 % only hard notes (0.3 V and up) reach it; past 70 % even a gentle 30 mV note loses several decibels.' },
+  { id: 'gain', label: 'Gain', min: 0, max: 40, def: 10, unit: 'dB', decimals: 1, perform: true,
+    hint: 'Make-up gain after the cell, in decibels: it puts back what the cell takes away, and changes nothing about how hard it compresses (the panel listens before it). +6 dB doubles the output.' },
+  { id: 'sense', label: 'Sense', type: 'select', def: 'output', options: [['output', 'After the cell (feedback)'], ['input', 'Before the cell (feed-forward)']],
+    hint: 'Where the panel\'s driver listens. After the cell, as the classic leveler does, a note lights the panel hardest at its start, before the cell has turned it down, so the cell catches the attack in about 10 ms, and louder in is always a little louder out. Before it, the panel sees only the note, never what the cell has done to it: the cell settles onto it more slowly, so the front of each note gets through (punch), and dug in hard enough, a louder note comes out quieter than a softer one.' },
+  { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Mixes your dry signal back in after the make-up gain (parallel compression): the leveled body underneath, the attack of each note on top.' },
+];
+
+const panel = [
+  { id: 'panelB', label: 'Panel\'s voltage constant', min: 30, max: 120, def: 70, unit: '√V', decimals: 0,
+    hint: 'The b in the panel\'s brightness, exp(−b/√V): how steeply its light rises with the voltage across it. Larger, the panel stays dark longer and then flares: it lights on fewer notes, and a loud note\'s first moment hits the cell harder, so the attack gets faster.' },
+  { id: 'afterglow', label: 'Phosphor afterglow', min: 0.2e-3, max: 10e-3, def: 1e-3, log: true, unit: 'ms', scale: 1e3, decimals: 1,
+    hint: 'How long the panel\'s phosphor keeps glowing after the voltage falls: it flashes on every half-cycle of the note, and the afterglow smooths the flashes. Longer, a low note flickers the cell less (less low-note distortion) but the attack is a little slower.' },
+  { id: 'swing', label: 'Driver\'s swing', min: 50, max: 300, def: 150, unit: 'V', decimals: 0,
+    hint: 'The most voltage the driver can put across the panel. It caps how bright the panel gets, and so how hard the cell can be lit: lower it and the deepest gain reduction, on the loudest notes, is less.' },
+];
+
+const cell = [
+  { id: 'litR', label: 'Cell\'s resistance, lit', min: 300, max: 20e3, def: 2e3, log: true, unit: 'kΩ', scale: 1e-3, decimals: 2,
+    hint: 'The photocell\'s resistance under the panel\'s reference glow. It shunts the signal to ground after a 47 kΩ resistor, so the lower it gets, the deeper the cell can turn the bass down: a smaller value compresses more at every setting.' },
+  { id: 'darkR', label: 'Cell\'s dark resistance', min: 0.5e6, max: 50e6, def: 5e6, log: true, unit: 'MΩ', scale: 1e-6, decimals: 1,
+    hint: 'The cell\'s resistance with the panel dark. It is always across the signal, so it sets the small loss the pedal has at rest: 0.1 dB at 5 MΩ, about 0.8 dB at 0.5 MΩ.' },
+  { id: 'lifetime', label: 'Carrier lifetime (fast release)', min: 10e-3, max: 300e-3, def: 60e-3, log: true, unit: 'ms', scale: 1e3, decimals: 0,
+    hint: 'How long a free electron in the cell lasts before it recombines. It sets the first, fast part of the release: at 60 ms, half the gain reduction comes back in 70 to 90 ms, a little longer the longer the note was held. Shorter, a quicker release and a quicker attack; longer, both slower.' },
+  { id: 'trapTime', label: 'Trap release time (memory)', min: 0.2, max: 10, def: 1.5, log: true, unit: 's', decimals: 1,
+    hint: 'How long electrons stay caught in the cell\'s traps. The longer a note keeps the cell lit, the fuller its traps; once the light goes, they let their electrons go slowly, and the last few decibels come back over seconds. Longer, a longer memory: after a held note the bass stays turned down longer.' },
+];
+
+const GROUPS = [
+  { name: 'The leveler', params: leveler },
+  { name: 'The panel', params: panel },
+  { name: 'The cell', params: cell },
+];
+
+// Each preset shows one idea.
+const stock = { peak: 0.55, gain: 10, sense: 'output', blend: 0, panelB: 70, afterglow: 1e-3, swing: 150, litR: 2e3, darkR: 5e6, lifetime: 60e-3, trapTime: 1.5 };
+const PRESETS = {
+  'Gentle leveling': { ...stock, peak: 0.45, gain: 6 },
+  'Even fingerstyle': { ...stock },
+  'Squashed': { ...stock, peak: 0.8, gain: 20 },
+  'Parallel (blend)': { ...stock, peak: 0.8, gain: 20, blend: 0.4 },
+  'Feed-forward punch': { ...stock, sense: 'input', peak: 0.5 },
+  'Quick cell, short memory': { ...stock, lifetime: 25e-3, trapTime: 0.4 },
+  'Slow cell, long memory': { ...stock, lifetime: 150e-3, trapTime: 6 },
+};
+const KEEP = [];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- opto/src/opto-pedal.js
+const __m15 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m16;
+// opto-pedal.js — the Opto Compressor's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
+
+const PEDAL = {
+  id: 'opto',
+  name: 'Opto Compressor',
+  description: 'An electro-optical leveler: a glowing panel and a photocell with memory turn the bass down',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/opto.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- cabinet/src/cabinet-params.js
+const __m18 = (() => {
+
+// cabinet-params.js — the Speaker Cabinet's controls. Values in SI units; `scale` shows them in
+// friendlier ones. The drivers are Thiele–Small parameters typical of a 10-inch or a 15-inch bass
+// driver, not any one maker's; the presets set whole cabinets.
+
+const cabinet = [
+  { id: 'drive', label: 'Power amp gain', min: 10, max: 46, def: 32, unit: 'dB', decimals: 1, perform: true,
+    hint: 'The clean power amp\'s voltage gain, from your bass\'s volts to the cabinet\'s. It sets how hard the cones are pushed: up high, the low notes run the cones out of travel and the sound thickens and compresses, the lowest strings first.' },
+  { id: 'mic', label: 'Microphone sensitivity', min: 1e-3, max: 0.1, def: 15e-3, log: true, unit: 'mV/Pa', scale: 1e3, decimals: 1, perform: true,
+    hint: 'The volts the microphone at 1 m gives per pascal of sound: a dynamic microphone gives about 2, a condenser about 20. It is the pedal\'s output level and changes nothing else.' },
+  { id: 'layout', label: 'Drivers', type: 'select', def: '8x10', options: [['1x15', '1 × 15″'], ['2x10', '2 × 10″, in parallel'], ['4x10', '4 × 10″, 2 series × 2 parallel'], ['8x10', '8 × 10″, 2 series × 4 parallel']],
+    hint: 'How many drivers share the box and how they are wired. More drivers move more air together: 8 against 1 is 18 dB more sound for the same voltage on each. Two in series share the amp\'s voltage, each getting half of it.' },
+  { id: 'box', label: 'Box', type: 'select', def: 'sealed', options: [['sealed', 'Sealed'], ['ported', 'Ported']],
+    hint: 'Sealed, the air in the box is a spring behind the cones: the bass rolls off gently (12 dB an octave) below the box\'s resonance, and the cones stay in control however low you play. Ported, the air in the port resonates with the box\'s and takes over from the cones near its tuning: deeper bass, a steeper roll-off (24 dB an octave), and below the tuning the cones flap with nothing holding them.' },
+  { id: 'volume', label: 'Box volume', min: 0.02, max: 0.4, def: 0.2, log: true, unit: 'L', scale: 1e3, decimals: 0, perform: true,
+    hint: 'The air inside, shared by all the drivers. A smaller box is a stiffer spring: sealed, it raises the resonance and makes it peakier; ported, the same port tunes higher.' },
+];
+
+const port = [
+  { id: 'ports', label: 'Ports', min: 1, max: 4, def: 2, step: 1, unit: '', decimals: 0, showIf: (P) => P.box === 'ported',
+    hint: 'How many round ports. More port area tunes the box higher, as the square root of the area.' },
+  { id: 'portD', label: 'Port diameter', min: 0.03, max: 0.2, def: 0.1, unit: 'cm', scale: 100, decimals: 1, showIf: (P) => P.box === 'ported',
+    hint: 'Each port\'s diameter. Wider ports tune higher, and keep the air in them slower on loud low notes.' },
+  { id: 'portL', label: 'Port length', min: 0.01, max: 0.6, def: 0.09, log: true, unit: 'cm', scale: 100, decimals: 1, showIf: (P) => P.box === 'ported',
+    hint: 'How long each port is: a longer port holds more air, a heavier mass on the box\'s spring, and tunes lower.' },
+];
+
+const driver = [
+  { id: 'fs', label: 'Resonance (Fs)', min: 20, max: 120, def: 45, log: true, unit: 'Hz', decimals: 1,
+    hint: 'The driver\'s own resonance in free air, its moving mass on its suspension. In the box the spring gets stiffer and the resonance higher; a lower Fs reaches lower.' },
+  { id: 'qes', label: 'Electrical Q (Qes)', min: 0.15, max: 1.5, def: 0.375, log: true, decimals: 3, unit: '',
+    hint: 'How little the motor damps the resonance: the coil, shorted through the amp, brakes the cone. Lower Qes (a stronger magnet) is a tighter, flatter, less boomy low end; higher is a fatter bump at the box\'s resonance.' },
+  { id: 'qms', label: 'Mechanical Q (Qms)', min: 1, max: 15, def: 5, log: true, decimals: 1, unit: '',
+    hint: 'How little the suspension\'s own friction damps the resonance. It barely matters beside the motor\'s damping unless the amp\'s output impedance is high.' },
+  { id: 'vas', label: 'Compliance volume (Vas)', min: 0.005, max: 0.4, def: 0.054, log: true, unit: 'L', scale: 1e3, decimals: 0,
+    hint: 'The volume of air as springy as the driver\'s suspension. A driver with a large Vas against its box is held mostly by the air: the box\'s resonance rises as √(1 + Vas/Vb).' },
+  { id: 're', label: 'Coil resistance (Re)', min: 2, max: 16, def: 5.6, unit: 'Ω', decimals: 1,
+    hint: 'The voice coil\'s DC resistance (5.6 Ω for an 8 Ω driver). With Fs, Qes and Vas fixed it only sets how much current a volt makes: higher, a little quieter.' },
+  { id: 'le', label: 'Coil inductance (Le)', min: 0.1e-3, max: 5e-3, def: 0.8e-3, log: true, unit: 'mH', scale: 1e3, decimals: 2,
+    hint: 'The voice coil\'s inductance. Above Re/(2πLe), about 1.1 kHz at the defaults, it chokes the current and the top rolls off: more inductance, a darker cabinet.' },
+  { id: 'sd', label: 'Cone area (Sd)', min: 0.005, max: 0.1, def: 0.035, log: true, unit: 'cm²', scale: 1e4, decimals: 0,
+    hint: 'The cone\'s area, about 350 cm² for a 10-inch and 855 cm² for a 15-inch. With Fs, Qes and Vas held, a bigger cone makes the same sound with less travel, since it moves more air per millimetre: it runs out of travel later on low notes.' },
+  { id: 'xmax', label: 'Linear travel (Xmax)', min: 1e-3, max: 20e-3, def: 4e-3, log: true, unit: 'mm', scale: 1e3, decimals: 1,
+    hint: 'How far the cone travels each way before the coil starts to leave the magnet\'s gap (the force factor falls to 82 %) and the suspension stiffens. Less travel, and loud low notes distort sooner.' },
+];
+
+const amp = [
+  { id: 'ampR', label: 'Amp output impedance', min: 0.01, max: 20, def: 0.05, log: true, unit: 'Ω', decimals: 2,
+    hint: 'What the power amp drives the cabinet through: near nothing for a solid-state amp, several ohms for a tube amp with its output transformer. It adds to the coil\'s resistance and weakens the motor\'s braking, so the bump at the box\'s resonance swells: tube-amp bloom.' },
+];
+
+const GROUPS = [
+  { name: 'The cabinet', params: cabinet },
+  { name: 'The port', params: port },
+  { name: 'The drivers', params: driver },
+  { name: 'The amp', params: amp },
+];
+
+const ten = { fs: 45, qes: 0.375, qms: 5, vas: 0.054, re: 5.6, le: 0.8e-3, sd: 0.035, xmax: 4e-3 };
+const fifteen = { fs: 38, qes: 0.4, qms: 6, vas: 0.18, re: 5.4, le: 1.5e-3, sd: 0.0855, xmax: 6e-3 };
+const PRESETS = {
+  '8 × 10 sealed': { ...ten, layout: '8x10', box: 'sealed', volume: 0.2, ampR: 0.05, drive: 32, mic: 15e-3 },
+  '4 × 10 ported': { ...ten, layout: '4x10', box: 'ported', volume: 0.14, ports: 2, portD: 0.1, portL: 0.09, ampR: 0.05, drive: 32, mic: 25e-3 },
+  '2 × 10 ported': { ...ten, layout: '2x10', box: 'ported', volume: 0.07, ports: 1, portD: 0.1, portL: 0.09, ampR: 0.05, drive: 30, mic: 40e-3 },
+  '1 × 15 ported': { ...fifteen, layout: '1x15', box: 'ported', volume: 0.12, ports: 1, portD: 0.1, portL: 0.05, ampR: 0.05, drive: 32, mic: 40e-3 },
+  '1 × 15 sealed': { ...fifteen, layout: '1x15', box: 'sealed', volume: 0.12, ampR: 0.05, drive: 32, mic: 40e-3 },
+  '8 × 10 on a tube amp': { ...ten, layout: '8x10', box: 'sealed', volume: 0.2, ampR: 4, drive: 32, mic: 15e-3 },
+  '8 × 10, pushed hard': { ...ten, layout: '8x10', box: 'sealed', volume: 0.2, ampR: 0.05, drive: 44, mic: 4e-3 },
+};
+const KEEP = [];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- cabinet/src/cabinet-pedal.js
+const __m17 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m18;
+// cabinet-pedal.js — the Speaker Cabinet's descriptor: everything a host needs to run it without
+// its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'cabinet',
+  name: 'Cabinet',
+  description: 'Bass speaker cabinets from their Thiele–Small parameters: cones on their suspensions, the air in a sealed or ported box, heard by a microphone',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/cabinet.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- envelope/src/envelope-params.js
+const __m20 = (() => {
+
+// envelope-params.js — the Envelope Filter's controls. Values in SI units; `scale` shows them in
+// friendlier ones. The filter is a state-variable filter whose two integrators' resistors are
+// photocells lit by one LED; an envelope follower drives the LED from how hard you play.
+
+const filter = [
+  { id: 'mode', label: 'Mode', type: 'select', options: [['lp', 'Low-pass'], ['bp', 'Band-pass'], ['hp', 'High-pass']], def: 'bp',
+    hint: 'Which of the state-variable filter\'s three outputs you hear. Band-pass is the vocal "quack", a peak that rides up with each note; low-pass keeps the bottom and opens the top like a synth; high-pass thins the note from below as the cutoff climbs.' },
+  { id: 'reso', label: 'Resonance (Q)', min: 0.5, max: 15, def: 5, log: true, decimals: 1, unit: '', perform: true,
+    hint: 'How little the filter\'s damping resistor damps it. More, a taller and narrower peak at the cutoff that whistles and quacks; at 0.7 the low-pass is flat to the cutoff with no peak at all.' },
+  { id: 'rangeC', label: 'Range (capacitors)', min: 10e-9, max: 220e-9, def: 47e-9, log: true, unit: 'nF', scale: 1e9, decimals: 0, perform: true,
+    hint: 'The two integrators\' capacitors. The cutoff is 1/(2πRC), so bigger capacitors move the whole sweep down, as 1/C: 47 nF sweeps about 100 Hz to 1.5 kHz for bass, 15 nF a guitar\'s range.' },
+];
+
+const envelope = [
+  { id: 'sens', label: 'Sensitivity', min: 0, max: 40, def: 20, unit: 'dB', decimals: 1, perform: true,
+    hint: 'The follower\'s gain, ahead of the LED. More, and a softer note lights the LED as brightly as a hard one did: the sweep goes higher, and hard notes pin it at the top.' },
+  { id: 'direction', label: 'Direction', type: 'select', options: [['up', 'Up'], ['down', 'Down']], def: 'up',
+    hint: 'Up, the follower adds to the LED\'s current: each pluck sweeps the filter up and it falls as the note fades. Down, it subtracts from a standing 5 mA: the filter rests high, each pluck pulls it down, and it rises again as the note dies.' },
+  { id: 'attack', label: 'Attack', min: 1e-3, max: 0.1, def: 10e-3, log: true, unit: 'ms', scale: 1000, decimals: 1,
+    hint: 'The follower\'s charging time constant. Short, the sweep jumps with the pluck; long, it slides up while the note sounds.' },
+  { id: 'decay', label: 'Decay', min: 0.02, max: 2, def: 0.15, log: true, unit: 'ms', scale: 1000, decimals: 0,
+    hint: 'The follower\'s discharging time constant. Short, the sweep follows each note down; long, it hangs up between notes.' },
+];
+
+const cell = [
+  { id: 'lifetime', label: 'Carrier lifetime', min: 3e-3, max: 0.2, def: 15e-3, log: true, unit: 'ms', scale: 1000, decimals: 1,
+    hint: 'How long a free electron lasts in the photocells before it recombines. It is how fast the cells darken when the LED dims: longer, and the sweep falls back more lazily than the follower asks.' },
+  { id: 'trapTime', label: 'Trap release time', min: 0.1, max: 5, def: 0.5, log: true, unit: 's', decimals: 2,
+    hint: 'How long the cells\' traps hold the electrons they catch. A long, hard note fills the traps, and after it the filter takes this long to fall all the way to rest: the photocell\'s memory.' },
+  { id: 'litR', label: 'Cell resistance, lit', min: 1e3, max: 20e3, def: 5e3, log: true, unit: 'kΩ', scale: 1e-3, decimals: 1,
+    hint: 'Each cell\'s resistance scale under 1 mA through the LED (the cell is 1.6 times this at that light, since its electrons respond sublinearly). Lower cells conduct more for the same light: the sweep reaches higher.' },
+];
+
+const output = [
+  { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your dry signal mixed back in after the filter, so the bass\'s bottom stays under the sweep (most use for band-pass and high-pass).' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the filter, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The filter', params: filter },
+  { name: 'The envelope', params: envelope },
+  { name: 'The photocells', params: cell },
+  { name: 'Output', params: output },
+];
+
+const PRESETS = {
+  'Quack (band-pass)': { mode: 'bp', reso: 5, rangeC: 47e-9, sens: 20, direction: 'up', attack: 10e-3, decay: 0.15, blend: 0.2 },
+  'Synth bass (low-pass)': { mode: 'lp', reso: 6, rangeC: 47e-9, sens: 22, direction: 'up', attack: 5e-3, decay: 0.2, blend: 0 },
+  'Gentle bloom': { mode: 'lp', reso: 1.5, rangeC: 47e-9, sens: 16, direction: 'up', attack: 30e-3, decay: 0.4, blend: 0.3 },
+  'Downward': { mode: 'bp', reso: 5, rangeC: 47e-9, sens: 20, direction: 'down', attack: 5e-3, decay: 0.25, blend: 0.2 },
+  'Squelch': { mode: 'bp', reso: 12, rangeC: 33e-9, sens: 28, direction: 'up', attack: 3e-3, decay: 0.12, blend: 0.15 },
+  'Slow cells': { mode: 'bp', reso: 5, rangeC: 47e-9, sens: 20, direction: 'up', attack: 5e-3, decay: 0.05, lifetime: 0.1, trapTime: 2, blend: 0.2 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- envelope/src/envelope-pedal.js
+const __m19 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m20;
+// envelope-pedal.js — the Envelope Filter's descriptor: everything a host needs to run it without
+// its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'envelope',
+  name: 'Envelope Filter',
+  description: 'A resonant state-variable filter swept by how hard you play: an envelope follower lights an LED, and the photocells it lights set the cutoff',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/envelope.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- octave/src/octave-params.js
+const __m22 = (() => {
+
+// octave-params.js — the Octave Down's controls. Values in SI units; `scale` shows them in
+// friendlier ones. The circuit is the analog octave divider: a tracking filter, a comparator with
+// hysteresis, two flip-flops, and a switch that flips the filtered bass's polarity on each.
+
+const mix = [
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 0.7, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in, under the octaves.' },
+  { id: 'oct1', label: 'One octave down', min: 0, max: 1, def: 0.8, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'The filtered bass with its polarity flipped by the first flip-flop, which toggles once a cycle: a wave that repeats every two cycles, an octave below.' },
+  { id: 'oct2', label: 'Two octaves down', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'The same, flipped by a second flip-flop that toggles on every other cycle: two octaves below. On a low E it is 10 Hz, felt more than heard; it comes into its own above the 5th fret.' },
+];
+
+const divider = [
+  { id: 'track', label: 'Tracking filter', min: 40, max: 1000, def: 70, log: true, unit: 'Hz', decimals: 0, perform: true,
+    hint: 'The two-pole low-pass ahead of the comparator, whose output the switch also flips. It takes the harmonics off so the comparator crosses once a cycle. Lower tracks the low strings cleanly but dulls the octave and leaves high notes weak in its roll-off; higher lets a low string\'s strong second harmonic flip the comparator twice a cycle, and the octave warbles or jumps up to the note itself.' },
+  { id: 'hyst', label: 'Hysteresis', min: 0.5e-3, max: 50e-3, def: 5e-3, log: true, unit: 'mV', scale: 1000, decimals: 1,
+    hint: 'How far past zero the filtered signal must swing to flip the comparator. More ignores noise and the wobble of a decaying note, but a note that dies below it stops the dividers: the octave holds one polarity and passes the note at its own pitch.' },
+  { id: 'tone', label: 'Tone', min: 150, max: 5000, def: 900, log: true, unit: 'Hz', decimals: 0,
+    hint: 'A one-pole low-pass after the switch. The flips are clean at the zero crossings, so the octave is smooth already; lower is rounder and more like a synth\'s sub, higher keeps more of the string\'s edge.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The mix', params: mix },
+  { name: 'The divider', params: divider },
+];
+
+const PRESETS = {
+  'Octave under': { dry: 0.7, oct1: 0.8, oct2: 0, track: 70, hyst: 5e-3, tone: 900 },
+  'Octave alone': { dry: 0, oct1: 1, oct2: 0, track: 70, hyst: 5e-3, tone: 900 },
+  'Sub synth': { dry: 0.3, oct1: 0.8, oct2: 0.5, track: 60, hyst: 5e-3, tone: 400 },
+  'High notes, two down': { dry: 0.6, oct1: 0.4, oct2: 0.8, track: 150, hyst: 5e-3, tone: 1200 },
+  'Tracking too high': { dry: 0, oct1: 1, oct2: 0, track: 1000, hyst: 0.5e-3, tone: 2500 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- octave/src/octave-pedal.js
+const __m21 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m22;
+// octave-pedal.js — the Octave Down's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'octave',
+  name: 'Octave Down',
+  description: 'The analog octave divider: a comparator and flip-flops that flip the bass\'s polarity once a cycle, an octave below, and every other cycle, two',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/octave.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue } = __m1;
@@ -1546,6 +1964,10 @@ const { PEDAL: BUFFER } = __m7;
 const { PEDAL: PHUZZ } = __m9;
 const { PEDAL: WAH } = __m11;
 const { PEDAL: PREAMP } = __m13;
+const { PEDAL: OPTO } = __m15;
+const { PEDAL: CABINET } = __m17;
+const { PEDAL: ENVELOPE } = __m19;
+const { PEDAL: OCTAVE } = __m21;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -1563,7 +1985,11 @@ const { PEDAL: PREAMP } = __m13;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP].map((d) => [d.id, d]));
+
+
+
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

@@ -4,6 +4,9 @@
 //   plugin: { code } the AU subtype (four characters, unique)
 
 export const PHUZZBOX_VERSION = '0.1.0';
+// the site's credits link to the source; the only link to GitHub on the site (Jesse, 2026-11-01):
+// everything a reader needs is on the site itself, in How it works
+export const SOURCE = 'https://github.com/jdthaler/phuzzbox';
 
 export const PEDALS = [
   {
@@ -26,8 +29,26 @@ export const PEDALS = [
     after: 'the 1959 Fender Bassman\'s preamp',
     blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
   },
-  { id: 'opto', name: 'Opto Compressor', ready: false, after: 'electro-optical leveler', blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.' },
-  { id: 'cabinet', name: 'Cabinet', ready: false, after: '8×10 and 1×15 bass cabinets', blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.' },
+  {
+    id: 'opto', name: 'Opto Compressor', version: '0.1.0', ready: true, plugin: { code: 'Opto' },
+    after: 'the electro-optical leveling amplifiers of the 1960s',
+    blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
+  },
+  {
+    id: 'cabinet', name: 'Cabinet', version: '0.1.0', ready: true, plugin: { code: 'Cabn' },
+    after: '8×10 and 1×15 bass cabinets',
+    blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.',
+  },
+  {
+    id: 'envelope', name: 'Envelope Filter', version: '0.1.0', ready: true, plugin: { code: 'Envf' },
+    after: 'the envelope-controlled filters of the 1970s',
+    blurb: 'A resonant state-variable filter whose resistors are photocells, lit by an LED that follows how hard you play.',
+  },
+  {
+    id: 'octave', name: 'Octave Down', version: '0.1.0', ready: true, plugin: { code: 'Octv' },
+    after: 'the analog octave dividers of the 1980s',
+    blurb: 'A comparator and two flip-flops that flip your bass\'s polarity once a cycle: an octave below, and two.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

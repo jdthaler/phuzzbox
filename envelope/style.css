@@ -1,0 +1,8 @@
+/* the Envelope Filter's enclosure: a deep violet enamel, as the funk boxes of the 1970s */
+:root { --enclosure: #4b2f6e; --enclosure-ink: #f1e9fb; }
+/* the sweep's history: a strip chart that takes the view's height; on a phone, a fixed one */
+.card .canvas.history { height: 220px; }
+body.one-screen .card .canvas.history { flex: 1 1 0; height: auto; min-height: 90px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.history { flex: none; height: 240px; }
+}

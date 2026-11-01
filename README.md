@@ -15,8 +15,10 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | ✅ | [Phuzz](phuzz/) | two-transistor germanium fuzz (1966) | Ebers–Moll transistors that drift with temperature, a sagging battery, an input that loads the pickup; solved by the nodal DK method at 4× oversampling |
 | ✅ | [Wah](wah/) | the inductor wah of the late 1960s, swept low for bass | two Ebers–Moll transistors and a 500 mH coil, solved node by node; a MIDI expression pedal rocks it |
 | ✅ | [Tube Preamp](preamp/) | the 1959 Fender Bassman's preamp | three 12AX7 triodes (Dempwolf–Zölzer, with grid conduction), the passive tone stack and its supply rail, solved node by node at up to 4× oversampling |
-| 🛠 | Opto Compressor | electro-optical leveler | an electroluminescent panel and a photocell with memory |
-| 🛠 | Cabinet | 8×10 and 1×15 cabinets | a loudspeaker from its Thiele–Small parameters in a sealed or ported box |
+| ✅ | [Opto Compressor](opto/) | the electro-optical leveling amplifiers of the 1960s | a glowing panel and a photocell whose free and trapped electrons set the attack (10 ms) and the program-dependent release |
+| ✅ | [Speaker Cabinet](cabinet/) | 8 × 10, 4 × 10, 2 × 10 and 1 × 15 bass cabinets | drivers from their Thiele–Small parameters, in a sealed or ported box, with the cones running out of travel on loud low notes |
+| ✅ | [Envelope Filter](envelope/) | the envelope-controlled filters of the 1970s | a state-variable filter whose resistors are photocells, lit by an LED that an envelope follower drives; the cells' electrons set how it sweeps and remembers |
+| ✅ | [Octave Down](octave/) | the analog octave dividers of the 1980s | a tracking filter, a comparator with hysteresis and two flip-flops that flip the bass's polarity every cycle or every other: one and two octaves down, with the real thing's warble and dropouts |
 
 ✅ playable · 🛠 in the workshop. The plan and the rest of the lineup are in
 [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -74,9 +76,17 @@ name the note, then the peak of the fundamental's own spectral line, to a hundre
 ([tuner/README.md](tuner/README.md), tested in `test/tuner-tests.mjs`). **Mute while tuning**
 silences the output, as a tuner pedal does.
 
+Every pedal also has a **Scope** and a **Spectrum**, each showing what goes in (dashed) against
+what comes out (solid), in volts. The scope draws the two waves over 50 ms, held still by a
+trigger on the input's rising edges with hysteresis, as a bench oscilloscope's
+([scope/README.md](scope/README.md)). The spectrum draws them against frequency, calibrated so a
+partial reads its peak amplitude in dBV (0 dBV is a sine of 1 V peak), with the note being played
+marked in green ([spectrum/README.md](spectrum/README.md)); both are tested in
+`test/views-tests.mjs`.
+
 **How it works and Tour.** By each page's title, **How it works** opens the pedal's notes (its
 README: the equations, the numbers, what is simplified and the sources), with tabs for the test
-bass's and the tuner's. **Tour** is a guided tour of the pedal's physics, as Forte's instruments
+bass's, the tuner's, the scope's and the spectrum's. **Tour** is a guided tour of the pedal's physics, as Forte's instruments
 have: a few steps, each setting the pedal up and playing the test bass through it while a card
 says what to listen for and which view to watch. Your own settings come back when it ends.
 

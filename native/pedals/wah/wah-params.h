@@ -15,10 +15,30 @@ enum Param : int {
   vcc = 5,
   blend = 6,
   level = 7,
-  kParamCount = 8
+  control = 8,
+  direction = 9,
+  sens = 10,
+  attack = 11,
+  decay = 12,
+  reversed = 13,
+  cable = 14,
+  outCable = 15,
+  load = 16,
+  active = 17,
+  pickupL = 18,
+  pickupR = 19,
+  pickupC = 20,
+  pots = 21,
+  activeR = 22,
+  recCable = 23,
+  recLoad = 24,
+  cablePF = 25,
+  kParamCount = 26
 };
 
 inline const char *const taperChoices[] = {"Audio (log)", "Linear"};
+inline const char *const controlChoices[] = {"Foot", "Auto"};
+inline const char *const directionChoices[] = {"Up", "Down"};
 
 inline const phuzzbox::ParamInfo kParams[] = {
   {"position", "Rocker", "Rocker", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.5, 0.0, false, "%", 100.0, 0},
@@ -29,21 +49,47 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"vcc", "Supply", "Circuit", phuzzbox::ParamKind::continuous, 5.0, 12.0, 8.15, 0.0, false, "V", 1.0, 2},
   {"blend", "Clean blend", "Output", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.0, 0.0, false, "%", 100.0, 0},
   {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"control", "Rocked by", "Auto", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, controlChoices, 2},
+  {"direction", "Direction", "Auto", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, directionChoices, 2},
+  {"sens", "Full sweep at", "Auto", phuzzbox::ParamKind::continuous, 0.02, 1.0, 0.15, 0.0, true, "mV", 1000.0, 0},
+  {"attack", "Attack", "Auto", phuzzbox::ParamKind::continuous, 0.001, 0.1, 0.005, 0.0, true, "ms", 1000.0, 1},
+  {"decay", "Decay", "Auto", phuzzbox::ParamKind::continuous, 0.02, 2.0, 0.25, 0.0, true, "ms", 1000.0, 0},
+  {"reversed", "Reversed (plugged in backwards)", "Plugged in backwards", phuzzbox::ParamKind::toggle, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2},
+  {"cable", "Cable from the bass", "Plugged in backwards", phuzzbox::ParamKind::continuous, 0.3, 30.0, 3.0, 0.0, true, "m", 1.0, 1},
+  {"outCable", "Cable to the amp", "Plugged in backwards", phuzzbox::ParamKind::continuous, 0.3, 30.0, 3.0, 0.0, true, "m", 1.0, 1},
+  {"load", "Amp's input", "Plugged in backwards", phuzzbox::ParamKind::continuous, 10000.0, 10000000.0, 1000000.0, 0.0, true, "kΩ", 0.001, 0},
+  {"active", "Active electronics", "Plugged in backwards", phuzzbox::ParamKind::toggle, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2},
+  {"pickupL", "Pickup inductance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 0.5, 12.0, 3.6, 0.0, true, "H", 1.0, 2},
+  {"pickupR", "Pickup resistance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 2000.0, 30000.0, 10500.0, 0.0, true, "kΩ", 0.001, 1},
+  {"pickupC", "Pickup capacitance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 2e-11, 5e-10, 1e-10, 0.0, true, "pF", 1000000000000.0, 0},
+  {"pots", "Volume and tone pots", "Plugged in backwards", phuzzbox::ParamKind::continuous, 50000.0, 1000000.0, 125000.0, 0.0, true, "kΩ", 0.001, 0},
+  {"activeR", "Preamp output resistance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 100.0, 10000.0, 1000.0, 0.0, true, "kΩ", 0.001, 2},
+  {"recCable", "Your cable", "Plugged in backwards", phuzzbox::ParamKind::continuous, 0.3, 30.0, 3.0, 0.0, true, "m", 1.0, 1},
+  {"recLoad", "Your interface's input", "Plugged in backwards", phuzzbox::ParamKind::continuous, 100000.0, 10000000.0, 1000000.0, 0.0, true, "MΩ", 0.000001, 2},
+  {"cablePF", "Cable capacitance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 3e-11, 3e-10, 1e-10, 0.0, true, "pF/m", 1000000000000.0, 0},
 };
 
-inline const phuzzbox::PresetValue kPreset0[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}};
-inline const phuzzbox::PresetValue kPreset1[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.4}};
-inline const phuzzbox::PresetValue kPreset2[] = {{2, 1e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}};
-inline const phuzzbox::PresetValue kPreset3[] = {{2, 4.7e-8}, {3, 100000.0}, {4, 0.5}, {6, 0.2}};
-inline const phuzzbox::PresetValue kPreset4[] = {{2, 2.2e-8}, {3, 15000.0}, {4, 0.5}, {6, 0.2}};
+inline const phuzzbox::PresetValue kPreset0[] = {{8, 0.0}, {2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}, {13, 0.0}};
+inline const phuzzbox::PresetValue kPreset1[] = {{8, 0.0}, {2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.4}, {13, 0.0}};
+inline const phuzzbox::PresetValue kPreset2[] = {{8, 0.0}, {2, 1e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}, {13, 0.0}};
+inline const phuzzbox::PresetValue kPreset3[] = {{8, 0.0}, {2, 4.7e-8}, {3, 100000.0}, {4, 0.5}, {6, 0.2}, {13, 0.0}};
+inline const phuzzbox::PresetValue kPreset4[] = {{8, 0.0}, {2, 2.2e-8}, {3, 15000.0}, {4, 0.5}, {6, 0.2}, {13, 0.0}};
+inline const phuzzbox::PresetValue kPreset5[] = {{8, 1.0}, {9, 0.0}, {0, 0.0}, {10, 0.15}, {11, 0.005}, {12, 0.25}, {2, 2.2e-8}, {3, 68000.0}, {4, 0.5}, {6, 0.15}, {13, 0.0}};
+inline const phuzzbox::PresetValue kPreset6[] = {{8, 1.0}, {9, 0.0}, {0, 0.1}, {10, 0.3}, {11, 0.04}, {12, 0.6}, {2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.2}, {13, 0.0}};
+inline const phuzzbox::PresetValue kPreset7[] = {{8, 1.0}, {9, 1.0}, {0, 0.9}, {10, 0.15}, {11, 0.003}, {12, 0.3}, {2, 2.2e-8}, {3, 47000.0}, {4, 0.5}, {6, 0.15}, {13, 0.0}};
+inline const phuzzbox::PresetValue kPreset8[] = {{8, 0.0}, {2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}, {13, 1.0}};
 inline const phuzzbox::Preset kPresets[] = {
-  {"Bass wah (22 nF)", kPreset0, 4},
-  {"Bass wah, bottom kept", kPreset1, 4},
-  {"Guitar wah as built (10 nF)", kPreset2, 4},
-  {"Deep and vocal (47 nF, 100 kΩ)", kPreset3, 4},
-  {"Gentle (15 kΩ)", kPreset4, 4},
+  {"Bass wah (22 nF)", kPreset0, 6},
+  {"Bass wah, bottom kept", kPreset1, 6},
+  {"Guitar wah as built (10 nF)", kPreset2, 6},
+  {"Deep and vocal (47 nF, 100 kΩ)", kPreset3, 6},
+  {"Gentle (15 kΩ)", kPreset4, 6},
+  {"Auto: funky envelope", kPreset5, 11},
+  {"Auto: slow bloom", kPreset6, 11},
+  {"Auto: downward", kPreset7, 11},
+  {"Plugged in backwards", kPreset8, 6},
 };
-inline constexpr int kPresetCount = 5;
+inline constexpr int kPresetCount = 9;
 inline constexpr int kExpression = 0;
 
 } // namespace wah

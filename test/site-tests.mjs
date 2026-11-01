@@ -45,4 +45,17 @@ check(/^## Prior art and references/m.test(readFileSync(`${root}testbass/README.
   const sw = readFileSync(`${root}sw.js`, 'utf8');
   check(ready.every((p) => sw.includes(`'./${p.id}/'`)), 'the service worker keeps every ready pedal\'s page');
 }
+// GitHub only in the credits (Jesse, 2026-11-01): the site's code names the repository once, as
+// registry.js's SOURCE, and the notes never link a reader to it for information
+{
+  const { readdirSync } = await import('node:fs');
+  const files = ['index.html', 'sw.js', ...readdirSync(`${root}shared`).filter((f) => /\.(js|css)$/.test(f)).map((f) => `shared/${f}`),
+    ...ready.flatMap((p) => [`${p.id}/index.html`, ...readdirSync(`${root}${p.id}/src`).filter((f) => f.endsWith('.js')).map((f) => `${p.id}/src/${f}`)])];
+  const hits = files.flatMap((f) => readFileSync(`${root}${f}`, 'utf8').split('\n').map((l, i) => [f, i + 1, l]))
+    .filter(([, , l]) => /https?:\/\/(www\.)?github\.com/.test(l) && !/^\/\//.test(l.trim()));
+  const ok = hits.length === 1 && hits[0][0] === 'shared/registry.js' && /SOURCE = 'https:\/\/github\.com\/jdthaler\/phuzzbox'/.test(hits[0][2]);
+  check(ok, 'GitHub: the site links it only from the credits (registry.js SOURCE)', hits.map(([f, n]) => `${f}:${n}`).join(', '));
+  const notes = readFileSync(`${root}shared/notes.js`, 'utf8');
+  check(/function siteLinks/.test(notes) && /github\\?\.com/.test(notes), 'GitHub: the notes turn links to the repository into plain text');
+}
 done();

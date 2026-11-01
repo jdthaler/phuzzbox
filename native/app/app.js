@@ -15,7 +15,11 @@ import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
 import { PEDAL as PHUZZ } from '../../phuzz/src/phuzz-pedal.js';
 import { PEDAL as WAH } from '../../wah/src/wah-pedal.js';
 import { PEDAL as PREAMP } from '../../preamp/src/preamp-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP].map((d) => [d.id, d]));
+import { PEDAL as OPTO } from '../../opto/src/opto-pedal.js';
+import { PEDAL as CABINET } from '../../cabinet/src/cabinet-pedal.js';
+import { PEDAL as ENVELOPE } from '../../envelope/src/envelope-pedal.js';
+import { PEDAL as OCTAVE } from '../../octave/src/octave-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

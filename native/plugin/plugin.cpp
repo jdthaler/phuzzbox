@@ -21,6 +21,7 @@
 #include <clap/clap.h>
 
 #include "phuzzbox/denormals.h"
+#include "phuzzbox/dryline.h"
 #include "phuzzbox/guard.h"
 #include "phuzzbox/midi.h"
 
@@ -66,6 +67,7 @@ struct Plugin {
   double fs = 48000;
   std::atomic<double> bypass{0}, volume{1};
   double wet = 1, gain = 1;          // the bypass's crossfade and the volume's gain, as they glide
+  DryLine dry;                       // the dry signal, as late as the pedal (its latency)
   MidiMap midi, midiMain, midiPending; // the audio thread's, the main thread's, and one on its way
   std::atomic<bool> midiNew{false};
 
@@ -145,6 +147,7 @@ bool activate(const clap_plugin_t *p, double fs, uint32_t, uint32_t maxFrames) {
   s->dirty = true;
   s->apply();
   s->wet = 1 - s->bypass.load();
+  s->dry.reset();
   s->gain = audioTaper(s->volume.load());
   return true;
 }
@@ -177,10 +180,11 @@ clap_process_status process(const clap_plugin_t *p, const clap_process_t *proc) 
     // the bypass crossfades and the volume pedal glides, each over about 10 ms, without a click
     const double k = 1 - std::exp(-1 / (0.010 * s->fs));
     const double wetTo = 1 - s->bypass.load(), gainTo = audioTaper(s->volume.load());
+    s->dry.setDelay(s->effect->latency());
     for (uint32_t i = 0; i < m; i++) {
       s->wet += (wetTo - s->wet) * k;
       s->gain += (gainTo - s->gain) * k;
-      const double dry = s->in[i];
+      const double dry = s->dry.run(s->in[i]);
       oL[at + i] = (float)(s->gain * (s->wet * s->L[i] + (1 - s->wet) * dry));
       if (oR) oR[at + i] = (float)(s->gain * (s->wet * s->R[i] + (1 - s->wet) * dry));
     }

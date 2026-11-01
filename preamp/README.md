@@ -18,24 +18,12 @@ Part of [PhuzzBox](../README.md).
 
 ## The circuit
 
-```
-jack ── 68 kΩ ── V1a grid;  jack ── 1 MΩ ── ground
-V1a: plate ── 100 kΩ ── rail;  cathode ── 1.5 kΩ ∥ 25 µF ── ground
-V1a plate ──┤├── Gain pot 1 MΩ (audio) ── ground;  its wiper ── 270 kΩ ── V2a grid
-           20 nF
-V2a: plate ── 100 kΩ ── rail;  cathode ── 820 Ω ── ground (no capacitor)
-V2b, a cathode follower: grid on V2a's plate, plate on the rail, cathode ── 100 kΩ ── ground
-the tone stack, from V2b's cathode:
-    ──┤├── Treble pot 250 kΩ ── (its wiper is the stack's output)
-     250 pF          │
-    ── 56 kΩ ──┬──┤├──┴── Bass pot 1 MΩ (audio) ──┐
-               │  20 nF                           │
-               └──┤├──────────────────── Middle pot 25 kΩ ── ground
-                  20 nF
-the stack's output ── Master pot 1 MΩ (audio) ── ground;  its wiper is the output
-the rail: the 385 V supply ── 14 kΩ dropper ──┬── the preamp's rail, about 325 V
-                                              └── 8 µF ── ground
-```
+![The two gain stages, V1a and V2a, and the cathode follower V2b that drives the tone stack](schematics/stages.svg)
+
+![The tone stack (Yeh and Smith's), its Treble pot's wiper into the Master](schematics/tonestack.svg)
+
+The rail: the 385 V supply through a 14 kΩ dropper to the preamp's rail, about 325 V, with 8 µF
+from it to ground.
 
 From the Bassman (5F6-A, as Silicon Chip's 2024 article and Kuehnel's analysis give it): the
 second stage's 100 kΩ plate, 820 Ω unbypassed cathode and 270 kΩ grid stopper; the cathode
@@ -181,7 +169,7 @@ the Phuzz's, so the harmonics clipping makes above 20 kHz are filtered rather th
   axis where the tube cuts off.
 - **The tone stack**: the preamp's small-signal gain from what your interface records to the
   output, and the stack and Master alone.
-- **Scope** and **Spectrum**: the input and the output.
+- **Scope** and **Spectrum**: the input and the output, as on every page (their own How it works tabs say how they are made).
 
 ## What to listen for
 
@@ -191,6 +179,16 @@ the Phuzz's, so the harmonics clipping makes above 20 kHz are filtered rather th
 - **Tight (small cathode capacitor)**: the first stage gives the low notes less gain, so they
   break up later than the high ones.
 - **Tired tubes, low rail**: less emission, less headroom, an earlier and softer break-up.
+
+## Plugged in backwards
+
+No **Reversed** switch here either (the [Wah](../wah/README.md) has one). Backwards, the bass would
+drive the Master pot and, through the tone stack, the cathode follower's cathode, which the follower
+holds at its 615 Ω. From there back to the input jack is three triodes the wrong way round. A
+triode passes its grid's voltage to its plate, and back only through the 2.4 pF between them, and
+this model has those capacitances: by them, what reaches the input jack is far below any
+interface's hiss. A real amp's wiring would let a little more through, but still almost nothing.
+The switch would only be a mute.
 
 ## What is simplified
 

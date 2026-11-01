@@ -33,6 +33,7 @@ template <int Order> struct ChebyshevLowpass {
   }
   double run(double x) { for (auto &q : s) x = q.run(x); return x; }
   void reset() { for (auto &q : s) q.reset(); }
+  void flush() { for (auto &q : s) q.flush(); }
   // the response at frequency f (Hz), for the filter's own sampling rate fs
   std::complex<double> response(double f, double fs) const {
     const std::complex<double> z1 = std::polar(1.0, -TAU * f / fs);
@@ -56,8 +57,15 @@ class Oversampler {
   int factor() const { return M; }
   // the M samples at the high rate that follow input x
   double upsample(double x, int m) { return M == 1 ? x : up.run(m == 0 ? M * x : 0.0); }
-  // feed one high-rate sample to the decimator; the host's sample is the one fed last (m = M − 1)
-  double downsample(double y) { return M == 1 ? y : down.run(y); }
+  // feed one high-rate sample to the decimator; the host's sample is the one fed last (m = M − 1).
+  // Every 1024 of them the filters' states are flushed of denormals (Biquad::flush): fed the zeros
+  // between the samples, and silence after a note, the upsampler rings down into them, and the
+  // Phuzz took five times its CPU in the silence after a note in the browser.
+  double downsample(double y) {
+    if (M == 1) return y;
+    if (++sinceFlush == 1024) { sinceFlush = 0; up.flush(); down.flush(); }
+    return down.run(y);
+  }
   // the round trip's group delay at low frequencies, in host samples (what latency() reports)
   double delay(double fs) const {
     if (M == 1) return 0;
@@ -68,7 +76,7 @@ class Oversampler {
   }
 
  private:
-  int M = 1;
+  int M = 1, sinceFlush = 0;
   ChebyshevLowpass<8> up, down;
 };
 

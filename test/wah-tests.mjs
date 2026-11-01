@@ -297,7 +297,280 @@ function distortion(P, amp, f = 110) {
   e.destroy();
 }
 
-// 10. CPU: the budget is 5 % of a core, with the rocker moving all the time (the faster of two
+// 10. Auto: the envelope follower, a capacitor C charged from the full-wave rectified input through
+// the attack resistor while the input is above it (an ideal diode), and always discharged through
+// the decay resistor: C dv/dt = (|in| − v)/Ra·[|in| > v] − v/Rd, with τa = RaC and τd = RdC. Its
+// voltage moves the rocker from where it rests: rest + (1 − rest)·min(1, v/full) up, rest·(1 − …) down.
+const auto_ = (over) => with_({ control: 'auto', ...over });
+function runAuto(P, inp) {
+  const e = new Effect(fs);
+  e.setParams(P);
+  const L = new Float32Array(inp.length), R = new Float32Array(inp.length), ms = [];
+  for (let at = 0; at < inp.length; at += 4800) {
+    const m = Math.min(4800, inp.length - at);
+    e.process(inp.subarray(at, at + m), L.subarray(at, at + m), R.subarray(at, at + m));
+    for (const q of e.messages()) if (q.type === 1) ms.push({ rocker: q.values[0], v: q.values[1] });
+  }
+  e.destroy();
+  return { L, ms }; // a message every 10 ms: after samples 480, 960, …
+}
+// the follower's equation integrated here by RK4, 64 steps a sample, the input held through each
+// sample and the diode deciding at every step
+function follower(P, inp) {
+  const h = 1 / fs / 64, out = new Float64Array(inp.length);
+  let v = 0;
+  for (let i = 0; i < inp.length; i++) {
+    const r = Math.abs(inp[i]);
+    const f = (v) => (r > v ? (r - v) / P.attack : 0) - v / P.decay;
+    for (let k = 0; k < 64; k++) {
+      const k1 = f(v), k2 = f(v + (h / 2) * k1), k3 = f(v + (h / 2) * k2), k4 = f(v + h * k3);
+      v += (h / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
+    }
+    out[i] = v;
+  }
+  return out;
+}
+const TBA = await loadBass();
+const bassNote = (midi, vel, secs = 1.5) => { const b = new TBA(fs); b.note(midi, vel); const y = new Float32Array(Math.round(secs * fs)); b.process(y); return y; };
+{
+  const P = auto_({ attack: 4e-3, decay: 0.2 }), inp = bassNote(28, 0.9);
+  const { ms } = runAuto(P, inp), ref = follower(P, inp);
+  let worst = 0;
+  ms.forEach((m, k) => { const want = ref[480 * (k + 1) - 1]; if (want > 1e-3) worst = Math.max(worst, Math.abs(m.v / want - 1)); });
+  check(ms.length >= 140 && worst < 0.01, 'Auto: the follower is its circuit\'s equation, integrated here by RK4, on the test bass\'s low E', `${ms.length} points, worst ${(100 * worst).toFixed(2)} %`);
+}
+{
+  // a steady 0.1 V: the capacitor charges with τ = τaτd/(τa + τd) toward 0.1·τd/(τa + τd); then,
+  // the input gone, it discharges through Rd alone, with τd
+  const P = auto_({ attack: 0.02, decay: 0.2, sens: 1 }), A = 0.1, n = fs, inp = new Float32Array(n);
+  inp.fill(A, 0, n / 2);
+  const { ms } = runAuto(P, inp);
+  const tau = (0.02 * 0.2) / 0.22, vInf = (A * 0.2) / 0.22;
+  const at = (t) => ms[Math.round(t / 0.01) - 1].v; // the message after t seconds
+  const rise = at(0.1) / (vInf * (1 - Math.exp(-0.1 / tau))), held = at(0.5) / vInf, fall = at(0.7) / at(0.5);
+  check(Math.abs(rise - 1) < 0.002 && Math.abs(held - 1) < 0.002, `Attack: a steady 0.1 V charges the follower with τ = τaτd/(τa + τd) = ${(1e3 * tau).toFixed(1)} ms, to 0.1·τd/(τa + τd) = ${(1e3 * vInf).toFixed(1)} mV`, `${(100 * rise).toFixed(2)} % and ${(100 * held).toFixed(2)} % of the closed form`);
+  check(Math.abs(fall - Math.exp(-0.2 / 0.2)) < 0.002, 'Decay: let go, and it discharges through the decay resistor alone, e^(−t/τd)', `${fall.toFixed(4)} after τd, against ${Math.exp(-1).toFixed(4)}`);
+  const P2 = auto_({ position: 0.3, sens: 0.05 }), P3 = auto_({ position: 0.3, sens: 0.05, direction: 'down' });
+  const rel = (P) => runAuto(P, inp).ms.map((m) => Math.abs(m.rocker - (P.direction === 'down' ? 0.3 * (1 - Math.min(1, m.v / 0.05)) : 0.3 + 0.7 * Math.min(1, m.v / 0.05))));
+  const worst = Math.max(...rel(P2), ...rel(P3));
+  // (the wiper moves every 32 samples, so the rocker is the follower's of up to 0.7 ms before)
+  check(worst < 0.005, 'the rocker goes from where it rests toward the toe (up) or the heel (down), all the way at the Full sweep voltage', `worst ${worst.toExponential(1)}`);
+}
+{
+  // on silence, the rocker rests where the Rocker knob has it: the same filter as your foot there
+  const a = measure(auto_({ position: 0.3, sens: 1 }), 300, { rate: fs }), b = measure(with_({ position: 0.3 }), 300, { rate: fs });
+  check(Math.abs(db(a) - db(b)) < 0.1, 'Rocked by: Auto rests where the Rocker (or your expression pedal) has it', `${db(a).toFixed(2)} against ${db(b).toFixed(2)} dB at 300 Hz for a 1 mV sine`);
+  const note = bassNote(33, 0.9, 1.5), r = runAuto(auto_({ ...PEDAL.presets['Auto: funky envelope'] }), note).ms.map((m) => m.rocker);
+  const top = Math.max(...r.slice(0, 15)), end = r[r.length - 1];
+  check(r[0] > 0.2 && top > 0.6 && end < top - 0.3, 'and each note sweeps the peak as it starts and lets it fall back as it dies away', `rocker ${(100 * top).toFixed(0)} % in the first 150 ms, ${(100 * end).toFixed(0)} % at 1.5 s`);
+  const fp = (rocker) => peak(with_({ position: rocker })).f;
+  check(fp(top) > 2 * fp(end), 'which sweeps the filter\'s peak: the test bass\'s A opens it up and lets it fall', `${fp(top).toFixed(0)} Hz at the top, ${fp(end).toFixed(0)} Hz at 1.5 s`);
+}
+{
+  const s = (P) => runAuto(P, sine(110, fs, fs / 2, 0.3)).ms.at(-1).rocker;
+  const up = s(auto_({ position: 0.5, sens: 0.15 })), down = s(auto_({ position: 0.5, sens: 0.15, direction: 'down' }));
+  check(up > 0.99 && down < 0.01, 'Direction: a hard note takes it to the toe (up) or the heel (down)', `${(100 * up).toFixed(0)} % and ${(100 * down).toFixed(0)} % from 50 %`);
+  const soft = (sens) => runAuto(auto_({ position: 0, sens }), sine(110, fs, fs / 2, 0.05)).ms.at(-1).rocker;
+  check(soft(0.1) > 1.5 * soft(0.3), 'Full sweep at: lower, and a soft note sweeps further', `a 50 mV note: ${(100 * soft(0.3)).toFixed(0)} % at 300 mV, ${(100 * soft(0.1)).toFixed(0)} % at 100 mV`);
+  const t90 = (attack) => { const r = runAuto(auto_({ position: 0, sens: 0.3, attack }), sine(110, fs, fs / 2, 0.3)).ms.map((m) => m.rocker); return 10 * (r.findIndex((v) => v > 0.9 * r.at(-1)) + 1); };
+  check(t90(40e-3) > 3 * t90(2e-3), 'Attack: longer, and the peak slides up rather than jumping', `90 % of the way in ${t90(2e-3)} ms at 2 ms, ${t90(40e-3)} ms at 40 ms`);
+  const after = (decay) => { const inp = new Float32Array(fs); inp.set(sine(110, fs, fs / 2, 0.3)); const r = runAuto(auto_({ position: 0, sens: 0.15, decay }), inp).ms; return r[69].rocker; };
+  check(after(0.05) < 0.2 && after(1) > 0.8, 'Decay: short, and the peak falls with the note; long, and it hangs', `200 ms after the note: ${(100 * after(0.05)).toFixed(0)} % at 50 ms, ${(100 * after(1)).toFixed(0)} % at 1 s`);
+}
+
+// 11. plugged in backwards (Reversed): the bass drives the output jack (node 8) through its pickup,
+// and the input jack (node 1) drives the cable to the amp. Here independently: the bass as its coil's
+// series admittance 1/(R + jωL) to ground with its capacitance and pots, driven by the Norton current
+// that makes the recorded voltage; the circuit's own behaviour from its linearised equations
+// G x + C x' = 0 (every node and each inductor's current), stepped by backward Euler from a random
+// start until only its slowest-decaying (or fastest-growing) disturbance is left.
+function bassOf(P) {
+  const passive = !P.active, R = passive ? P.pickupR : P.activeR, L = passive ? P.pickupL : 0;
+  return {
+    R, L, C: (passive ? P.pickupC : 0) + P.cable * P.cablePF, pots: passive ? P.pots : Infinity,
+    ampC: P.outCable * P.cablePF, amp: P.load,
+    yrec: (w) => { // the recording's admittance at the jack, as [re, im]
+      const zr = R, zi = w * L, m = zr * zr + zi * zi;
+      return [zr / m + (passive ? 1 / P.pots : 0) + 1 / P.recLoad, -zi / m + w * ((passive ? P.pickupC : 0) + P.recCable * P.cablePF)];
+    },
+  };
+}
+// |v1| per volt recorded, for a small signal at the operating point
+function responseBack(P, f, V = operatingPoint(P)) {
+  const c = parts(P), b = bassOf(P), w = 2 * Math.PI * f, free = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], idx = new Map(free.map((n, i) => [n, i]));
+  const n = free.length, Mr = free.map(() => new Array(n).fill(0)), Mi = free.map(() => new Array(n).fill(0)), br = new Array(n).fill(0), bi = new Array(n).fill(0);
+  const add = (a, bb, yr, yi) => { for (const [p, q, s] of [[a, a, 1], [bb, bb, 1], [a, bb, -1], [bb, a, -1]]) if (idx.has(p) && idx.has(q)) { Mr[idx.get(p)][idx.get(q)] += s * yr; Mi[idx.get(p)][idx.get(q)] += s * yi; } };
+  for (const [a, bb, r] of c.R) add(a, bb, 1 / r, 0);
+  for (const [a, bb, C] of c.C) add(a, bb, 0, w * C);
+  for (const [a, bb, L] of c.L) add(a, bb, 0, -1 / (w * L));
+  const zm = b.R * b.R + (w * b.L) ** 2;
+  add(8, 0, b.R / zm + 1 / b.pots, -w * b.L / zm + w * b.C);
+  add(1, 0, 1 / b.amp, w * b.ampC);
+  for (const [bq, co, e] of c.Q) {
+    const nodes = [bq, co, e], at = (dvb, dvc, dve) => bjt(V[bq] + dvb - V[e] - dve, V[bq] + dvb - V[co] - dvc), i0 = at(0, 0, 0);
+    nodes.forEach((m, j) => { const d = [0, 0, 0]; d[j] = 1e-6; const i1 = at(...d); nodes.forEach((p, k) => { if (idx.has(p) && idx.has(m)) Mr[idx.get(p)][idx.get(m)] += (i1[k] - i0[k]) / 1e-6; }); });
+  }
+  const [ir, ii] = b.yrec(w); // the Norton current into node 8
+  br[idx.get(8)] = ir; bi[idx.get(8)] = ii;
+  const A = [], rhs = [];
+  for (let i = 0; i < n; i++) { A.push([...Mr[i], ...Mi[i].map((v) => -v)]); rhs.push(br[i]); }
+  for (let i = 0; i < n; i++) { A.push([...Mi[i], ...Mr[i]]); rhs.push(bi[i]); }
+  const sol = solveReal(A, rhs);
+  return Math.hypot(sol[idx.get(1)], sol[n + idx.get(1)]);
+}
+// the growth rate (1/s; above zero, it oscillates by itself) and frequency (Hz) of the circuit's
+// least-damped disturbance, plugged in either way (forward, the input jack held by its source)
+function growth(P, back, T = 1 / 400000, secs = 0.2) {
+  const c = parts(P), V = operatingPoint(P), Rs = [...c.R], Cs = [...c.C], Ls = [...c.L];
+  const free = back ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] : [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  if (back) {
+    const b = bassOf(P);
+    if (b.L > 0) { free.push(14); Rs.push([8, 14, b.R]); Ls.push([14, 0, b.L]); } else Rs.push([8, 0, b.R]);
+    if (Number.isFinite(b.pots)) Rs.push([8, 0, b.pots]);
+    Rs.push([1, 0, b.amp]); Cs.push([8, 0, b.C], [1, 0, b.ampC]);
+  }
+  const idx = new Map(free.map((nd, i) => [nd, i])), n = free.length + Ls.length;
+  const G = Array.from({ length: n }, () => new Array(n).fill(0)), C = Array.from({ length: n }, () => new Array(n).fill(0));
+  const stamp = (M, a, bb, y) => { for (const [p, q, s] of [[a, a, 1], [bb, bb, 1], [a, bb, -1], [bb, a, -1]]) if (idx.has(p) && idx.has(q)) M[idx.get(p)][idx.get(q)] += s * y; };
+  for (const [a, bb, r] of Rs) stamp(G, a, bb, 1 / r);
+  for (const [a, bb, cap] of Cs) stamp(C, a, bb, cap);
+  Ls.forEach(([a, bb, h], k) => { // its current j, from a to b: in the KCL rows, and v_a − v_b = h dj/dt
+    const j = free.length + k;
+    if (idx.has(a)) { G[idx.get(a)][j] += 1; G[j][idx.get(a)] -= 1; }
+    if (idx.has(bb)) { G[idx.get(bb)][j] -= 1; G[j][idx.get(bb)] += 1; }
+    C[j][j] += h;
+  });
+  for (const [bq, co, e] of c.Q) {
+    const nodes = [bq, co, e], at = (d) => bjt(V[bq] + d[0] - V[e] - d[2], V[bq] + d[0] - V[co] - d[1]), i0 = at([0, 0, 0]);
+    nodes.forEach((m, j) => { const d = [0, 0, 0]; d[j] = 1e-6; const i1 = at(d); nodes.forEach((p, k) => { if (idx.has(p) && idx.has(m)) G[idx.get(p)][idx.get(m)] += (i1[k] - i0[k]) / 1e-6; }); });
+  }
+  // backward Euler: (G + C/T) x' = (C/T) x
+  const A = G.map((row, i) => row.map((g, j) => g + C[i][j] / T));
+  const cols = Array.from({ length: n }, (_, i) => solveReal(A.map((r) => [...r]), Array.from({ length: n }, (_, k) => +(k === i))));
+  const M = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => { let s = 0; for (let k = 0; k < n; k++) s += cols[k][i] * C[k][j] / T; return s; }));
+  let xv = Array.from({ length: n }, (_, i) => Math.sin(7.1 * i + 1)), logN = 0, ups = 0, prev = 0, first = -1, last = -1;
+  const steps = Math.round(secs / T), probe = idx.get(4);
+  for (let s = 0; s < steps; s++) {
+    const yv = M.map((row) => row.reduce((acc, m, j) => acc + m * xv[j], 0)), norm = Math.hypot(...yv);
+    xv = yv.map((v) => v / norm);
+    if (s < steps / 2) continue;
+    logN += Math.log(norm);
+    if (prev < 0 && xv[probe] >= 0) { ups++; if (first < 0) first = s; last = s; }
+    prev = xv[probe];
+  }
+  return { rate: logN / (steps / 2) / T, f: ups > 1 ? (ups - 1) / ((last - first) * T) : 0 };
+}
+function squeal(P) {
+  const s = scratch(x), v = Effect.native(P);
+  s.f64(v.length).set(v);
+  x.wah_squeal(s.at);
+  const [on, f, pk] = s.f64(3);
+  return { on: !!on, f, peak: pk };
+}
+// the engine from silence, plugged in backwards: its pitch and peak over its second half
+function play(P, secs = 0.5) {
+  const e = new Effect(fs);
+  e.setParams(P);
+  const n = Math.round(secs * fs), inp = new Float32Array(n), L = new Float32Array(n), R = new Float32Array(n);
+  e.process(inp, L, R);
+  e.destroy();
+  const y = L.subarray(n / 2);
+  let ups = 0, first = -1, last = -1, pk = 0;
+  for (let i = 1; i < y.length; i++) { pk = Math.max(pk, Math.abs(y[i])); if (y[i - 1] < 0 && y[i] >= 0) { ups++; if (first < 0) first = i; last = i; } }
+  return { peak: pk, f: ups > 1 ? ((ups - 1) * fs) / (last - first) : 0, start: L.findIndex((v) => Math.abs(v) > 0.01) / fs };
+}
+{
+  const back = with_({ reversed: true }), active = with_({ reversed: true, active: true });
+  // a: from a passive bass the loop oscillates over most of the rocker's travel; forward, and from
+  // an active bass, it never does
+  const g = [0, 0.3, 0.5, 0.9, 1].map((position) => growth({ ...back, position }, true));
+  check(g[0].rate > 100 && g[1].rate > 100 && g[2].rate > 100 && g[3].rate < 0 && g[4].rate < 0,
+    'backwards from a passive bass: its linearised circuit grows by itself from the heel to past halfway, and is stable toe down',
+    g.map((r, i) => `${[0, 30, 50, 90, 100][i]} %: ${r.rate.toFixed(0)}/s${r.rate > 0 ? ` at ${r.f.toFixed(0)} Hz` : ''}`).join(', '));
+  const fw = [0, 0.5, 1].map((position) => growth(with_({ position }), false).rate), ac = [0, 0.5, 1].map((position) => growth({ ...active, position }, true).rate);
+  check(fw.every((r) => r < 0) && ac.every((r) => r < 0), 'and it is stable plugged in the right way round, and backwards from an active bass',
+    `forward ${fw.map((r) => r.toFixed(0)).join(', ')}/s; active ${ac.map((r) => r.toFixed(0)).join(', ')}/s`);
+  // b: the engine squeals exactly where the linear analysis says it grows, and starts by itself
+  const where = [0, 0.3, 0.5, 0.9, 1].map((position) => play({ ...back, position }));
+  const agree = where.every((r, i) => (r.peak > 0.01) === (g[i].rate > 0)) && [0, 0.5, 1].every((position) => play({ ...active, position }).peak < 1e-4);
+  check(agree, 'engine: it squeals from silence just where the linearised circuit grows, and is silent elsewhere',
+    where.map((r, i) => `${[0, 30, 50, 90, 100][i]} %: ${r.peak.toFixed(2)} V`).join(', '));
+  check(where[0].start >= 0 && where[0].start < 0.1, 'the squeal starts by itself within 0.1 s of plugging in', `${(1000 * where[0].start).toFixed(0)} ms`);
+  const sq = [0, 0.3, 0.6].map((position) => play({ ...back, position }));
+  check(sq.every((r, i) => !i || (r.f > sq[i - 1].f && r.peak < sq[i - 1].peak)) && Math.abs(sq[0].f / 880 - 1) < 0.05 && Math.abs(sq[2].f / 1160 - 1) < 0.05,
+    'Reversed: the squeal\'s pitch rises from about 880 Hz heel down to 1.16 kHz at 60 %, and it quietens as it goes',
+    sq.map((r) => `${r.f.toFixed(0)} Hz ${r.peak.toFixed(2)} V`).join(' → '));
+  const ss = [0.3, 0.9].map((position) => squeal({ ...back, position })), es = play({ ...back, position: 0.3 });
+  check(ss[0].on && !ss[1].on && Math.abs(ss[0].f / es.f - 1) < 0.01, 'model: the page\'s squeal check agrees with the engine', `${ss[0].f.toFixed(0)} Hz against ${es.f.toFixed(0)} Hz; none at 90 %`);
+  const c10 = play({ ...back, sweepC: 10e-9, position: 0 }), c47 = play({ ...back, sweepC: 47e-9, position: 0 });
+  check(c10.f > 1.3 * where[0].f && c47.f < 0.75 * where[0].f, 'Range: the sweep capacitor moves the squeal too', `heel down ${c47.f.toFixed(0)} Hz (47 nF), ${where[0].f.toFixed(0)} Hz (22 nF), ${c10.f.toFixed(0)} Hz (10 nF)`);
+  // c: where it is stable, the model's response is the independent analysis, and the engine follows it
+  let worst = 0;
+  for (const P of [{ ...back, position: 1 }, { ...back, position: 0.9, cable: 30 }, { ...active, position: 0 }, { ...active, position: 0.5, outCable: 20 }, { ...active, position: 1, load: 100e3 }]) {
+    const freqs = logspace(50, 8000, 16), m = model(P, freqs), V = operatingPoint(P);
+    freqs.forEach((f, i) => { worst = Math.max(worst, Math.abs(db(m[i]) - db(responseBack(P, f, V)))); });
+  }
+  check(worst < 0.05, 'model: backwards, the response is complex nodal analysis with the bass as a Norton source', `worst ${worst.toFixed(4)} dB`);
+  let worstE = 0;
+  for (const P of [{ ...active, position: 0 }, { ...active, position: 0.5 }, { ...back, position: 1 }]) {
+    for (const f of [250, 1000, 2000]) worstE = Math.max(worstE, Math.abs(db(measure(P, f)) - db(model(P, [f])[0])));
+  }
+  check(worstE < 0.2, 'engine: backwards, a 1 mV sine\'s gain is the model\'s', `worst ${worstE.toFixed(3)} dB`);
+  // d: from an active bass, a wah that works backwards: the peak follows the rocker and fades toward the toe
+  const ap = [0, 0.5, 1].map((position) => peak({ ...active, position }));
+  check(ap.every((p, i) => !i || (p.f > ap[i - 1].f && p.db < ap[i - 1].db)), 'from an active bass, the peak still rises with the rocker, and fades toward the toe',
+    ap.map((p) => `${p.f.toFixed(0)} Hz ${p.db.toFixed(1)} dB`).join(' → '));
+  // e: the hints of what it brings in
+  const c30 = play({ ...back, position: 0, cable: 30 });
+  check(Math.abs(c30.f / where[0].f - 1) < 0.05 && Math.abs(db(c30.peak / where[0].peak)) < 1, 'Cable from the bass: it hardly matters', `30 m: ${c30.f.toFixed(0)} Hz ${c30.peak.toFixed(2)} V against ${where[0].f.toFixed(0)} Hz ${where[0].peak.toFixed(2)} V`);
+  const o30 = play({ ...back, position: 0, outCable: 30 }), l10 = play({ ...back, position: 0, load: 10e3 });
+  const o = db(o30.peak / where[0].peak), l = db(l10.peak / where[0].peak);
+  check(o < -5 && o > -9, 'Cable to the amp: 30 m takes the squeal down by about 7 dB', `${o.toFixed(1)} dB`);
+  check(l < -15 && l > -21, 'Amp\'s input: into 10 kΩ the squeal is about 18 dB down', `${l.toFixed(1)} dB`);
+  const b0 = play({ ...back, position: 0.3, blend: 0 }), b1 = play({ ...back, position: 0.3, blend: 1 });
+  check(b0.peak === b1.peak, 'Clean blend: off when plugged in backwards', `${b0.peak.toFixed(3)} V and ${b1.peak.toFixed(3)} V`);
+  // e2: Auto backwards: the follower hears the input jack, which now carries the squeal, and rocks
+  // away from it; up, it pushes toward the toe until the squeal holds itself at the edge
+  {
+    const run = (over) => {
+      const e = new Effect(fs);
+      e.setParams({ ...back, ...PEDAL.presets['Auto: funky envelope'], reversed: true, ...over });
+      const n = 3 * fs, inp = new Float32Array(n), L = new Float32Array(n), R = new Float32Array(n);
+      e.process(inp, L, R);
+      e.destroy();
+      const pk = (a, b) => L.subarray(a * fs, b * fs).reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+      return [pk(2, 2.5), pk(2.5, 3)];
+    };
+    const up = run({ direction: 'up', position: 0 }), down = run({ direction: 'down', position: 0.9 });
+    check(up[0] > 0.01 && up[0] < where[0].peak / 4 && Math.abs(up[1] / up[0] - 1) < 0.1, 'Auto backwards, up: the follower hears the squeal and rocks it down to a steady edge',
+      `${up[0].toFixed(2)} V and ${up[1].toFixed(2)} V against ${where[0].peak.toFixed(2)} V by foot, heel down`);
+    check(down[1] < 1e-4, 'and down, resting near the toe, it never starts', `${down[1].toExponential(1)} V`);
+  }
+  // f: hygiene: turning the cables round on silence, either way, makes no thump in a stable setting,
+  // and the test bass plays through it backwards
+  const e = new Effect(fs), z = new Float32Array(4800), zL = new Float32Array(4800), zR = new Float32Array(4800);
+  e.setParams(with_({ position: 1 }));
+  e.process(z, zL, zR);
+  let most = 0;
+  for (const rev of [true, false, true]) {
+    e.setParams(with_({ position: 1, reversed: rev }));
+    e.process(z, zL, zR);
+    most = zL.reduce((m, v) => Math.max(m, Math.abs(v)), most);
+  }
+  check(most < 1e-5, 'turning it round toe down, on silence, makes no sound of its own', `largest ${most.toExponential(1)} V`);
+  e.destroy();
+  const TB = await loadBass(), tb = new TB(fs);
+  tb.note(28, 0.8);
+  const n = fs, inp = new Float32Array(n), L = new Float32Array(n), R = new Float32Array(n);
+  tb.process(inp);
+  const q = new Effect(fs);
+  q.setParams({ ...back, position: 0.85 });
+  q.process(inp, L, R);
+  check(L.every(Number.isFinite) && L.reduce((m, v) => Math.max(m, Math.abs(v)), 0) > 1e-4, 'the test bass\'s low E through it backwards plays');
+  q.destroy();
+}
+
+// 12. CPU: the budget is 5 % of a core, with the rocker moving all the time (the faster of two
 // runs, since the other test files share the machine)
 if (!CI) {
   const n = 10 * fs, inp = sine(82.4, fs, n, 0.3), L = new Float32Array(n), R = new Float32Array(n);
@@ -313,6 +586,15 @@ if (!CI) {
     e.destroy();
   }
   check(ms < 500, 'CPU: ten seconds of audio, the rocker moving, in under 0.5 s', `${ms.toFixed(0)} ms`);
+  let ma = Infinity;
+  for (let run = 0; run < 2; run++) {
+    const e = new Effect(fs), t0 = performance.now();
+    e.setParams(auto_({ ...PEDAL.presets['Auto: funky envelope'] }));
+    for (let at = 0; at < n; at += 128) e.process(inp.subarray(at, at + 128), L.subarray(at, at + 128), R.subarray(at, at + 128));
+    ma = Math.min(ma, performance.now() - t0);
+    e.destroy();
+  }
+  check(ma < 500, 'CPU: and in Auto, the follower moving it on every block, under 0.5 s too', `${ma.toFixed(0)} ms`);
 }
 
 done();

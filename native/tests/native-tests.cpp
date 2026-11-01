@@ -116,10 +116,76 @@ int main() {
     const double ms = a.measured(), want = 1000.0 * D / 48000;
     check(ms > 0 && std::abs(ms - want) < 1000.0 * 2 / 48000, "the loopback test times a 300-sample cable to two samples");
     std::printf("     (measured %.3f ms for %.3f ms)\n", ms, want);
+
+    // a NaN arriving at the input reaches neither the pedal nor the dry path, and the blocks after
+    // it play on
+    bool finite = true;
+    for (int b = 0; b < 10; b++) {
+      for (int i = 0; i < n; i++) { in[2 * i] = 0; in[2 * i + 1] = b == 3 && i == 10 ? NAN : 0.4f; }
+      a.bypass = b == 3; // the footswitch's crossfade under way, so the dry path is heard too
+      a.process(in.data(), 2, out.data(), 2, n);
+      finite = finite && std::all_of(out.begin(), out.end(), [](float y) { return std::isfinite(y); });
+    }
+    check(finite, "a NaN at the input never reaches the output");
+    check(std::abs(out[2 * (n - 1)] - 0.4f) < 1e-4, "and the blocks after it play on");
+  }
+
+  // bypassed, the app's output is the input as late as the pedal would be (the Phuzz's latency, its
+  // oversampling filters), so the footswitch's crossfade never sums the two a few samples apart
+  {
+    const phuzzbox::PedalInfo *phuzz = phuzzbox::app::findPedal("phuzz");
+    phuzzbox::app::Engine a(*phuzz);
+    a.prepare(48000, 64);
+    const int lat = std::unique_ptr<phuzzbox::Effect>(phuzz->create(48000))->latency();
+    a.bypass = true;
+    a.prepare(48000, 64);
+    std::vector<float> in(64), out(128), all, got;
+    for (int b = 0; b < 20; b++) {
+      for (int i = 0; i < 64; i++) { in[i] = (float)(0.3 * std::sin(0.01 * (b * 64 + i) * (b * 64 + i))); all.push_back(in[i]); }
+      a.process(in.data(), 1, out.data(), 2, 64);
+      for (int i = 0; i < 64; i++) got.push_back(out[2 * i]);
+    }
+    double worst = 0;
+    for (size_t t = lat; t < got.size(); t++) worst = std::max(worst, (double)std::abs(got[t] - all[t - lat]));
+    char what[96];
+    std::snprintf(what, sizeof what, "bypassed, the app delays the dry signal by the pedal's latency (%d samples)", lat);
+    check(lat > 0 && worst < 1e-6, what);
+  }
+
+  // the Wah's Supply turned while it plays moves the circuit without a click: the largest step from
+  // one sample to the next, a 110 Hz tone at 0.2 V, stays what it is with the knob still (it used
+  // to start the circuit again from its DC solution at each step of the knob)
+  {
+    const phuzzbox::PedalInfo *wah = phuzzbox::app::findPedal("wah");
+    std::unique_ptr<phuzzbox::Effect> e(wah->create(48000));
+    std::vector<double> P(wah->paramCount);
+    int vcc = -1;
+    for (int i = 0; i < wah->paramCount; i++) { P[i] = wah->params[i].def; if (!std::strcmp(wah->params[i].id, "vcc")) vcc = i; }
+    e->setParams(P.data());
+    const int n = 128;
+    float x[n], L[n], R[n], last = 0;
+    double still = 0, turning = 0;
+    long t = 0;
+    for (int b = 0; b < 400; b++) {
+      if (b >= 200 && b < 300) { P[vcc] = wah->params[vcc].def + 0.01 * (b - 199); e->setParams(P.data()); }
+      for (int i = 0; i < n; i++, t++) x[i] = (float)(0.2 * std::sin(2 * 3.14159265358979323846 * 110 * t / 48000));
+      e->process(x, L, R, n);
+      for (int i = 0; i < n; i++) {
+        const double d = std::abs(L[i] - last);
+        last = L[i];
+        if (b >= 100 && b < 200) still = std::max(still, d);
+        if (b >= 200 && b < 300) turning = std::max(turning, d);
+      }
+    }
+    char what[128];
+    std::snprintf(what, sizeof what, "turning the Wah's Supply doesn't click (largest step %.4f V turning, %.4f V still)", turning, still);
+    check(vcc >= 0 && turning < 1.5 * still, what);
   }
 
   // every pedal the app offers plays through its engine: a low E at a passive pickup's level
-  // comes out, and bounded, each with its defaults
+  // comes out, and bounded, each with its defaults. "Comes out" is above 1 mV: a pure 41.2 Hz
+  // sine is all fundamental, and the Envelope Filter's band-pass, swept far above it, passes
+  // only a few millivolts of it (a string's harmonics are what it is for)
   {
     using namespace phuzzbox::app;
     check(pedals().size() >= 2 && findPedal("phuzz") && !findPedal("nonesuch"), "the app has its pedals, found by slug");
@@ -138,7 +204,7 @@ int main() {
       }
       char what[96];
       std::snprintf(what, sizeof what, "the app plays the %s: a low E comes out, finite and under 20 V (peak %.3f V)", p->name, peak);
-      check(finite && peak > 0.01 && peak < 20, what);
+      check(finite && peak > 1e-3 && peak < 20, what);
     }
   }
   return failures ? 1 : 0;

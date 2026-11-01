@@ -14,6 +14,8 @@ template: the smallest pedal with a model, an engine, a page, views, tests and p
 <slug>/wasm/<slug>.wasm                 built from native/, committed
 <slug>/src/<slug>-tour.js               its guided tour of the physics (shared/tour.js)
 <slug>/README.md                        the page's How it works
+<slug>/src/<slug>-schematics.js         its circuit diagrams (shared/schematic.js), written to
+<slug>/schematics/*.svg                 by tools/gen-schematics.mjs, shown as figures
 native/pedals/<slug>/                   model, engine, PedalInfo, web bindings, CMakeLists.txt
 native/pedals/<slug>/<slug>-params.h    generated from the descriptor (tools/gen-native-params.mjs)
 test/<slug>-tests.mjs
@@ -33,7 +35,10 @@ The page lays itself out (`shared/layout.js`, after Forte's): the pedal at the l
 with a toggle for each view, a Controls bar with a toggle for each group, the test bass below. A
 view's `title` names its toggle and its `caption` waits behind ⓘ; `perform: true` shows it at first
 (by default the first two are). A view draws to fill its card, whatever shape it is given, and
-redraws on resize. A spectrum marks the note being played with `markNote(g, x, box, api.note)`
+redraws on resize. Every page has a Scope and a Spectrum (`shared/views.js`): the shell adds them
+to a page that doesn't bring its own, and a pedal with something to say about them passes
+`scopeView({ caption })` or `spectrumView({ caption })` among its views. A view of its own that
+plots against frequency marks the note being played with `markNote(g, x, box, api.note)`
 (`shared/plot.js`). Every page is dark, with the hardware drawn as hardware (`shared/pedal.css`).
 
 Add the pedal to `shared/registry.js` (`ready: true`, `version`, a unique four-letter
@@ -82,9 +87,16 @@ irrelevant control on the page.
 ## How it works and the guided tour
 
 **How it works**, by the page's title, is the pedal's README in a dialog (`shared/notes.js`),
-with tabs for the test bass's notes (`testbass/README.md`) and the tuner's (`tuner/README.md`),
-since every page plays the one and shows the other. It leaves out the README's `## Files` and
-lists its other `##` sections as contents. `…/#about`, `#testbass` and `#tuner` open it.
+with tabs for what every page has: the test bass (`testbass/README.md`), the tuner
+(`tuner/README.md`), the scope (`scope/README.md`) and the spectrum (`spectrum/README.md`). It
+leaves out the README's `## Files` and lists its other `##` sections as contents. `…/#about`,
+`#testbass`, `#tuner`, `#scope` and `#spectrum` open it.
+
+The site never sends a reader to GitHub for information (Jesse, 2026-11-01); the only link there is
+the credits' `source` (`SOURCE` in `shared/registry.js`). Everything a reader needs goes in the
+README, which is on the site. Link other notes as relative READMEs (`../tuner/README.md`, with
+`#section` if you like): the dialog opens their tab, or that pedal's page. A link to any other file
+of the repository shows as plain text, and papers and standards keep their own links.
 
 **Tour**, before it, is the pedal's guided tour of its physics, as Forte's instruments have: a
 card under the pedal's face steps through three to eight steps, each setting the pedal up,
@@ -101,7 +113,7 @@ export const TOUR = tour('phuzz', [
 ]);
 ```
 
-A step names its views by their titles (and `Tuner`), a preset by name, parameters by id; it
+A step names its views by their titles (and `Tuner`, `Scope`, `Spectrum`), a preset by name, parameters by id; it
 starts engaged unless `bypass: true`, and keeps the player's own bass (the descriptor's `keep`).
 `play` holds notes (`note('E1', { at, dur, vel })`, `run`, `riff()` for the page's riff),
 `{ at, set: { … } }` and `sweep(id, from, to, { at, dur, log })` to turn a knob partway, and
@@ -109,9 +121,30 @@ starts engaged unless `bypass: true`, and keeps the player's own bass (the descr
 and the player's source come back. The tour reaches the page only through `api.page`
 (`shared/shell.js`), so a new layout keeps those members and the tours follow it.
 
+**Circuit diagrams.** Draw them in `<slug>/src/<slug>-schematics.js`, exporting
+`SCHEMATICS = { name: () => s.svg() }` built with `schematic()` from `shared/schematic.js` (wires,
+resistors, capacitors, inductors, pots, photocells, diodes, triodes, transistors, amplifiers and
+blocks on a 20 px grid, each diagram on its own dark panel). `node tools/gen-schematics.mjs`
+writes them to `<slug>/schematics/<name>.svg`. A README or a tour's text shows one as a figure,
+an image alone in its paragraph: `![What it shows](schematics/name.svg)`, its alt text the
+caption. Figures load from the site (the renderer's `assets` URL), never from GitHub.
+`test/schematics-tests.mjs` fails when a diagram is stale or a figure is missing.
+
 `test/tour-tests.mjs` checks every ready pedal's tour against its page and descriptor, and that
 every quantity in its text (a number and its unit) is one of the READMEs' or a setting the step
 makes: the tour says nothing the README, and so the tests, don't back.
+
+## Plugged in backwards
+
+A pedal may have a **Reversed** checkbox (id `reversed`): the bass into its output jack and its input
+jack to the amp. Give it one only where the model can honestly be driven from its output: the
+bass as its pickup (a Norton source, as the Phuzz, the Tube Preamp and the Wah backwards have it)
+at the output node, the amp's cable and input at the input node, and every path the signal could
+take back present in the model. Where the real leak back is through parts the model leaves out
+(a transistor's junction capacitances, say), it has none, and its README says why under
+`## Plugged in backwards`. A backwards circuit can be unstable (the Wah squeals): test where it
+oscillates against an independent analysis, not only its response. The Wah is the example
+(`native/pedals/wah/wah-model.cpp`, its `wah_squeal` for the page).
 
 ## Tests
 

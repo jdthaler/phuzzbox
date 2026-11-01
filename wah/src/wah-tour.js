@@ -14,7 +14,9 @@ export const TOUR = tour('wah', [
     preset: 'Bass wah (22 nF)',
     set: { position: 0 },
     play: [note('A1', { dur: 7, vel: 0.85 }), rock({ at: 0.5, dur: 6 })],
-    text: `A coil of half a henry and a capacitor make a resonance; two transistors make a loop that drives the capacitor's far end with a copy of its near end. From the coil, that capacitor looks (1 + A) times larger (the Miller effect), and the pot under your foot sets the loop's gain A:
+    text: `![The wah: the coil L1 and sweep capacitor C3, two transistors, and the rocker's pot](schematics/circuit.svg)
+
+A coil of half a henry and a capacitor make a resonance; two transistors make a loop that drives the capacitor's far end with a copy of its near end. From the coil, that capacitor looks (1 + A) times larger (the Miller effect), and the pot under your foot sets the loop's gain A:
 
   f ≈ 1 / (2π √(L C (1 + A)))
 
@@ -58,5 +60,28 @@ The classic value is 33 kΩ. **Q** on the pedal's face is that resistor.`,
     text: `Whatever the rocker does, the circuit leaves 100 Hz about 11 dB down, and a bass's fundamentals with it: through a wah alone, the low end goes.
 
 Bass wahs add a **Clean blend** pot, which mixes the dry signal back in under the wah. Halfway it goes to 40 %: the bottom comes back, and the sweep rides on top of it.`,
+  },
+  {
+    title: 'Auto: rocked by how hard you play',
+    views: ['The sweep', 'Scope'],
+    preset: 'Auto: funky envelope',
+    play: [note('A1', { dur: 1.5, vel: 0.9 }), note('D2', { at: 1.5, dur: 1.5, vel: 0.5 }), note('E1', { at: 3, dur: 2, vel: 1 }), riff({ at: 5.5 })],
+    text: `With **Rocked by** on Auto, an envelope follower moves the rocker for you. A capacitor charges from the rectified bass through an attack resistor (5 ms) and drains through a decay resistor (0.25 s), so its voltage reads close to each note's peak.
+
+That voltage pushes the rocker from heel toward toe. Each pluck opens the peak upward, and as the note fades the peak falls back: *wow*. A harder note goes further and stays up longer. Watch the solid curve in **The sweep** jump with every note.`,
+  },
+  {
+    title: 'Plugged in backwards',
+    views: ['The sweep', 'Spectrum'],
+    preset: 'Plugged in backwards',
+    set: { position: 0 },
+    play: [
+      sweep('position', 0, 0.85, { at: 0.5, dur: 6, steps: 40 }),
+      sweep('position', 0.85, 0, { at: 7, dur: 3, steps: 20 }),
+      riff({ at: 10.5 }),
+    ],
+    text: `Your bass into the wah's output jack, its input jack to the amp. The signal runs the loop the other way, from the pot's wiper through Q2 and the coil to Q1's base, and out of the input jack. But Q1 still drives the output jack, where the pickup's coil now hangs, and the coil's inductance turns the loop's phase round: from a passive bass, the loop oscillates on its own.
+
+That is the seagull of a wah plugged in backwards. Heel down it squeals near 880 Hz; rocked forward it climbs to 1.16 kHz by 60 % and fades, and past about three quarters of the travel it stops. Then the riff, heel down: the notes shake the squeal rather than replacing it. Bypassed, the true-bypass switch joins the jacks, and it plays the same either way round. From an active bass it would not squeal at all.`,
   },
 ]);
