@@ -1,4 +1,4 @@
-# The Phuzzbox app: a pedal at a time (pedals.cpp) in a window of its own, through the audio interface at small buffers
+# The PhuzzBox app: a pedal at a time (pedals.cpp) in a window of its own, through the audio interface at small buffers
 # (main.cpp). Its window is app/window.html (tools/bundle-app.mjs), embedded in the program.
 
 # the audio engine and the pedals, for the tests
@@ -34,11 +34,11 @@ target_include_directories(phuzz_app SYSTEM PRIVATE ${choc_SOURCE_DIR} ${RTAUDIO
 target_link_libraries(phuzz_app PRIVATE phuzz_app_engine rtaudio rtmidi)
 file(READ ${PHUZZ_ROOT}/package.json package)
 string(JSON PHUZZ_APP_VERSION GET "${package}" version)
-set_target_properties(phuzz_app PROPERTIES OUTPUT_NAME Phuzzbox RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/app)
+set_target_properties(phuzz_app PROPERTIES OUTPUT_NAME PhuzzBox RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/app)
 if (APPLE)
   set_target_properties(phuzz_app PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
-    MACOSX_BUNDLE_BUNDLE_NAME Phuzzbox
+    MACOSX_BUNDLE_BUNDLE_NAME PhuzzBox
     MACOSX_BUNDLE_GUI_IDENTIFIER net.jthaler.phuzzbox.app
     MACOSX_BUNDLE_BUNDLE_VERSION ${PHUZZ_APP_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PHUZZ_APP_VERSION}

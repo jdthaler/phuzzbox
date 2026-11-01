@@ -1,4 +1,4 @@
-// engine.h — the Phuzzbox app's audio, as the page's worklet does it (shared/worklet.js): one of
+// engine.h — the PhuzzBox app's audio, as the page's worklet does it (shared/worklet.js): one of
 // the interface's input channels, in volts (× Full scale), through the pedal, to every output
 // channel; the footswitch's crossfade; the volume (a MIDI volume pedal's); Mute; the levels; the input kept for the tuner; and the
 // loopback latency test. process() runs on the audio thread and never allocates or locks; the
