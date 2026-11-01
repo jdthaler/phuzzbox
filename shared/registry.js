@@ -69,6 +69,11 @@ export const PEDALS = [
     after: 'the steel plate reverbs of 1960s studios',
     blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',
   },
+  {
+    id: 'sympathetic', name: 'Sympathetic Strings', version: '0.1.0', ready: true, plugin: { code: 'Symp' },
+    after: 'the sitar\'s sympathetic strings',
+    blurb: 'A frame of steel strings tuned to a key, all on one bridge your bass shakes: the strings whose partials your notes share ring along, a halo that follows the key.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

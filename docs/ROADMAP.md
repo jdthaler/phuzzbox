@@ -77,6 +77,11 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    linear-phase filters; tested against the lattice and Weyl's law, every mode summed at the full
    rate in double precision, the decay by Schroeder's integral, and the bending waves' arrival at
    the pickups at their group velocity 2√(κω).
+   The **Sympathetic Strings** landed 2026-11-01: a frame of stiff steel strings tuned to a key and
+   scale, all at one stress, on a bridge the bass drives as an ideal velocity source; each partial
+   (Fletcher's n f₀ √(1 + Bn²)) a resonator pulling on the bridge, with Chaigne and Askenfelt's
+   b₁ + b₃ω² losses; tested against the string's driving-point closed form −T k cot(kL), every
+   partial summed in double precision, the stretched partials and the decay heard in the output.
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.
