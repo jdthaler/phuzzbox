@@ -1,7 +1,7 @@
 // preamp-main.js — the Tube Preamp's page: the shell (shared/shell.js) and its views.
 
 import { createPedal } from '../../shared/shell.js';
-import { fit, css, freqAxes, animate } from '../../shared/plot.js';
+import { fit, css, freqAxes, animate, markNote } from '../../shared/plot.js';
 import { scratch, wasmEffect } from '../../shared/wasm.js';
 import { PEDAL } from './preamp-pedal.js';
 
@@ -75,7 +75,7 @@ const tubeView = {
       if (!op) return;
       const { g, w, h } = fit(canvas);
       g.clearRect(0, 0, w, h);
-      const stacked = w < 640, pw = stacked ? w : w / 3, ph = stacked ? h / 3 : h;
+      const stacked = h > 0.6 * w, pw = stacked ? w : w / 3, ph = stacked ? h / 3 : h;
       [0, 1, 2].forEach((k) => {
         const ox = stacked ? 0 : k * pw, oy = stacked ? k * ph : 0;
         const box = { l: ox + 46, r: ox + pw - 10, t: oy + 16, b: oy + ph - 32 };
@@ -170,8 +170,8 @@ const scopeView = {
       let ma = 1e-4, mb = 1e-4;
       for (let i = 0; i < span; i++) { ma = Math.max(ma, Math.abs(k * a[start + i])); mb = Math.max(mb, Math.abs(b[off + start + i])); }
       const X = (i) => box.l + ((box.r - box.l) * i) / span, Y = (v, m) => (box.t + box.b) / 2 - ((box.b - box.t) / 2) * (v / m) * 0.95;
-      g.textAlign = 'right';
-      g.fillText(`${(ma * 1000).toFixed(0)} mV`, box.l - 4, box.t + 8);
+      g.textAlign = 'left';
+      g.fillText(`±${(ma * 1000).toFixed(0)} mV`, box.l + 4, box.t + 8);
       g.textAlign = 'center'; g.fillText(`50 ms; input ${(mb * 1000).toFixed(0)} mV at full height`, (box.l + box.r) / 2, h - 5);
       g.strokeStyle = css('--ink-2'); g.lineWidth = 1.2; g.setLineDash([4, 3]); g.beginPath();
       for (let i = 0; i < span; i++) { const yy = Y(b[off + start + i], mb); i ? g.lineTo(X(i), yy) : g.moveTo(X(i), yy); }
@@ -186,7 +186,7 @@ const scopeView = {
 // The spectra of the input and the output: the harmonics the triodes add.
 const spectrumView = {
   title: 'Spectrum',
-  caption: 'what goes in (dashed) and what comes out (solid), in dB of volts: clean, the harmonics are the bass\'s own, shaped by the tone stack; turned up, the triodes add their own, the even ones first, since each clips more on one side than the other.',
+  caption: 'what goes in (dashed) and what comes out (solid), in dB of volts: clean, the harmonics are the bass\'s own, shaped by the tone stack; turned up, the triodes add their own, the even ones first, since each clips more on one side than the other. The green line is the note you are playing, as the tuner hears it at the input, and the ticks along the top its harmonics.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -196,6 +196,7 @@ const spectrumView = {
       g.clearRect(0, 0, w, h);
       const { x, y, box } = freqAxes(g, w, h, { fmin: 30, dbMin: -120, dbMax: 0, step: h < 260 ? 24 : 12 });
       if (!api.analyser || !api.input) { g.fillStyle = css('--ink-2'); g.textAlign = 'center'; g.fillText('Start audio, then play', (box.l + box.r) / 2, (box.t + box.b) / 2); return; }
+      markNote(g, x, box, api.note);
       dOut ??= new Float32Array(api.analyser.frequencyBinCount); dIn ??= new Float32Array(api.input.frequencyBinCount);
       api.analyser.getFloatFrequencyData(dOut);
       api.input.getFloatFrequencyData(dIn);
