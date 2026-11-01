@@ -1,12 +1,19 @@
 // app.js — the Phuzzbox app's window: the pedal's face, the tuner, the audio settings and the
-// Controls, drawn from the same descriptor and modules as the site's page (shell.js), talking to
+// Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
-// program's web view as one page, bundled by tools/bundle-app.mjs.
+// program's web view as one page, bundled by tools/bundle-app.mjs. The menu in the header picks
+// the pedal: the program swaps it and the window is drawn again for it. MIDI foot controllers are
+// the site's MIDI card (shared/midi-panel.js), fed by the program's MIDI (window.phuzzMidi).
 
 import { params, defaults, fmt, toUnit, fromUnit, nativeValue } from '../../shared/params.js';
 import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
-import { PEDAL } from '../../buffer/src/buffer-pedal.js';
+import { midiPanel } from '../../shared/midi-panel.js';
+// every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
+import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
+import { PEDAL as PHUZZ } from '../../phuzz/src/phuzz-pedal.js';
+import { PEDAL as WAH } from '../../wah/src/wah-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
@@ -18,23 +25,41 @@ const h = (tag, attrs = {}, ...kids) => {
   return e;
 };
 
-const all = params(PEDAL.groups);
 const FRAMES = [16, 32, 64, 128, 256, 512];
+// the window is drawn again for each pedal; what is left running (the poll, the keys) checks it
+// still belongs to the window as drawn now
+let drawn = 0;
 
-async function main() {
-  const info = await call('describe');
+async function main(info, carry = {}) {
+  const me = ++drawn;
+  const PEDAL = DESCRIPTORS[info.pedal] ?? BUFFER;
+  const all = params(PEDAL.groups);
+  document.documentElement.dataset.pedal = PEDAL.id;
   const S = info.settings ?? {};
-  const P = { ...defaults(PEDAL.groups), ...(S.params ?? {}) };
+  const P = { ...defaults(PEDAL.groups), ...(info.params ?? {}) };
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
-  const audio = { input: '', output: '', frames: 64, rate: 0, channel: 0, bypass: 0, fullScale: 1, interface: '', gain: 20, ...(S.audio ?? {}) };
+  // the bass and how it is plugged in are the same whichever pedal it plays
+  for (const id of PEDAL.keep ?? []) if (id in carry && all.some((p) => p.id === id)) P[id] = carry[id];
+  const audio = { input: '', output: '', frames: 64, rate: 0, channel: 0, bypass: 0, fullScale: 1, interface: '', gain: 20, volume: 1, ...(S.audio ?? {}) };
   const ui = { a4: 440, ...(S.ui ?? {}) };
   let stream = info.stream;
 
   const app = document.getElementById('app');
+  app.replaceChildren();
   const status = h('span', { class: 'status' });
+  const pedalSel = h('select', { 'aria-label': 'Pedal', class: 'pedal-pick', title: 'The pedal to play; each keeps its own settings' },
+    ...(info.pedals ?? []).filter((d) => DESCRIPTORS[d.slug]).map((d) => h('option', { value: d.slug }, d.name)));
+  pedalSel.value = PEDAL.id;
+  pedalSel.addEventListener('change', async () => {
+    pedalSel.disabled = true;
+    status.textContent = 'switching…';
+    clearTimeout(saveTimer);
+    await call('store', 'params', P);
+    main(await call('pedal', pedalSel.value), Object.fromEntries((PEDAL.keep ?? []).map((id) => [id, P[id]])));
+  });
   const streamPill = h('span', { class: 'pill', title: 'The sample rate and buffer, and the round trip the buffers make' }, '–');
   const cpu = h('span', { class: 'pill', title: 'The share of the audio thread\'s time the pedal takes' }, 'CPU –');
-  app.append(h('header', { class: 'top' }, h('span', { class: 'home' }, 'Phuzzbox'), h('h1', {}, PEDAL.name), h('span', { class: 'spacer' }), streamPill, cpu, status));
+  app.append(h('header', { class: 'top' }, h('span', { class: 'home' }, 'Phuzzbox'), h('h1', {}, pedalSel), h('span', { class: 'spacer' }), streamPill, cpu, status));
 
   // ---- audio: the interface, its channel, the output, the buffer, Full scale
   const inSel = h('select', { 'aria-label': 'Input' }, ...info.inputs.map((d) => h('option', { value: d.name }, d.name)));
@@ -47,6 +72,8 @@ async function main() {
   const gainInput = h('input', { type: 'number', min: 0, max: 62, step: 1, 'aria-label': 'Interface gain in decibels' });
   const gainLabel = h('label', { class: 'inline' }, 'gain ', gainInput, ' dB');
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, 'aria-label': 'Volts at full scale' });
+  const volInput = h('input', { type: 'range', class: 'fader', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
+  const volOut = h('output', {});
   const audioCard = h('section', { class: 'card audiocard', 'aria-label': 'Audio' },
     h('div', { class: 'audio-row' }, h('b', {}, 'Audio'),
       h('label', { class: 'inline' }, 'In ', inSel), chanSel,
@@ -55,13 +82,24 @@ async function main() {
       measureBtn, measured),
     h('div', { class: 'audio-row' },
       h('span', { class: 'inline', title: 'Choose your interface and type its gain, and Full scale comes from the maker\'s specification' }, ifaceSel, gainLabel),
-      h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale sample' }, 'Full scale ', fsInput, ' V')));
+      h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale sample' }, 'Full scale ', fsInput, ' V'),
+      h('label', { class: 'inline', title: 'The level after the pedal, as a volume pedal sets it (a MIDI expression pedal moves it)' }, 'Volume ', volInput, volOut)));
   inSel.value = audio.input || info.inputs[0]?.name || '';
   outSel.value = audio.output || info.outputs[0]?.name || '';
   frameSel.value = audio.frames;
   ifaceSel.value = audio.interface;
   gainInput.value = audio.gain;
   fsInput.value = audio.fullScale;
+  volInput.addEventListener('input', () => setVolume(+volInput.value));
+  let volTimer = null;
+  function setVolume(g) {
+    audio.volume = Math.min(1, Math.max(0, g));
+    volInput.value = audio.volume;
+    volOut.textContent = `${Math.round(100 * audio.volume)} %`;
+    call('volume', audio.volume);
+    clearTimeout(volTimer);
+    volTimer = setTimeout(() => call('store', 'audio', audio), 300);
+  }
 
   function fillChannels() {
     const n = info.inputs.find((d) => d.name === inSel.value)?.channels ?? 2;
@@ -146,11 +184,11 @@ async function main() {
     for (const p of g.params) {
       const val = h('output', {});
       let input;
-      if (p.type === 'checkbox') { input = h('input', { type: 'checkbox', id: `p-${p.id}` }); input.addEventListener('change', () => set(p.id, input.checked)); }
+      if (p.type === 'checkbox') { input = h('input', { type: 'checkbox', class: 'switch', id: `p-${p.id}` }); input.addEventListener('change', () => set(p.id, input.checked)); }
       else if (p.type === 'select') { input = h('select', { id: `p-${p.id}` }, ...p.options.map(([v, l]) => h('option', { value: v }, l))); input.addEventListener('change', () => set(p.id, input.value)); }
-      else { input = h('input', { type: 'range', min: 0, max: 1000, step: 1, id: `p-${p.id}` }); input.addEventListener('input', () => set(p.id, fromUnit(p, input.value / 1000))); }
+      else { input = h('input', { type: 'range', class: 'fader', min: 0, max: 1000, step: 1, id: `p-${p.id}` }); input.addEventListener('input', () => set(p.id, fromUnit(p, input.value / 1000))); }
       const hint = h('p', { class: 'hint', hidden: true }, p.hint ?? '');
-      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, onclick: () => hint.toggleAttribute('hidden') }, 'ⓘ') : null;
+      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, onclick: () => hint.toggleAttribute('hidden') }, 'i') : null;
       const row = h('div', { class: 'row' }, h('label', { for: `p-${p.id}` }, p.label), infoBtn, input, val, hint);
       rows.push({ p, row, input, val });
       box.append(row);
@@ -159,7 +197,22 @@ async function main() {
   }
   const controls = h('section', { class: 'controls' }, h('div', { class: 'controls-bar' }, h('b', {}, 'Controls'), presetSel), groupsEl);
 
-  app.append(audioCard, h('div', { class: 'stage' }, face, h('section', { class: 'views' }, tunerCard)), controls,
+  // MIDI foot controllers: the site's card, its mappings kept in the settings file for each pedal
+  const midiSaved = { ...(S.midi ?? {}) };
+  const midiStore = {
+    get: (k, d) => (k in midiSaved ? midiSaved[k] : d),
+    set: (k, v) => { midiSaved[k] = v; call('store', 'midi', midiSaved); },
+  };
+  const midi = midiPanel({ PEDAL, h, store: midiStore, key: `phuzzbox.${PEDAL.id}`, ui: {
+    setVolume, bypassed: () => !!audio.bypass, setBypass, muted: () => muted, setMute,
+    value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
+  } });
+  window.phuzzMidi = (status, d1, d2) => midi.feed([status, d1, d2]); // the card's status names the inputs instead
+  const midiStatus = midi.el.querySelector('.midi-status'), midiHelp = midi.el.querySelector('.midi-help');
+  for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
+  midiHelp.textContent = 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and set it to Control Change mode. The app listens to every MIDI input. Learn, then move a pedal, teaches a row that pedal.';
+
+  app.append(audioCard, h('div', { class: 'stage' }, face, h('section', { class: 'views' }, tunerCard)), controls, midi.el,
     h('footer', {}, `${PEDAL.name} ${info.version} · Phuzzbox · physics, not samples. Space is the footswitch.`));
   for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
 
@@ -239,20 +292,20 @@ async function main() {
       },
     };
   }
-  addEventListener('keydown', (e) => {
-    if (e.code !== 'Space' || e.repeat || e.target.closest?.('input, select, textarea, button, [role=slider]')) return;
-    e.preventDefault();
-    setBypass(!audio.bypass);
-  });
+  onSpace = () => setBypass(!audio.bypass);
 
   // ---- the levels, the tuner and the measurement, ten times a second
-  let t = 0, wasMeasuring = false;
+  let t = 0, wasMeasuring = false, midiPorts = null;
   async function tick() {
+    if (me !== drawn) return; // a newer window has its own
     const r = await call('poll');
+    if (me !== drawn) return;
     t += 0.1;
     meterIn.set(r.in, r.in / audio.fullScale > 0.98);
     meterOut.set(r.out, r.out / audio.fullScale > 0.98);
     cpu.textContent = `CPU ${(100 * r.cpu).toFixed(1)}%`;
+    const ports = (r.midi ?? []).join(', ');
+    if (ports !== midiPorts) { midiPorts = ports; midiStatus.textContent = ports ? `listening to ${ports}` : 'no MIDI input: plug in the interface'; }
     if (r.measured === -1) wasMeasuring = true;
     else if (wasMeasuring) {
       wasMeasuring = false;
@@ -277,11 +330,20 @@ async function main() {
 
   // the program already holds the saved parameters; send them all once so both agree
   for (const p of all) send(p);
+  if (Object.keys(carry).length) saveParams();
   setBypass(!!audio.bypass);
   setFullScale();
+  setVolume(audio.volume);
   refresh();
   showStream();
   tick();
 }
 
-main().catch((err) => { document.getElementById('app').textContent = `The window failed to start: ${err.message}`; });
+let onSpace = () => {};
+addEventListener('keydown', (e) => {
+  if (e.code !== 'Space' || e.repeat || e.target.closest?.('input, select, textarea, button, [role=slider]')) return;
+  e.preventDefault();
+  onSpace();
+});
+
+call('describe').then(main).catch((err) => { document.getElementById('app').textContent = `The window failed to start: ${err.message}`; });

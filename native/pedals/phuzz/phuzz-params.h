@@ -75,5 +75,6 @@ inline const phuzzbox::Preset kPresets[] = {
   {"Trimmed for a leaky one", kPreset6, 10},
 };
 inline constexpr int kPresetCount = 7;
+inline constexpr int kExpression = -1;
 
 } // namespace phuzz

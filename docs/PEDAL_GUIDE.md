@@ -12,11 +12,29 @@ template: the smallest pedal with a model, an engine, a page, views, tests and p
 <slug>/src/<slug>-main.js               createPedal({ PEDAL, worklet, views })
 <slug>/src/<slug>-worklet.js            registerPedal(PEDAL), for the AudioWorklet
 <slug>/wasm/<slug>.wasm                 built from native/, committed
+<slug>/src/<slug>-tour.js               its guided tour of the physics (shared/tour.js)
 <slug>/README.md                        the page's How it works
 native/pedals/<slug>/                   model, engine, PedalInfo, web bindings, CMakeLists.txt
 native/pedals/<slug>/<slug>-params.h    generated from the descriptor (tools/gen-native-params.mjs)
 test/<slug>-tests.mjs
 ```
+
+A descriptor may name its `expression` parameter (the Wah's `position`): a MIDI expression pedal
+(CC 1) moves it by default on the page and in the plugins. Every page also has the MIDI pedals card
+(`shared/midi-panel.js`), and every plugin a MIDI input with Bypass and Volume pedal parameters
+(`native/plugin/plugin.cpp`).
+
+A nonlinear circuit can be written as a netlist for `phuzzbox::dk::Circuit` (`phuzzbox/dk.h`):
+resistors, capacitors, inductors, sources, diodes and transistors, solved by the nodal DK method
+with Newton on the junctions only; `response(f)` gives its small-signal response for the views and
+tests. The Wah (`native/pedals/wah/wah-model.cpp`) is the example.
+
+The page lays itself out (`shared/layout.js`, after Forte's): the pedal at the left, a Views bar
+with a toggle for each view, a Controls bar with a toggle for each group, the test bass below. A
+view's `title` names its toggle and its `caption` waits behind ⓘ; `perform: true` shows it at first
+(by default the first two are). A view draws to fill its card, whatever shape it is given, and
+redraws on resize. A spectrum marks the note being played with `markNote(g, x, box, api.note)`
+(`shared/plot.js`). Every page is dark, with the hardware drawn as hardware (`shared/pedal.css`).
 
 Add the pedal to `shared/registry.js` (`ready: true`, `version`, a unique four-letter
 `plugin.code`) and to `native/CMakeLists.txt`.
@@ -60,6 +78,40 @@ Values in SI units; `scale` and `decimals` say how they read (the C++ shows the 
 `type: 'checkbox'` or `type: 'select'` with `options`. `perform: true` puts a knob on the
 pedal's face (three to five of them); the rest stay in the Controls panel. `showIf(P)` hides an
 irrelevant control on the page.
+
+## How it works and the guided tour
+
+**How it works**, by the page's title, is the pedal's README in a dialog (`shared/notes.js`),
+with tabs for the test bass's notes (`testbass/README.md`) and the tuner's (`tuner/README.md`),
+since every page plays the one and shows the other. It leaves out the README's `## Files` and
+lists its other `##` sections as contents. `…/#about`, `#testbass` and `#tuner` open it.
+
+**Tour**, before it, is the pedal's guided tour of its physics, as Forte's instruments have: a
+card under the pedal's face steps through three to eight steps, each setting the pedal up,
+showing only the views it is about, playing the test bass through it and saying what to listen
+for and look at. `…/#tour` opens it at its first step. Write it in `<slug>/src/<slug>-tour.js`
+and load it after the main module (`<script type="module" src="src/<slug>-tour.js"></script>`):
+
+```js
+import { tour, note, run, riff, sweep } from '../../shared/tour.js';
+export const TOUR = tour('phuzz', [
+  { title: 'Germanium leaks when warm', views: ['The transistors', 'Scope'], preset: 'Full fuzz',
+    set: { temp: 5 }, play: [riff({ times: 3 }), sweep('temp', 5, 45, { at: 0.5, dur: 14 })],
+    text: 'What to listen for and look at, and why (Markdown; an indented paragraph is an equation).' },
+]);
+```
+
+A step names its views by their titles (and `Tuner`), a preset by name, parameters by id; it
+starts engaged unless `bypass: true`, and keeps the player's own bass (the descriptor's `keep`).
+`play` holds notes (`note('E1', { at, dur, vel })`, `run`, `riff()` for the page's riff),
+`{ at, set: { … } }` and `sweep(id, from, to, { at, dur, log })` to turn a knob partway, and
+`{ at, bypass }` for the footswitch. When it ends, the settings, the footswitch, the tuner's mute
+and the player's source come back. The tour reaches the page only through `api.page`
+(`shared/shell.js`), so a new layout keeps those members and the tours follow it.
+
+`test/tour-tests.mjs` checks every ready pedal's tour against its page and descriptor, and that
+every quantity in its text (a number and its unit) is one of the READMEs' or a setting the step
+makes: the tour says nothing the README, and so the tests, don't back.
 
 ## Tests
 

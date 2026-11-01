@@ -1,6 +1,6 @@
 // native-tests.cpp — the C++ alone: parameters read and write their text, the Buffer is the identity
 // when nothing changes, the test bass plays in tune, the tuner reads as the page's does, and the
-// app's audio engine routes, fades, mutes and measures. (The physics is tested in test/, on the
+// app's audio engine routes, fades, mutes and measures, with each of its pedals. (The physics is tested in test/, on the
 // WebAssembly build.)
 
 #include <algorithm>
@@ -16,8 +16,6 @@
 #include "phuzzbox/pedal.h"
 #include "testbass.h"
 
-const phuzzbox::PedalInfo &phuzz_pedal();
-
 static int failures = 0;
 static void check(bool ok, const char *what) {
   std::printf("%s %s\n", ok ? "ok  " : "FAIL", what);
@@ -25,7 +23,7 @@ static void check(bool ok, const char *what) {
 }
 
 int main() {
-  const phuzzbox::PedalInfo &I = phuzz_pedal();
+  const phuzzbox::PedalInfo &I = *phuzzbox::app::findPedal("buffer");
   char text[64];
   phuzzbox::formatValue(I.params[buffer::pickupR], 10500, text, sizeof text);
   check(!std::strcmp(text, "10.5 kΩ"), "a value shows in its unit");
@@ -95,6 +93,17 @@ int main() {
     check(*std::max_element(out.begin(), out.end()) == 0 && *std::min_element(out.begin(), out.end()) == 0, "Mute silences the output");
     a.mute = false;
 
+    // a volume pedal at half: the output glides to half of the Buffer's (its identity), with a
+    // 10 ms time constant
+    a.gain = 0.5;
+    for (int b = 0; b < 90; b++) { // 120 ms
+      for (int i = 0; i < n; i++) { in[2 * i] = 0; in[2 * i + 1] = 0.4f; }
+      a.process(in.data(), 2, out.data(), 2, n);
+    }
+    check(std::abs(out[2 * (n - 1)] - 0.2f) < 1e-4 && std::abs(out[2 * (n - 1) + 1] - 0.2f) < 1e-4, "a volume pedal at half halves the output, gliding there");
+    a.gain = 1;
+    for (int b = 0; b < 90; b++) a.process(in.data(), 2, out.data(), 2, n);
+
     // a loopback cable 300 samples long: what goes out comes back in 300 samples later
     const int D = 300;
     std::vector<float> line(48000 * 2, 0.0f);
@@ -107,6 +116,30 @@ int main() {
     const double ms = a.measured(), want = 1000.0 * D / 48000;
     check(ms > 0 && std::abs(ms - want) < 1000.0 * 2 / 48000, "the loopback test times a 300-sample cable to two samples");
     std::printf("     (measured %.3f ms for %.3f ms)\n", ms, want);
+  }
+
+  // every pedal the app offers plays through its engine: a low E at a passive pickup's level
+  // comes out, and bounded, each with its defaults
+  {
+    using namespace phuzzbox::app;
+    check(pedals().size() >= 2 && findPedal("phuzz") && !findPedal("nonesuch"), "the app has its pedals, found by slug");
+    for (const phuzzbox::PedalInfo *p : pedals()) {
+      const int n = 64;
+      std::vector<float> in(n), out(2 * n);
+      Engine a(*p);
+      for (int i = 0; i < p->paramCount; i++) a.setParam(i, p->params[i].def);
+      a.prepare(48000, n);
+      double peak = 0;
+      bool finite = true;
+      for (int b = 0; b < 750; b++) { // a second
+        for (int i = 0; i < n; i++) in[i] = (float)(0.2 * std::sin(2 * 3.14159265358979323846 * 41.2 * (b * n + i) / 48000));
+        a.process(in.data(), 1, out.data(), 2, n);
+        for (float y : out) { finite = finite && std::isfinite(y); if (b > 375) peak = std::max(peak, (double)std::abs(y)); }
+      }
+      char what[96];
+      std::snprintf(what, sizeof what, "the app plays the %s: a low E comes out, finite and under 20 V (peak %.3f V)", p->name, peak);
+      check(finite && peak > 0.01 && peak < 20, what);
+    }
   }
   return failures ? 1 : 0;
 }

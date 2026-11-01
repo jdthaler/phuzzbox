@@ -16,9 +16,18 @@ same C++. The full write-up is the [Phuzzbox plan](https://claude.ai/artifact/A2
    DK method (Newton on the four junctions) at 4× oversampling between minimum-phase Chebyshev
    filters; views of the transistors' characteristics with their operating points moving, a
    scope and the spectra; plugins. Tested against an independent nodal analysis in JavaScript
-   (test/phuzz-circuit.mjs). Next for it: the app playing it, and listening on the owner's bass.
+   (test/phuzz-circuit.mjs). The app plays it; next, listening on the owner's bass.
 3. **The rig**: tube preamp, opto compressor, cabinet; the **pedalboard** page, chaining pedals
    with real input and output impedances.
+   For the rig, done ahead of it (2026-10-31): **MIDI pedals**, Web MIDI on every page and a MIDI input on the plugins,
+   with learn and the Roland FC-300's factory CCs as defaults (CC 7 volume, CC 1 the pedal's
+   expression control, CC 65 the footswitch, CC 66 the tuner's mute); the **Wah** (an inductor
+   wah from its circuit, by the nodal DK method in `phuzzbox/dk.h`, swept low for bass) for the
+   expression pedal to rock. The app (`native/app/`) is to forward its MIDI to the page with
+   `window.phuzzMidi(status, d1, d2)`.
+   For every pedal, done 2026-11-01: **How it works** as Forte's (the README in a dialog, with
+   contents and tabs for the test bass's and the new tuner's notes) and a **physics tour** of
+   each pedal (`shared/tour.js`), checked by `test/tour-tests.mjs`; a new pedal brings its tour.
 4. **Time and space**: spring reverb (Forte's springs), plate reverb, tape echo, rotary speaker.
 5. **The rest**: envelope filter, octave down, sympathetic strings, black hole, Doppler; a
    hardware pedal (Electrosmith Daisy Seed) if wanted.
@@ -29,10 +38,20 @@ Decided 2026-10-31: the owner plays a passive four-string through a Scarlett 2i2
 MainStage too much, so Phuzzbox gets a simple app of its own. First the installable web app (done),
 then **Phuzzbox.app** (`native/app/`, done): the same face in a window, with audio in C++ through
 RtAudio at small buffers, a few milliseconds' round trip against Chrome's 15–25. Its own program
-rather than clap-wrapper's standalone, which fixes the buffer at 256 samples on macOS. Next: the
-same face as the plugins' panel in MainStage and Logic (Forte's editor.cpp), and the app choosing
-among pedals once there is more than one.
+rather than clap-wrapper's standalone, which fixes the buffer at 256 samples on macOS. The app
+plays every ready pedal, one at a time, from a menu in its title (2026-11-01: the Phuzz on the
+site measured 70 ms in Chrome on the owner's Mac). Next: the same face as the plugins' panel in
+MainStage and Logic (Forte's editor.cpp).
+
+## The page
+
+Decided 2026-11-01 (Jesse): the pages look and work like Forte's. One screen, with toggles to show
+and hide each view and group of controls, Discover and Perform, and a handle sharing the height
+(`shared/layout.js`); a dark theme with skeuomorphic hardware (powder-coated enclosure, knurled
+knobs on a scale, a chrome footswitch, LED-ladder meters, a lit tuner display, faders, a rosewood
+fretboard); the test bass on screen only while it is the input; the spectra mark the note being
+played. The app's window takes the dark theme; giving it the one-screen layout is still to do.
 
 ## Open
 
-- The site (`phuzzbox.jthaler.net`), so the app installs from a URL rather than `localhost`.
+- The site is up at `phuzzbox.jthaler.net` (GitHub Pages from `live`, 2026-10-31).

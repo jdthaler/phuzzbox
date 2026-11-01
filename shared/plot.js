@@ -36,3 +36,32 @@ export function animate(canvas, draw) {
   const tick = () => { if (canvas.offsetParent !== null) draw(); requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
 }
+
+// The note being played, as the tuner hears it at the input (api.note: { f, letter, octave, live }),
+// marked on a frequency plot: a line at its fundamental, labelled with its name, and ticks along
+// the top at its harmonics n·f₁, so the peaks that belong to the note can be told from the rest.
+// Dimmed while the note is held after the string has gone quiet.
+export function markNote(g, x, box, note) {
+  if (!note?.f) return;
+  const X = x(note.f);
+  if (!(X >= box.l && X <= box.r)) return;
+  g.save();
+  g.globalAlpha = note.live ? 1 : 0.4;
+  const c = css('--good');
+  g.strokeStyle = c; g.lineWidth = 1;
+  for (let n = 2; n <= 16; n++) {
+    const xn = x(n * note.f);
+    if (xn > box.r) break;
+    g.globalAlpha = (note.live ? 1 : 0.4) * Math.max(0.25, 1 - n / 12);
+    g.beginPath(); g.moveTo(xn, box.t); g.lineTo(xn, box.t + 7); g.stroke();
+  }
+  g.globalAlpha = note.live ? 1 : 0.4;
+  g.setLineDash([3, 3]); g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(X, box.t); g.lineTo(X, box.b); g.stroke(); g.setLineDash([]);
+  const label = `${note.letter}${note.octave} · ${note.f.toFixed(1)} Hz`;
+  g.font = '600 12px system-ui, sans-serif';
+  const w = g.measureText(label).width + 10, lx = Math.min(box.r - w, X + 4);
+  g.fillStyle = css('--panel'); g.fillRect(lx, box.t + 10, w, 18);
+  g.fillStyle = c; g.textAlign = 'left'; g.fillText(label, lx + 5, box.t + 23);
+  g.restore();
+}
