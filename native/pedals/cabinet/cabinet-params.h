@@ -32,7 +32,7 @@ inline const char *const boxChoices[] = {"Sealed", "Ported"};
 
 inline const phuzzbox::ParamInfo kParams[] = {
   {"drive", "Power amp gain", "The cabinet", phuzzbox::ParamKind::continuous, 10.0, 46.0, 32.0, 0.0, false, "dB", 1.0, 1},
-  {"mic", "Microphone sensitivity", "The cabinet", phuzzbox::ParamKind::continuous, 0.001, 0.1, 0.015, 0.0, true, "mV/Pa", 1000.0, 1},
+  {"mic", "Microphone sensitivity", "The cabinet", phuzzbox::ParamKind::continuous, 0.001, 0.1, 0.0186, 0.0, true, "mV/Pa", 1000.0, 1},
   {"layout", "Drivers", "The cabinet", phuzzbox::ParamKind::choice, 0.0, 6.0, 3.0, 0.0, false, "", 1.0, 2, layoutChoices, 7},
   {"box", "Box", "The cabinet", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, boxChoices, 2},
   {"volume", "Box volume", "The cabinet", phuzzbox::ParamKind::continuous, 0.02, 0.4, 0.2, 0.0, true, "L", 1000.0, 0},

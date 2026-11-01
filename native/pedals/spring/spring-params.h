@@ -31,7 +31,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"oil", "Oil damping", "The tank", phuzzbox::ParamKind::continuous, 0.0, 20.0, 0.0, 0.0, false, "/s", 1.0, 1},
   {"dry", "Dry", "The mix", phuzzbox::ParamKind::continuous, 0.0, 1.0, 1.0, 0.0, false, "%", 100.0, 0},
   {"reverb", "Reverb", "The mix", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.3, 0.0, false, "%", 100.0, 0},
-  {"level", "Level", "The mix", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "The mix", phuzzbox::ParamKind::continuous, -24.0, 12.0, -0.6, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.0}, {1, 0.00035}, {3, 0.4}, {4, 0.0002}, {5, 0.0}, {6, 1.0}, {7, 0.3}};

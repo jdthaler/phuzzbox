@@ -5,7 +5,7 @@
 const leveler = [
   { id: 'peak', label: 'Peak Reduction', min: 0, max: 1, def: 0.55, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of the signal reaches the panel\'s driver: an audio pot. Turn it up and the panel lights on quieter notes, so the pedal turns the bass down sooner and further: at 30 % only hard notes (0.3 V and up) reach it; past 70 % even a gentle 30 mV note loses several decibels.' },
-  { id: 'gain', label: 'Gain', min: 0, max: 40, def: 10, unit: 'dB', decimals: 1, perform: true,
+  { id: 'gain', label: 'Gain', min: 0, max: 40, def: 8.5, unit: 'dB', decimals: 1, perform: true,
     hint: 'Make-up gain after the cell, in decibels: it puts back what the cell takes away, and changes nothing about how hard it compresses (the panel listens before it). +6 dB doubles the output.' },
   { id: 'sense', label: 'Sense', type: 'select', def: 'output', options: [['output', 'After the cell (feedback)'], ['input', 'Before the cell (feed-forward)']],
     hint: 'Where the panel\'s driver listens. After the cell, as the classic leveler does, a note lights the panel hardest at its start, before the cell has turned it down, so the cell catches the attack in about 10 ms, and louder in is always a little louder out. Before it, the panel sees only the note, never what the cell has done to it: the cell settles onto it more slowly, so the front of each note gets through (punch), and dug in hard enough, a louder note comes out quieter than a softer one.' },

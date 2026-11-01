@@ -18,7 +18,7 @@ const divider = [
     hint: 'How far past zero the filtered signal must swing to flip the comparator. More ignores noise and the wobble of a decaying note, but a note that dies below it stops the dividers: the octave holds one polarity and passes the note at its own pitch.' },
   { id: 'tone', label: 'Tone', min: 150, max: 5000, def: 900, log: true, unit: 'Hz', decimals: 0,
     hint: 'A one-pole low-pass after the switch. The flips are clean at the zero crossings, so the octave is smooth already; lower is rounder and more like a synth\'s sub, higher keeps more of the string\'s edge.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 2.7, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 

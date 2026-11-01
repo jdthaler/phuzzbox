@@ -12,7 +12,7 @@ const cables = [
   { id: 'ampCable', label: 'Cable to the amp', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
     hint: 'The cable from the last pedal to the amp. Behind the Phuzz turned down, or the Tube Preamp\'s tone stack, which drive it from tens of kilohms, a long one is a low-pass: 30 m darkens the top by several dB.' },
   { id: 'ampLoad', label: 'Amp\'s input', min: 10e3, max: 10e6, def: 1e6, log: true, unit: 'kΩ', scale: 0.001, decimals: 0,
-    hint: 'The input impedance of the amp or interface the board drives, usually 1 MΩ. It matters only behind a pedal that drives it from a high impedance: into 10 kΩ, the Tube Preamp is about 16 dB quieter.' },
+    hint: 'The input impedance of the amp or interface the board drives, usually 1 MΩ. It matters only behind a pedal that drives it from a high impedance: into 10 kΩ, the Tube Preamp with its Master at 40 % is about 16 dB quieter.' },
 ];
 
 export const GROUPS = [

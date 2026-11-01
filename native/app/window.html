@@ -1648,7 +1648,7 @@ const { bass, recorded } = __m9;
 const pedal = [
   { id: 'fuzz', label: 'Fuzz', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'The 1 kΩ pot in the second transistor\'s emitter, which sets how much of it the 20 µF capacitor bypasses. Full up, the emitter is grounded for the signal and the pair has all its gain; turning it down brings back negative feedback, and the gain falls fast: about 25 dB less by halfway. The input impedance falls with it, to a few hundred ohms, and loads your pickup harder.' },
-  { id: 'volume', label: 'Volume', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'volume', label: 'Volume', min: 0, max: 1, def: 0.77, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'A 500 kΩ audio-taper pot on the output: halfway passes about a tenth of the voltage (−20 dB). Full up, the peaks come out a few decibels above your bass\'s own, and since the wave is nearly square it sounds a good deal louder.' },
   { id: 'temp', label: 'Temperature', min: -10, max: 50, def: 20, unit: '°C', decimals: 0, perform: true,
     hint: 'Germanium leaks more as it warms, about twice as much every 7 °C. The first transistor\'s leakage takes over from the bias the feedback sets, the second transistor is starved of current and its collector slides toward the battery. Cold, it sits nearer the middle of its swing and clips evenly; hot, it clips lopsided, and near 50 °C most of the gain is gone.' },
@@ -1757,7 +1757,7 @@ const output = [
   { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
     showIf: (P) => !P.reversed,
     hint: 'A blend pot that mixes your dry signal back in, as bass wahs have: the wah thins out the low end, and this keeps the bottom under the sweep. It is not part of the circuit model, so plugged in backwards it is off.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 1.3, unit: 'dB', decimals: 1,
     hint: 'Gain after the wah, in decibels.' },
 ];
 
@@ -1859,7 +1859,7 @@ const pedal = [
     hint: 'The tone stack\'s 25 kΩ pot to ground. The stack always scoops the middle, deepest near 700 Hz with the knobs at halfway; turning Middle down deepens the scoop, to about 22 dB down near 900 Hz, and turning it up fills it in, about 2.5 dB more at 500 Hz.' },
   { id: 'treble', label: 'Treble', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'The tone stack\'s 250 kΩ pot, fed through 250 pF. From halfway, full up passes about 4.5 dB more at 5 kHz, and all the way down takes about 7.5 dB off it.' },
-  { id: 'master', label: 'Master', min: 0, max: 1, def: 0.4, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'master', label: 'Master', min: 0, max: 1, def: 0.24, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'A 1 MΩ audio pot after the tone stack, which the amp doesn\'t have (its tone stack drives the power amp): it sets how loud the pedal is without changing how hard the tubes are driven. Halfway passes about a tenth of the voltage.' },
 ];
 
@@ -1882,9 +1882,9 @@ const supply = [
   { id: 'cable', label: 'Cable from the bass', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
     hint: 'The cable from your bass to the preamp. Into the tube\'s 1 MΩ grid leak its capacitance tunes the pickup\'s resonance, as it does into an amp: 10 m against 1 m moves the resonance down, and leaves 5 kHz about 9 dB darker.' },
   { id: 'outCable', label: 'Cable to the amp', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
-    hint: 'The cable from the preamp to what it drives. The tone stack and the Master pot drive it from tens of kilohms, so a long cable darkens the top: 30 m takes about 10 dB off 3 kHz.' },
+    hint: 'The cable from the preamp to what it drives. The tone stack and the Master pot drive it from tens of kilohms, so a long cable darkens the top: with the Master at 40 %, 30 m takes about 10 dB off 3 kHz; with it turned down, less.' },
   { id: 'load', label: 'Amp\'s input', min: 10e3, max: 10e6, def: 1e6, log: true, unit: 'kΩ', scale: 0.001, decimals: 0,
-    hint: 'The input impedance of what the preamp drives, usually 1 MΩ. It loads the Master pot and the tone stack behind it: into 100 kΩ the preamp is about 3 dB quieter, into 10 kΩ about 16 dB.' },
+    hint: 'The input impedance of what the preamp drives, usually 1 MΩ. It loads the Master pot and the tone stack behind it: with the Master at 40 %, into 100 kΩ the preamp is about 3 dB quieter and into 10 kΩ about 16 dB; with it turned down, less.' },
 ];
 
 const GROUPS = [
@@ -1943,7 +1943,7 @@ const __m18 = (() => {
 const leveler = [
   { id: 'peak', label: 'Peak Reduction', min: 0, max: 1, def: 0.55, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of the signal reaches the panel\'s driver: an audio pot. Turn it up and the panel lights on quieter notes, so the pedal turns the bass down sooner and further: at 30 % only hard notes (0.3 V and up) reach it; past 70 % even a gentle 30 mV note loses several decibels.' },
-  { id: 'gain', label: 'Gain', min: 0, max: 40, def: 10, unit: 'dB', decimals: 1, perform: true,
+  { id: 'gain', label: 'Gain', min: 0, max: 40, def: 8.5, unit: 'dB', decimals: 1, perform: true,
     hint: 'Make-up gain after the cell, in decibels: it puts back what the cell takes away, and changes nothing about how hard it compresses (the panel listens before it). +6 dB doubles the output.' },
   { id: 'sense', label: 'Sense', type: 'select', def: 'output', options: [['output', 'After the cell (feedback)'], ['input', 'Before the cell (feed-forward)']],
     hint: 'Where the panel\'s driver listens. After the cell, as the classic leveler does, a note lights the panel hardest at its start, before the cell has turned it down, so the cell catches the attack in about 10 ms, and louder in is always a little louder out. Before it, the panel sees only the note, never what the cell has done to it: the cell settles onto it more slowly, so the front of each note gets through (punch), and dug in hard enough, a louder note comes out quieter than a softer one.' },
@@ -2023,7 +2023,7 @@ const __m20 = (() => {
 const cabinet = [
   { id: 'drive', label: 'Power amp gain', min: 10, max: 46, def: 32, unit: 'dB', decimals: 1, perform: true,
     hint: 'The clean power amp\'s voltage gain, from your bass\'s volts to the cabinet\'s. It sets how hard the cones are pushed: up high, the low notes run the cones out of travel and the sound thickens and compresses, the lowest strings first.' },
-  { id: 'mic', label: 'Microphone sensitivity', min: 1e-3, max: 0.1, def: 15e-3, log: true, unit: 'mV/Pa', scale: 1e3, decimals: 1, perform: true,
+  { id: 'mic', label: 'Microphone sensitivity', min: 1e-3, max: 0.1, def: 18.6e-3, log: true, unit: 'mV/Pa', scale: 1e3, decimals: 1, perform: true,
     hint: 'The volts the microphone at 1 m gives per pascal of sound: a dynamic microphone gives about 2, a condenser about 20. It is the pedal\'s output level and changes nothing else.' },
   { id: 'layout', label: 'Drivers', type: 'select', def: '8x10', options: [['1x15', '1 × 15″'], ['2x10', '2 × 10″, in parallel'], ['4x10', '4 × 10″, 2 series × 2 parallel'], ['8x10', '8 × 10″, 2 series × 4 parallel'],
     ['1x12', '1 × 12″'], ['2x12', '2 × 12″, in parallel'], ['4x12', '4 × 12″, 2 series × 2 parallel']],
@@ -2155,7 +2155,7 @@ const cell = [
 const output = [
   { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'Your dry signal mixed back in after the filter, so the bass\'s bottom stays under the sweep (most use for band-pass and high-pass).' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 6.1, unit: 'dB', decimals: 1,
     hint: 'Gain after the filter, in decibels.' },
 ];
 
@@ -2222,7 +2222,7 @@ const divider = [
     hint: 'How far past zero the filtered signal must swing to flip the comparator. More ignores noise and the wobble of a decaying note, but a note that dies below it stops the dividers: the octave holds one polarity and passes the note at its own pitch.' },
   { id: 'tone', label: 'Tone', min: 150, max: 5000, def: 900, log: true, unit: 'Hz', decimals: 0,
     hint: 'A one-pole low-pass after the switch. The flips are clean at the zero crossings, so the octave is smooth already; lower is rounder and more like a synth\'s sub, higher keeps more of the string\'s edge.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 2.7, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2292,7 +2292,7 @@ const mix = [
     hint: 'Your bass as it came in.' },
   { id: 'reverb', label: 'Reverb', min: 0, max: 1, def: 0.3, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of what the pickup bead hears is mixed in: the recovery amplifier\'s gain. At 100 % the first echo of a low note comes out as loud as the note went in.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -0.6, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2377,7 +2377,7 @@ const mix = [
     hint: 'Your bass as it came in.' },
   { id: 'wet', label: 'Echo', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'How much of the playback heads is mixed in.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -3.5, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2468,7 +2468,7 @@ const cabinet = [
 ];
 
 const output = [
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0.4, unit: 'dB', decimals: 1,
     hint: 'Gain after the microphones, in decibels.' },
 ];
 
@@ -2546,7 +2546,7 @@ const where = [
 const model = [
   { id: 'top', label: 'Modes up to', min: 2000, max: 8000, def: 5000, log: true, unit: 'Hz', decimals: 0,
     hint: 'The highest of the plate\'s modes that is played. The plate has about 1.3 modes in every hertz, so 5 kHz is about 6400 of them; above this it is silent here. Higher is brighter and costs more of the computer.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -3, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2627,7 +2627,7 @@ const tuning = [
     hint: 'The octave of the lowest string (E1 is the bass\'s open E). Octave 1 is the bass\'s own register, and long strings: 3.4 m for E1. Higher strings are shorter and ring to the bass\'s harmonics.' },
   { id: 'wire', label: 'Wire diameter', min: 0.2e-3, max: 1e-3, def: 0.3e-3, log: true, unit: 'mm', scale: 1000, decimals: 2,
     hint: 'The steel wire every string is made of. Each is tensioned to the same stress, 600 MPa, so a thicker wire is stiffer for its tension and its partials go sharp, more for the higher ones: Fletcher\'s inharmonicity B grows as the diameter squared.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -11.5, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2691,7 +2691,7 @@ const merger = [
     hint: 'How lopsided the merger that made the hole was, the heavier over the lighter: it sets how strongly each mode rings (Kamaretsos et al.\'s fits). Equal masses leave the odd-m modes, (2,1) and (3,3), silent; a lopsided merger switches them on.' },
   { id: 'inclination', label: 'Inclination', min: 0, max: 90, def: 30, unit: '°', decimals: 0,
     hint: 'Where you hear the hole from: 0° along its spin axis (face-on), 90° in its equator (edge-on). The left channel is h₊ and the right h×: face-on the two are a quarter cycle apart, circularly polarised; edge-on h× of the (2,2) mode vanishes.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -15.1, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 
@@ -2757,7 +2757,7 @@ const air = [
     hint: 'The air\'s temperature, which sets the speed of sound: 331 m/s at 0 °C, 343 m/s at 20 °C. From the next pass.' },
   { id: 'mix', label: 'Fly-by', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0,
     hint: 'How much of the passing source is heard.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 12, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 

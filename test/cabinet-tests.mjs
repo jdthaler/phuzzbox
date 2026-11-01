@@ -15,7 +15,8 @@ import { derive, smallSignal, mag, closedBox, closedBoxShape, efficiency } from 
 const { PEDAL, Effect } = await loadPedal('cabinet');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), mic: 15e-3 };
 const W = (over) => ({ ...D, ...over });
 const preset = (name, over) => W({ ...PEDAL.presets[name], ...over });
 

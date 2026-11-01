@@ -1,7 +1,7 @@
 {"slug": "cabinet",
  "params": [
   {"id":"drive","kind":"continuous","min":10,"max":46,"step":0,"log":false,"def":32},
-  {"id":"mic","kind":"continuous","min":0.001,"max":0.1,"step":0,"log":true,"def":0.015},
+  {"id":"mic","kind":"continuous","min":0.001,"max":0.1,"step":0,"log":true,"def":0.0186},
   {"id":"layout","kind":"choice","options":["1x15","2x10","4x10","8x10","1x12","2x12","4x12"],"def":"8x10"},
   {"id":"box","kind":"choice","options":["sealed","ported"],"def":"sealed"},
   {"id":"volume","kind":"continuous","min":0.02,"max":0.4,"step":0,"log":true,"def":0.2},

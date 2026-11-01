@@ -35,7 +35,7 @@ enum Param : int {
 
 inline const phuzzbox::ParamInfo kParams[] = {
   {"fuzz", "Fuzz", "The Phuzz", phuzzbox::ParamKind::continuous, 0.0, 1.0, 1.0, 0.0, false, "%", 100.0, 0},
-  {"volume", "Volume", "The Phuzz", phuzzbox::ParamKind::continuous, 0.0, 1.0, 1.0, 0.0, false, "%", 100.0, 0},
+  {"volume", "Volume", "The Phuzz", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.77, 0.0, false, "%", 100.0, 0},
   {"temp", "Temperature", "The Phuzz", phuzzbox::ParamKind::continuous, -10.0, 50.0, 20.0, 0.0, false, "°C", 1.0, 0},
   {"battery", "Battery", "The Phuzz", phuzzbox::ParamKind::continuous, 5.0, 9.6, 9.0, 0.0, false, "V", 1.0, 1},
   {"hfe1", "Q1 current gain (hFE)", "Transistors", phuzzbox::ParamKind::continuous, 20.0, 250.0, 80.0, 0.0, true, "", 1.0, 0},

@@ -14,7 +14,8 @@ import { operatingPoint, smallSignal, yehSmith, toneStackNodal, triode, mag, rat
 const { PEDAL, Effect } = await loadPedal('preamp');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), master: 0.4 };
 const W = (over) => ({ ...D, ...over });
 const NODES = Object.keys(N);
 
@@ -182,9 +183,11 @@ function harmonics(P, f, amp, quality = 'high') {
   const c10 = db(ss(W({ cable: 10 }), 5000) / ss(W({ cable: 1 }), 5000));
   check(near(c10, -9, 1.5), 'the cable from the bass: 10 m against 1 m leaves 5 kHz about 9 dB darker', `${c10.toFixed(1)} dB`);
   const oc = db(ss(W({ outCable: 30 }), 3000) / ss(W({ outCable: 0.3 }), 3000));
-  check(near(oc, -10, 1.5), 'the cable to the amp: 30 m takes about 10 dB off 3 kHz', `${oc.toFixed(1)} dB`);
-  const l100 = rel({ load: 100e3 }, 1000), l10 = rel({ load: 10e3 }, 1000);
-  check(near(l100, -3, 0.7) && near(l10, -16, 1.5), 'the amp\'s input: into 100 kΩ about 3 dB quieter, into 10 kΩ about 16 dB', `${l100.toFixed(1)} dB, ${l10.toFixed(1)} dB`);
+  const M = defaults(PEDAL.groups).master, down = (o) => ({ ...o, master: M }); // turned down to the default
+  const ocDown = rel(down({ outCable: 30 }), 3000, down({ outCable: 0.3 }));
+  check(near(oc, -10, 1.5) && ocDown > oc + 1, `the cable to the amp: with the Master at 40 %, 30 m takes about 10 dB off 3 kHz; turned down (${Math.round(100 * M)} %), less`, `${oc.toFixed(1)} dB; ${ocDown.toFixed(1)} dB`);
+  const l100 = rel({ load: 100e3 }, 1000), l10 = rel({ load: 10e3 }, 1000), l10Down = rel(down({ load: 10e3 }), 1000, down({}));
+  check(near(l100, -3, 0.7) && near(l10, -16, 1.5) && l10Down > l10 + 1, `the amp\'s input: with the Master at 40 %, into 100 kΩ about 3 dB quieter, into 10 kΩ about 16 dB; turned down (${Math.round(100 * M)} %), less`, `${l100.toFixed(1)} dB, ${l10.toFixed(1)} dB; ${l10Down.toFixed(1)} dB`);
 }
 
 // a note of the test bass, and what the preamp makes of it

@@ -6,7 +6,7 @@
   {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
   {"id":"ratio","kind":"continuous","min":1,"max":10,"step":0,"log":true,"def":1.2},
   {"id":"inclination","kind":"continuous","min":0,"max":90,"step":0,"log":false,"def":30},
-  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":-15.1}
  ],
  "presets": [
   {"name":"Bass hole","values":{"mass":200,"nines":0.509,"ratio":1.2,"inclination":30,"mix":0.5,"dry":1}},

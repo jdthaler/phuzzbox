@@ -13,7 +13,8 @@ import { paths, component, SMALL_H, rcBilinear } from './octave-circuit.mjs';
 const { PEDAL, Effect } = await loadPedal('octave');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), level: 0 };
 const W = (over) => ({ ...D, ...over });
 const preset = (name, over) => W({ ...PEDAL.presets[name], ...over });
 

@@ -25,7 +25,7 @@ inline const char *const senseChoices[] = {"After the cell (feedback)", "Before 
 
 inline const phuzzbox::ParamInfo kParams[] = {
   {"peak", "Peak Reduction", "The leveler", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.55, 0.0, false, "%", 100.0, 0},
-  {"gain", "Gain", "The leveler", phuzzbox::ParamKind::continuous, 0.0, 40.0, 10.0, 0.0, false, "dB", 1.0, 1},
+  {"gain", "Gain", "The leveler", phuzzbox::ParamKind::continuous, 0.0, 40.0, 8.5, 0.0, false, "dB", 1.0, 1},
   {"sense", "Sense", "The leveler", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, senseChoices, 2},
   {"blend", "Clean blend", "The leveler", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.0, 0.0, false, "%", 100.0, 0},
   {"panelB", "Panel's voltage constant", "The panel", phuzzbox::ParamKind::continuous, 30.0, 120.0, 70.0, 0.0, false, "√V", 1.0, 0},
