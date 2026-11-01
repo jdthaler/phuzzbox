@@ -200,11 +200,12 @@ button.info::after { content: ""; position: absolute; inset: -5px; border-radius
 .string button.open { background: rgb(0 0 0 / 0.25); border-right: 6px solid #ece3c9; box-shadow: inset -1px 0 0 #a49b81; }
 .string button::after { /* the string */
   content: ""; position: absolute; left: 0; right: -3px; top: 50%; height: var(--gauge); margin-top: calc(var(--gauge) / -2); z-index: 2;
+  transform: translateY(var(--bend, 0px)); /* pushed across the neck, a bend */
   background: linear-gradient(180deg, #fafafa, #9a9a9a); box-shadow: 0 1px 1px rgb(0 0 0 / 0.6);
 }
 .s0 button { --gauge: 3.5px; } .s1 button { --gauge: 3px; } .s2 button { --gauge: 2.4px; } .s3 button { --gauge: 1.8px; }
 .s0 button::after, .s1 button::after { background: repeating-linear-gradient(90deg, #e6e6e6 0 1px, #a5a5a5 1px 2px); }
-.string button.inlay::before { /* the dots between the D and A strings */
+.string button.inlay::before { /* the dots, between the middle two strings: a bass's D and A, a guitar's G and D */
   content: ""; position: absolute; left: 50%; bottom: 0; width: 10px; height: 10px; margin-left: -5px; transform: translateY(50%); z-index: 1; border-radius: 50%;
   background: radial-gradient(circle at 40% 35%, #fffaf0, #d8d2c4 60%, #b7b0a0);
 }
@@ -307,6 +308,11 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
    A phone (as layout.js's phoneQuery) scrolls instead, at the end.
    ================================================================================================ */
 body.one-screen { height: 100vh; height: 100dvh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+/* a playing surface, not a document: a long press or a drag across the knobs, the fretboard or the
+   views selects no text (a selection that starts there can capture the next drags on a tablet);
+   what is read, a How it works, and what is typed, still select */
+body.one-screen { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+body.one-screen :is(input, textarea, [contenteditable], dialog.notes, .caption, .tour-slot) { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
 body.one-screen #app { max-width: none; height: 100%; padding: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 
 /* the header: PhuzzBox, the pedal (its menu), How it works; then the audio */
@@ -1582,6 +1588,9 @@ const INSTRUMENTS = {
     // the open strings of four-, five- and six-string basses: B0 E1 A1 D2 G2 C3
     tunerOpen: [23, 28, 33, 38, 43, 48],
     tuner: { fmin: 30, fmax: 500 },
+    // m between strings at the bridge (¾ inch): how far a drag of one string's row on the fretboard
+    // pushes a string across the neck, to bend it
+    spacing: 0.019,
   },
   guitar: {
     id: 'guitar', name: 'Guitar', test: 'Test guitar',
@@ -1590,6 +1599,7 @@ const INSTRUMENTS = {
     tunerOpen: [35, 40, 45, 50, 55, 59, 64],
     // drop C's low C (65 Hz) to the high E's 24th fret (1319 Hz)
     tuner: { fmin: 60, fmax: 1400 },
+    spacing: 0.0105, // m between strings at the bridge (2 1/16 inches, E to E)
   },
 };
 const instrument = (id) => INSTRUMENTS[id] ?? INSTRUMENTS.bass;
