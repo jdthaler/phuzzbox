@@ -70,6 +70,11 @@ The controls:
 - **Pedal by the bass (30 cm)**: a little brighter than your interface hears it, the resonance
   a little higher and stronger.
 
+## Plugged in backwards
+
+The Buffer has no **Reversed** switch: it has no circuit of its own to turn round, only what a cable
+and an input do to your pickup. The [Wah](../wah/README.md) has one, and squeals.
+
 ## What is simplified
 
 - The pickup is a lumped *R*, *L*, *C*. A real coil's inductance falls and its losses rise at high

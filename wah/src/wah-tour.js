@@ -70,4 +70,18 @@ Bass wahs add a **Clean blend** pot, which mixes the dry signal back in under th
 
 That voltage pushes the rocker from heel toward toe. Each pluck opens the peak upward, and as the note fades the peak falls back: *wow*. A harder note goes further and stays up longer. Watch the solid curve in **The sweep** jump with every note.`,
   },
+  {
+    title: 'Plugged in backwards',
+    views: ['The sweep', 'Spectrum'],
+    preset: 'Plugged in backwards',
+    set: { position: 0 },
+    play: [
+      sweep('position', 0, 0.85, { at: 0.5, dur: 6, steps: 40 }),
+      sweep('position', 0.85, 0, { at: 7, dur: 3, steps: 20 }),
+      riff({ at: 10.5 }),
+    ],
+    text: `Your bass into the wah's output jack, its input jack to the amp. The signal runs the loop the other way, from the pot's wiper through Q2 and the coil to Q1's base, and out of the input jack. But Q1 still drives the output jack, where the pickup's coil now hangs, and the coil's inductance turns the loop's phase round: from a passive bass, the loop oscillates on its own.
+
+That is the seagull of a wah plugged in backwards. Heel down it squeals near 880 Hz; rocked forward it climbs to 1.16 kHz by 60 % and fades, and past about three quarters of the travel it stops. Then the riff, heel down: the notes shake the squeal rather than replacing it. Bypassed, the true-bypass switch joins the jacks, and it plays the same either way round. From an active bass it would not squeal at all.`,
+  },
 ]);
