@@ -40,8 +40,15 @@ nothing is plugged in, and that the tests and demos use as their signal.
 The pedals play at **<https://phuzzbox.jthaler.net>**, served by GitHub Pages from the `live`
 branch, which takes `main` at each release; it installs as a web app from the browser's menu. Open a pedal's page and press **Start audio**.
 
-A pedal's page fits one screen, as Forte's do: the pedal on its board at the left; the **Views**
-bar with a toggle for each view (the pedal, the tuner, the plots) and the **Controls** bar with a
+The landing page draws every pedal as itself, on boards grouped by the physics it is made of:
+circuits, light and photocells, vibrating steel, paper and air, motion and delay, and gravity, then
+the Pedalboard. On every page, the menu at the top left (PhuzzBox and the pedal's name) goes back
+to the landing page or to any pedal, grouped the same way. The audio carries over: a pedal opened
+from the menu starts its sound from the input, channel and output the last one used (in Chrome
+and Edge at once; elsewhere at the first tap or key).
+
+A pedal's page fits one screen, as Forte's do: the pedal on its board at the left, with the tuner
+under it; the **Views** bar with a toggle for each view (the pedal, the tuner, the plots) and the **Controls** bar with a
 toggle for each group of controls (the pedal's, the **Rig** and the **MIDI pedals**), with the
 presets beside them. Drag the handle on the Controls bar to share the height between them, or fold
 either away with its chevron. **Discover** shows every view with its explanations behind ⓘ;
@@ -75,13 +82,13 @@ browser's address bar) puts PhuzzBox in a window of its own, with its own Dock i
 worker ([sw.js](sw.js)) keeps a copy of every file it has loaded, so the app opens even with
 `npm run serve` stopped. Open each page once with the server running so that its files are kept.
 
-The **tuner** among the views reads whatever is coming in, your bass or the test bass, in cents
+The **tuner** under the pedal reads whatever is coming in, your bass or the test bass, in cents
 from the nearest note, against a reference A4 you can set (440 Hz unless you change it). It reads
 the string's first partial, not the period of the whole waveform. A real string is stiff, so its
 upper partials run sharp of whole multiples, f_n = n f₁ √(1 + Bn²). The period is a compromise
 among them, which on a low E can read 5 to 20 cents sharp. The tuner finds the period first, to
 name the note, then the peak of the fundamental's own spectral line, to a hundredth of a cent
-([tuner/README.md](tuner/README.md), tested in `test/tuner-tests.mjs`). **Mute while tuning**
+([tuner/README.md](tuner/README.md), tested in `test/tuner-tests.mjs`). **Mute**, on the tuner,
 silences the output, as a tuner pedal does.
 
 Every pedal also has a **Scope** and a **Spectrum**, each showing what goes in (dashed) against

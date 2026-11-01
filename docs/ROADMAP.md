@@ -142,6 +142,13 @@ Phuzz (no junction capacitances), the Tube Preamp (its tubes pass nothing back b
 picofarads: a switch would be a mute) and the Buffer (no circuit of its own) say in their READMEs why
 they have none. A new pedal decides the same way (`docs/PEDAL_GUIDE.md`).
 
+Decided 2026-11-01 (Jesse): one menu at the top left, as Forte's, with the home page and every
+pedal in it (`shared/nav.js`); the pedals grouped by the physics they are made of (`SECTIONS` in
+`shared/registry.js`: circuits, light and photocells, vibrating steel, paper and air, motion and
+delay, gravity), on the landing page and in the menu, and in the app's pedal menu; the landing page
+draws each pedal as itself (`shared/face.js`); the tuner sits under the pedal at the left; a pedal
+opened from the menu carries on with the audio the last one had (input, channel, output, on).
+
 ## Open
 
 - The site is up at `phuzzbox.jthaler.net` (GitHub Pages from `live`, 2026-10-31).
