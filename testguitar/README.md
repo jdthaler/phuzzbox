@@ -57,7 +57,10 @@ the test bass's riff an octave up, where a guitar has it.
 Drag along a string on the fretboard, or hold a key and press another on the same row, and the
 note slides there, fret by fret (the test bass's [Sliding](../testbass/README.md#sliding) has the
 physics). **Slide bar** lays a bar across the strings instead of the finger on the frets: the note
-glides through every pitch between, and the fret it was played at plays where the bar is.
+glides through every pitch between, and the fret it was played at plays where the bar is. Drag
+across a string, up or down, to bend it (the test bass's [Bending](../testbass/README.md#bending)):
+a drag of one string's row pushes it 10.5 mm, the strings' spacing at the bridge, and the plain G at
+the 7th fret goes up 1.67 semitones.
 
 The guided tours are written for the bass, about its notes: a tour plays the test bass, and the
 guitar comes back when it ends.

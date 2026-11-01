@@ -45,14 +45,24 @@ static double sinc(double x) { return std::abs(x) < 1e-9 ? 1 : std::sin(x) / x; 
 
 double stoppedLength(const Settings &S, double fret) { return S.scale / std::pow(2.0, fret / 12.0); }
 
-Mode mode(const Settings &S, int string, double len, int n) {
+Mode mode(const Settings &S, int string, double len, int n, double tension) {
   const StringSpec &s = S.spec[string];
-  const double B = inharmonicity(s, len);
+  const double B = inharmonicity(s, len) / tension; // B ∝ 1/T
   // tuned so that the first partial is the note: f₁ = f₀ √(1 + B), the note f_open ℓ_scale / ℓ
-  const double f0 = s.f * S.scale / len / std::sqrt(1 + B), f = n * f0 * std::sqrt(1 + B * n * n);
+  // (f ∝ √T, so a bend raises it by √(T'/T))
+  const double f0 = s.f * S.scale / len * std::sqrt(tension) / std::sqrt(1 + B), f = n * f0 * std::sqrt(1 + B * n * n);
   const double k = n * PI / len, xu = std::min(S.pickupAt, len);
   // the pickup hears the mode's velocity (its displacement times ω) over its aperture
   return {f, S.b1 + S.b3 * f * f, TAU * f * std::sin(k * xu) * sinc(k * S.aperture / 2)};
+}
+
+double bendTension(const Settings &S, int string, double fret, double across) {
+  const StringSpec &s = S.spec[string];
+  const double L = S.scale, len = stoppedLength(S, fret), a = L - len, d = std::abs(across);
+  if (a < 1e-4 || d == 0) return 1; // an open string has nothing to push against
+  const double stretch = std::hypot(a, d) - a + std::hypot(len, d) - len;
+  const double EA = kSteelE * PI * s.core * s.core / 4; // the core carries the stretch; a winding adds mass, not stiffness
+  return std::min(kMaxTension, 1 + EA * stretch / L / s.T);
 }
 
 std::vector<Partial> partials(const Settings &S, int string, int fret, double fs) {
@@ -77,8 +87,9 @@ void Instrument::use(Kind kind) {
   const bool fretless = settings.fretless;
   settings = kind == Kind::guitar ? guitarSettings() : bassSettings();
   settings.fretless = fretless;
-  for (Voice &V : voices) { V.n = 0; V.key = -1; V.muted = false; }
+  for (Voice &V : voices) { V.n = 0; V.key = -1; V.muted = false; V.across = 0; }
   next.fill(0);
+  across.fill(0);
   applySettings();
 }
 
@@ -106,7 +117,8 @@ void Instrument::pluck(int string, int fret, double velocity) {
   V.string = string;
   V.at = V.from = V.to = fret;
   V.sliding = false;
-  retune(V, fret);
+  V.across = across[string]; // a string already pushed plucks bent
+  retune(V, fret, false);
   for (int i = 0; i < V.n; i++) {
     const int n = i + 1;
     const double k = n * PI / len;
@@ -123,11 +135,17 @@ void Instrument::pluck(int string, int fret, double velocity) {
 // frequency. A mode's energy is ½ (μℓ/2) ω² A², so the action goes as ℓ ω A²; ℓω is nearly
 // constant (exactly, for a flexible string), so the displacement A carries through a slide
 // unchanged, and only the frequencies, the decay rates and what the pickup hears move.
-void Instrument::retune(Voice &V, double pitch) {
+void Instrument::retune(Voice &V, double pitch, bool keep) {
   V.pitch = pitch;
   const double len = stoppedLength(settings, pitch), T = 1 / fs, fmax = 0.49 * fs;
+  const double tension = bendTension(settings, V.string, pitch, V.across);
   for (int i = 0; i < V.n; i++) {
-    const Mode m = mode(settings, V.string, len, i + 1);
+    const Mode m = mode(settings, V.string, len, i + 1, tension);
+    // the action ½(μℓ/2)ω²A² / ω ∝ ℓ f A² is kept: through a slide ℓf barely changes (exactly not,
+    // on a flexible string) and the displacement is kept; through a bend ℓ is fixed and A ∝ 1/√f
+    const double lf = len * m.f;
+    if (keep && V.lf[i] > 0) { const double k = std::sqrt(V.lf[i] / lf); V.re[i] *= k; V.im[i] *= k; }
+    V.lf[i] = lf;
     const double f = std::min(m.f, fmax);
     const double r = std::exp(-m.sigma * T), w = TAU * f * T, rm = std::exp(-std::max(m.sigma, settings.muted) * T);
     V.cr[i] = r * std::cos(w); V.ci[i] = r * std::sin(w);
@@ -147,6 +165,11 @@ void Instrument::slide(int string, double fret, double seconds) {
   V.dur = std::max(1L, (long)std::lround(seconds * fs));
   V.sliding = true;
   V.key = settings.spec[string].key + (int)std::lround(V.to);
+}
+
+void Instrument::bend(int string, double d) {
+  if (string < 0 || string >= settings.strings) return;
+  across[string] = std::clamp(std::abs(d), 0.0, 0.05);
 }
 
 void Instrument::mute(int string) {
@@ -197,6 +220,16 @@ void Instrument::process(float *out, int n) {
       // halfway between); fretless or under a slide bar, at the finger itself
       const double pitch = settings.fretless ? V.at : std::round(V.at);
       if (pitch != V.pitch) retune(V, pitch);
+    }
+    // a bend: the note still held on each string follows the finger across the neck, as a finger
+    // moves, in a few milliseconds (a time constant of 5 ms)
+    const double glide = 1 - std::exp(-m / (0.005 * fs));
+    for (int s = 0; s < settings.strings; s++) {
+      Voice &V = voices[s * 2 + (next[s] ^ 1)];
+      if (!V.n || V.muted || V.across == across[s]) continue;
+      V.across += (across[s] - V.across) * glide;
+      if (std::abs(V.across - across[s]) < 1e-6) V.across = across[s];
+      retune(V, V.pitch);
     }
     for (int j = j0; j < j0 + m; j++) {
       double e = 0;

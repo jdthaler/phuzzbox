@@ -55,9 +55,11 @@ for (const fretless of [false, true]) {
 }
 
 // 2. the adiabatic invariant: a string's length changing slowly against its period keeps each mode's
-// action E/ω. A mode's energy is ½ (μℓ/2) ω² A² and ℓω is constant on a flexible string, so the
-// displacement A is kept. The open A plucked and slid to the 12th in 50 ms, against the 12th plucked
-// at the same moment: their partials differ by the ratio of the two plucks' modal amplitudes,
+// action E/ω. A mode's energy is ½ (μℓ/2) ω² A², so the action goes as ℓ f A² and the displacement
+// as 1/√(ℓ f): on a flexible string ℓf is constant and A is kept; a stiff string's partials stretch
+// more as it shortens (B ∝ 1/ℓ²), so its upper modes lose a little. The open A plucked and slid to
+// the 12th in 50 ms, against the 12th plucked at the same moment: their partials differ by the
+// ratio of the two plucks' modal amplitudes times √(ℓ₀ fₙ(ℓ₀) / ℓ₁₂ fₙ(ℓ₁₂)),
 //   aₙ(ℓ) = 2ℓ² / (n²π² xₚ (ℓ − xₚ)) sin(nπxₚ/ℓ) sinc(nπw/2ℓ),
 // both heard by the same pickup at the same frequencies (fretless or fretted, the same at the end),
 // and the slid one having lost less on the way, at the lower frequencies' σ = b₁ + b₃ f²
@@ -78,12 +80,12 @@ for (const fretless of [false, true]) {
       const at = -12 * Math.log2(1 - (t / 0.05) * dist(12)), f = f0 * 2 ** ((fretless ? at : Math.round(at)) / 12);
       saved += b3 * (ps[n - 1].f ** 2 - f * f) * 1e-4;
     }
-    const want = Math.abs(modal(scale, n) / modal(scale / 2, n)) * Math.exp(saved);
+    const want = Math.abs(modal(scale, n) / modal(scale / 2, n)) * Math.exp(saved) * Math.sqrt((scale * f0) / ((scale / 2) * ps[n - 1].f));
     const got = amplitudeAt(xa, ps[n - 1].f, fs) / amplitudeAt(xr, ps[n - 1].f, fs);
     worst = Math.max(worst, Math.abs(got / want - 1));
     rows.push(`${n}: ${got.toFixed(3)} for ${want.toFixed(3)}`);
   }
-  check(worst < 0.005, `${fretless ? 'fretless' : 'fretted'}, a note slid an octave keeps each mode's displacement (the adiabatic invariant)`, `partial ${rows.join(', ')}`);
+  check(worst < 0.005, `${fretless ? 'fretless' : 'fretted'}, a note slid an octave keeps each mode's action, E/ω (the adiabatic invariant)`, `partial ${rows.join(', ')}`);
 }
 
 // 3. a slide of no distance changes nothing, sample for sample
@@ -129,6 +131,53 @@ for (const fretless of [false, true]) {
     top = Math.max(top, ...run(1.5).subarray(Math.round(1.4 * rate)).map(Math.abs));
   }
   check(finite && top < 1e-5, 'the high E slid to the 24th fret and back, at 22.05 and 48 kHz, stays finite and dies away when lifted', `${top.toExponential(1)} V after 1.5 s`);
+}
+
+// 6. a bend: the finger pushes the string δ across the neck at the fret, a from the nut and ℓ from
+// the bridge. The string, nut to bridge (L), stretches by ΔL = √(a² + δ²) − a + √(ℓ² + δ²) − ℓ and its
+// tension rises by E A ΔL / L, A the steel core's section (E = 200 GPa): the guitar's plain G
+// (0.432 mm, 73.8 N) at the 7th fret pushed 10 mm, by hand
+{
+  const g = new TB(fs, 'guitar'), L = 0.648, len = L * 2 ** (-7 / 12), a = L - len, d = 0.01;
+  const want = 1 + (200e9 * Math.PI * 0.432e-3 ** 2 / 4) * (Math.hypot(a, d) - a + Math.hypot(len, d) - len) / L / 73.8;
+  const got = g.bendTension(3, 7, d);
+  check(Math.abs(got / want - 1) < 1e-12 && g.bendTension(3, 0, d) === 1 && g.bendTension(3, 7, 0.2) === 1.5,
+    'a bend stretches the string, nut to bridge: its tension rises by E A ΔL / L (an open string has nothing to push against; a string is not pushed past 1.5 × its tension)',
+    `the G at the 7th pushed 10 mm: × ${got.toFixed(4)}, ${(6 * Math.log2(got)).toFixed(2)} semitones`);
+}
+
+// 7. bent, the note is f √(T'/T), and each mode keeps its action: ℓ is fixed, so its displacement
+// goes as 1/√f and what the pickup hears (its velocity, f A) as √f, (T'/T)^¼. The G at the 7th
+// plucked twice, one pushed 10 mm 50 ms in: the bent one's fundamental, after its losses at its
+// higher frequency (σ = b₁ + b₃ f²), against the other's; then let back, the note it was
+for (const kind of ['guitar']) {
+  const b = new TB(fs, kind), r = new TB(fs, kind), d = 0.01;
+  b.pluck(3, 7, 0.8); r.pluck(3, 7, 0.8);
+  render(b, 0.05); render(r, 0.05);
+  b.bend(3, d);
+  const xb = render(b, 0.5).subarray(0.2 * fs), xr = render(r, 0.5).subarray(0.2 * fs);
+  const tension = b.bendTension(3, 7, d), p1 = r.partials(3, 7), p2 = p1[1];
+  const fu = p1[0].f, fb = fu * Math.sqrt(tension), b3 = (p2.sigma - p1[0].sigma) / (p2.f ** 2 - fu ** 2);
+  const got = peakNear(xb, fb), level = amplitudeAt(xb, fb, fs) / amplitudeAt(xr, fu, fs);
+  const tc = 0.2 + 0.15; // the window's centre, after the bend began
+  const wantLevel = tension ** 0.25 * Math.exp(-b3 * (fb * fb - fu * fu) * tc);
+  check(Math.abs(cents(got, fb)) < 0.1 && Math.abs(level / wantLevel - 1) < 0.005,
+    'bent, the note is f √(T\'/T), and the pickup hears (T\'/T)^¼ as much: each mode keeps its action',
+    `${cents(got, fu).toFixed(1)} ¢ up for ${cents(fb, fu).toFixed(1)}; × ${level.toFixed(4)} for ${wantLevel.toFixed(4)}`);
+  b.bend(3, 0);
+  const back = render(b, 0.4).subarray(0.1 * fs);
+  check(Math.abs(cents(peakNear(back, fu), fu)) < 0.1, 'let back, the bent note returns to the note it was, to a tenth of a cent');
+}
+
+// 8. a string already pushed when it is plucked starts bent (a pre-bend), and the bass's G, longer and
+// under more tension for its core (E A / T 231 against the guitar G's 397), bends less for the same push
+{
+  const g = new TB(fs, 'guitar'); g.bend(3, 0.01); g.pluck(3, 7, 0.8);
+  const x = render(g, 0.4).subarray(0.1 * fs), want = et(62) * Math.sqrt(g.bendTension(3, 7, 0.01));
+  const bass = new TB(fs), up = (t) => 12 * Math.log2(Math.sqrt(t));
+  check(Math.abs(cents(peakNear(x, want), want)) < 0.1 && up(bass.bendTension(3, 7, 0.01)) < up(g.bendTension(3, 7, 0.01)),
+    'a string pushed before it is plucked plays bent; a bass\'s G bends less than a guitar\'s for the same push',
+    `10 mm at the 7th: guitar G ${up(g.bendTension(3, 7, 0.01)).toFixed(2)}, bass G ${up(bass.bendTension(3, 7, 0.01)).toFixed(2)} semitones`);
 }
 
 done();
