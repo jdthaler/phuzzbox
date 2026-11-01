@@ -49,6 +49,50 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    against its ideal waveforms' Fourier coefficients by Simpson's rule (8/(3π) for one octave), the
    RC sections' bilinear images, and its tracking on the test bass's strings
    (`test/octave-circuit.mjs`).
+   The **Spring Reverb** landed 2026-11-01: the Leem Pro KA-1210's and Olson X-82's springs as
+   Parker and Bilbao measured them, as waves on the thin-spring model (a 2 × 2 eigenproblem per
+   wavenumber), played as 2300 modes with Forte's loss model and bead filter; tested against
+   Parker and Bilbao's T_D and F_C, an independent eigen-solve, and the echoes' arrival times at
+   the group delay (`test/spring-circuit.mjs`).
+   The **Tape Echo** landed 2026-11-01: a tape loop kept as samples and the positions they were
+   written at, so speed changes bend the pitch; the record head on the anhysteretic (Langevin)
+   curve; the playback heads' spacing, coating and gap losses as an FIR from their closed form; the
+   motor's lag and the capstan's flutter; tested against those closed forms, the curve's harmonics
+   by Simpson's rule, and the delays to the sample (`test/echo-circuit.mjs`).
+   The **Pedalboard** landed 2026-11-01: every pedal in series in one AudioWorklet
+   (`board/src/board-chain.js`), with true bypass; the pedals whose circuits include their jacks
+   wired to their neighbours (`board/src/board-jacks.js`): first in the chain they feel the
+   pickup, after a pedal a 100 Ω buffered output, and a pedal that drives a load drives the next
+   one's input impedance through the patch cable. Tested against convolution and commutation of
+   linear pedals, and the Phuzz's loss of the pickup against the pickup's complex impedance. Next
+   for it: the MIDI expression pedal on a wah on the board, and a tour.
+   The **Rotary Speaker** landed 2026-11-01: a horn and a drum past two microphones, each path
+   solved for its retarded time every sample (the Doppler shift exactly), each mouth a baffled
+   piston whose off-axis impulse response is a semicircle (2 J1(x)/x exactly), first-order motors;
+   tested against the retarded time by bisection (a 3 kHz note's phase within 0.009 rad of a
+   16.5 rad swing) and J1 by its series.
+   The **Plate Reverb** landed 2026-11-01: the EMT 140's steel plate as Kirchhoff's thin plate,
+   simply supported, 6432 modes to 5 kHz (1.31 per hertz), with the steel's thermoelastic and
+   radiation losses and a damper, played at a quarter and a half of the sample rate between
+   linear-phase filters; tested against the lattice and Weyl's law, every mode summed at the full
+   rate in double precision, the decay by Schroeder's integral, and the bending waves' arrival at
+   the pickups at their group velocity 2√(κω).
+   The **Sympathetic Strings** landed 2026-11-01: a frame of stiff steel strings tuned to a key and
+   scale, all at one stress, on a bridge the bass drives as an ideal velocity source; each partial
+   (Fletcher's n f₀ √(1 + Bn²)) a resonator pulling on the bridge, with Chaigne and Askenfelt's
+   b₁ + b₃ω² losses; tested against the string's driving-point closed form −T k cot(kL), every
+   partial summed in double precision, the stretched partials and the decay heard in the output.
+   The **Black Hole** landed 2026-11-01: a Kerr hole of 30–3000 suns rung by the bass in its four
+   loudest quasinormal modes, (2,2,0), (2,1,0), (3,3,0) and (4,4,0), from Forte's table of Leaver
+   solves, each a complex one-pole heard through its spin-weighted harmonic (h₊ left, h× right),
+   with Kamaretsos et al.'s merger amplitudes; tested against fresh Leaver solves (1.6 × 10⁻⁶),
+   the literature, Hod's near-extremal limit, the harmonics' closed form and the ringing measured
+   from a click.
+   The **Doppler** landed 2026-11-01: a point source on a straight road, pass after pass, each
+   ear's retarded time from c²D² = (X − vD)² + d² in closed form (one root below Mach 1, none or two
+   above), the moving source's field integrated over each output sample so it stays finite at the
+   Mach cone; tested against bisection on the light-cone condition, the field summed at those
+   times, the textbook shift (to 0.10 cents), the cone's arrival and a click's area through it.
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.

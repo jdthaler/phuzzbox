@@ -374,7 +374,12 @@ body.sharing { cursor: row-resize; user-select: none; }
 body.one-screen .views { display: block; grid-row: 2; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .view-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 1), minmax(0, 1fr)); gap: 12px; padding: 12px; height: 100%; min-height: 0; }
 .view-grid .card { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
-body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 90px; }
+body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 60px; }
+/* a view's legend keeps its one line in a short card: the canvas gives way, and a long entry is cut with an ellipsis */
+@media (min-width: 601px) {
+  body.one-screen .view-grid .legend { flex: none; flex-wrap: nowrap; overflow: hidden; }
+  body.one-screen .view-grid .legend > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+}
 body.one-screen .card:not(.notes-open) .caption { display: none; }
 body.one-screen .card.notes-open .caption { flex: none; max-height: 40%; overflow-y: auto; }
 body.one-screen .tunercard .t-body { flex: 1 1 auto; min-height: 0; align-content: safe center; overflow: hidden; }
@@ -475,3 +480,18 @@ body.perform .controls-bar { cursor: default; }
   .pz-tour-text .pz-figure { float: right; margin: 0 0 8px 16px; }
   .pz-tour-text::after { content: ''; display: block; clear: both; }
 }
+
+/* a switch on the face (a perform toggle): a black rocker with a lamp that lights when on */
+.knob.toggle .rocker {
+  width: 40px; height: 52px; margin: 6px 0 2px; padding: 0; border-radius: 6px; border: none; cursor: pointer; position: relative;
+  background: linear-gradient(180deg, #2a2a2f, #0d0d0f 48%, #1c1c20 52%, #060607);
+  box-shadow: 0 0 0 2px #050506, 0 0 0 4px #9a9a9a, 0 4px 8px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  transition: transform 60ms;
+}
+.knob.toggle .rocker[aria-pressed="true"] { background: linear-gradient(0deg, #2a2a2f, #0d0d0f 48%, #1c1c20 52%, #060607); }
+.knob.toggle .rocker:hover { border: none; filter: brightness(1.15); }
+.knob.toggle .rocker:focus-visible { outline: 2px solid var(--enclosure-ink); outline-offset: 5px; }
+.knob.toggle .rocker-led { position: absolute; left: 50%; top: 8px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: #3a0d0a; box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.8); }
+.knob.toggle .rocker[aria-pressed="true"] .rocker-led { background: radial-gradient(circle at 40% 35%, #ffd1cc, var(--led) 45%, #b3140c); box-shadow: 0 0 10px 2px rgb(255 59 47 / 0.6); }
+.pedal.mini .knob.toggle .rocker { width: 30px; height: 38px; margin: 6px 0 1px; }
+.pedal.mini .knob.toggle .rocker-led { top: 5px; }

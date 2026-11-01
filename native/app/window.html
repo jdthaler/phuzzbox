@@ -383,7 +383,12 @@ body.sharing { cursor: row-resize; user-select: none; }
 body.one-screen .views { display: block; grid-row: 2; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .view-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 1), minmax(0, 1fr)); gap: 12px; padding: 12px; height: 100%; min-height: 0; }
 .view-grid .card { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
-body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 90px; }
+body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 60px; }
+/* a view's legend keeps its one line in a short card: the canvas gives way, and a long entry is cut with an ellipsis */
+@media (min-width: 601px) {
+  body.one-screen .view-grid .legend { flex: none; flex-wrap: nowrap; overflow: hidden; }
+  body.one-screen .view-grid .legend > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+}
 body.one-screen .card:not(.notes-open) .caption { display: none; }
 body.one-screen .card.notes-open .caption { flex: none; max-height: 40%; overflow-y: auto; }
 body.one-screen .tunercard .t-body { flex: 1 1 auto; min-height: 0; align-content: safe center; overflow: hidden; }
@@ -485,6 +490,21 @@ body.perform .controls-bar { cursor: default; }
   .pz-tour-text::after { content: ''; display: block; clear: both; }
 }
 
+/* a switch on the face (a perform toggle): a black rocker with a lamp that lights when on */
+.knob.toggle .rocker {
+  width: 40px; height: 52px; margin: 6px 0 2px; padding: 0; border-radius: 6px; border: none; cursor: pointer; position: relative;
+  background: linear-gradient(180deg, #2a2a2f, #0d0d0f 48%, #1c1c20 52%, #060607);
+  box-shadow: 0 0 0 2px #050506, 0 0 0 4px #9a9a9a, 0 4px 8px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  transition: transform 60ms;
+}
+.knob.toggle .rocker[aria-pressed="true"] { background: linear-gradient(0deg, #2a2a2f, #0d0d0f 48%, #1c1c20 52%, #060607); }
+.knob.toggle .rocker:hover { border: none; filter: brightness(1.15); }
+.knob.toggle .rocker:focus-visible { outline: 2px solid var(--enclosure-ink); outline-offset: 5px; }
+.knob.toggle .rocker-led { position: absolute; left: 50%; top: 8px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: #3a0d0a; box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.8); }
+.knob.toggle .rocker[aria-pressed="true"] .rocker-led { background: radial-gradient(circle at 40% 35%, #ffd1cc, var(--led) 45%, #b3140c); box-shadow: 0 0 10px 2px rgb(255 59 47 / 0.6); }
+.pedal.mini .knob.toggle .rocker { width: 30px; height: 38px; margin: 6px 0 1px; }
+.pedal.mini .knob.toggle .rocker-led { top: 5px; }
+
 /* ---- buffer/style.css */
 /* the Buffer's enclosure: a plain grey box, as a buffer is */
 :root[data-pedal="buffer"] { --enclosure: #5b6470; --enclosure-ink: #f5f3ef; }
@@ -544,6 +564,40 @@ body.one-screen .card .canvas.lanes { flex: 1 1 0; height: auto; min-height: 120
 @media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
   body.one-screen .card .canvas.lanes { flex: none; height: 260px; }
 }
+
+/* ---- spring/style.css */
+/* the Spring Reverb's enclosure: the grey of an amplifier's reverb pan */
+:root[data-pedal="spring"] { --enclosure: #3a3f47; --enclosure-ink: #eef1f5; }
+/* the echoes: on a phone, where the views stack at their own heights, a fixed height */
+.card .canvas.echoes { height: 240px; }
+body.one-screen .card .canvas.echoes { flex: 1 1 0; height: auto; min-height: 140px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.echoes { flex: none; height: 260px; }
+}
+
+/* ---- echo/style.css */
+/* the Tape Echo's enclosure: the warm brown of a 1970s tape echo's case */
+:root[data-pedal="echo"] { --enclosure: #5a4632; --enclosure-ink: #f6eee2; }
+
+/* ---- rotary/style.css */
+/* the Rotary Speaker's enclosure: the walnut of an organ speaker's cabinet */
+:root[data-pedal="rotary"] { --enclosure: #6b3a1e; --enclosure-ink: #f4e7d6; }
+
+/* ---- plate/style.css */
+/* the Plate Reverb's enclosure: the grey of a plate's steel frame */
+:root[data-pedal="plate"] { --enclosure: #c9c6bd; --enclosure-ink: #1d1f22; }
+
+/* ---- sympathetic/style.css */
+/* the Sympathetic Strings' enclosure: the brass of a string frame's tuning pins */
+:root[data-pedal="sympathetic"] { --enclosure: #7a5a1f; --enclosure-ink: #f7efdc; }
+
+/* ---- blackhole/style.css */
+/* the Black Hole's enclosure: night, with the gold of an accretion disc's light */
+:root[data-pedal="blackhole"] { --enclosure: #0d0d12; --enclosure-ink: #f3d9a4; }
+
+/* ---- doppler/style.css */
+/* the Doppler's enclosure: road-sign teal, with white */
+:root[data-pedal="doppler"] { --enclosure: #1f4e5f; --enclosure-ink: #e9f3f5; }
 
 /* ---- native/app/app.css */
 /* app.css — the app window's own styles, after the site's shared/pedal.css (whose one-screen
@@ -1953,6 +2007,503 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- spring/src/spring-params.js
+const __m24 = (() => {
+
+// spring-params.js — the Spring Reverb's controls. Values in SI units; `scale` shows them in
+// friendlier ones. A reverb tank: helical steel springs hung between magnetic beads, one bead
+// turned by the drive coil, the one at the far end read by the pickup coil.
+
+const tank = [
+  { id: 'tank', label: 'Tank', type: 'select', def: 'leem',
+    options: [['leem', 'Leem, three springs'], ['olson', 'Olson, two springs'], ['one', 'One spring']],
+    hint: 'Whose springs hang in the tank, from Parker and Bilbao\'s measurements of a Leem Pro KA-1210 and an Olson X-82: their coils, turns and beads. The three long springs echo every 40 to 53 ms; the two short, wider ones every 31 and 35 ms, with their chirps lower. One spring alone echoes crisply, where three blur into a wash.' },
+  { id: 'wire', label: 'Wire diameter', min: 0.2e-3, max: 0.6e-3, def: 0.35e-3, log: true, unit: 'mm', scale: 1000, decimals: 2,
+    hint: 'The steel wire every spring is wound from (0.35 mm in both tanks). Thinner wire carries slower waves, so the echoes come later, and moves the top of the chirps, the transition frequency, down in proportion: a darker, slower, more twangy spring. Thicker is faster and brighter.' },
+  { id: 'mounts', label: 'Loss at the mounts', min: 0.05, max: 3, def: 0.4, log: true, unit: 'dB', decimals: 2,
+    hint: 'What a wave loses each time it reaches a bead and turns back. It sets how long the tank rings: more is a shorter reverb. Waves just below the transition frequency crawl, reach the beads least often, and are the ones the mounts damp least.' },
+  { id: 'steel', label: 'Steel loss factor', min: 1e-5, max: 2e-3, def: 2e-4, log: true, unit: '× 10⁻⁴', scale: 1e4, decimals: 2,
+    hint: 'The steel\'s own internal friction, a fraction of each cycle\'s energy. It damps the high frequencies first, so more makes the tail darker as it dies.' },
+  { id: 'oil', label: 'Oil damping', min: 0, max: 20, def: 0, unit: '/s', decimals: 1,
+    hint: 'A viscous drag on the wire, like the oil Hammond hung his springs in. It damps every frequency alike, so it shortens the reverb without changing its colour.' },
+];
+
+const mix = [
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in.' },
+  { id: 'reverb', label: 'Reverb', min: 0, max: 1, def: 0.3, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of what the pickup bead hears is mixed in: the recovery amplifier\'s gain. At 100 % the first echo of a low note comes out as loud as the note went in.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The tank', params: tank },
+  { name: 'The mix', params: mix },
+];
+
+const PRESETS = {
+  'Spring under the bass': { tank: 'leem', wire: 0.35e-3, mounts: 0.4, steel: 2e-4, oil: 0, dry: 1, reverb: 0.3 },
+  'Surf drip': { tank: 'leem', wire: 0.35e-3, mounts: 0.25, steel: 1e-4, oil: 0, dry: 0.8, reverb: 0.8 },
+  'Small tank': { tank: 'olson', wire: 0.35e-3, mounts: 0.4, steel: 2e-4, oil: 0, dry: 1, reverb: 0.4 },
+  'One spring, nearly lossless': { tank: 'one', wire: 0.35e-3, mounts: 0.05, steel: 1e-5, oil: 0, dry: 0.5, reverb: 1 },
+  'Thin wire, slow chirps': { tank: 'one', wire: 0.22e-3, mounts: 0.15, steel: 5e-5, oil: 0, dry: 0.6, reverb: 1 },
+  'Oil bath': { tank: 'leem', wire: 0.35e-3, mounts: 0.4, steel: 2e-4, oil: 8, dry: 1, reverb: 0.5 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- spring/src/spring-pedal.js
+const __m23 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m24;
+// spring-pedal.js — the Spring Reverb's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'spring',
+  name: 'Spring Reverb',
+  description: 'A reverb tank\'s helical springs from their measured coils and wire: every echo a chirp, from waves that travel slower the higher they are',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/spring.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- echo/src/echo-params.js
+const __m26 = (() => {
+
+// echo-params.js — the Tape Echo's controls. Values in SI units; `scale` shows them in friendlier
+// ones. A loop of tape passes a record head and three playback heads; the echoes are the distances
+// between them over the tape's speed, and the tape's magnetisation and the heads' losses colour them.
+
+const tape = [
+  { id: 'speed', label: 'Tape speed', min: 0.05, max: 0.4, def: 0.19, log: true, unit: 'cm/s', scale: 100, decimals: 1, perform: true,
+    hint: 'How fast the capstan pulls the tape past the heads. The echoes come after the heads\' distances over the speed: faster is shorter, and brighter, since each wavelength on the tape is longer and the heads lose less of it. Turning it while echoes are on the tape bends their pitch as the motor follows.' },
+  { id: 'heads', label: 'Playback heads', type: 'select', def: '12',
+    options: [['1', 'Head 1 (4 cm)'], ['2', 'Head 2 (8 cm)'], ['3', 'Head 3 (12 cm)'], ['12', 'Heads 1 and 2'], ['23', 'Heads 2 and 3'], ['13', 'Heads 1 and 3'], ['123', 'All three']],
+    hint: 'Which playback heads are heard. They sit 4, 8 and 12 cm after the record head, so at 19 cm/s they echo after 211, 421 and 632 ms; together they make rhythms of the same tape.' },
+  { id: 'repeats', label: 'Repeats', min: 0, max: 1.2, def: 0.35, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of what the heads play is recorded again. Each repeat goes through the tape once more, darker and more saturated each time. Past 100 % the loop grows until the tape saturates and holds it: the runaway these machines are known for.' },
+];
+
+const machine = [
+  { id: 'record', label: 'Record level', min: -24, max: 24, def: 0, unit: 'dB', decimals: 1,
+    hint: 'How hard the record head drives the tape. With an ideal bias the tape keeps the anhysteretic magnetisation, which bends over as the particles line up: louder is more compressed, and the third harmonic grows. The echoes come out at the same level until it bends.' },
+  { id: 'spacing', label: 'Head spacing', min: 0.5e-6, max: 30e-6, def: 4e-6, log: true, unit: 'µm', scale: 1e6, decimals: 1,
+    hint: 'How far the tape rides from the playback heads: dust, wear, a tired pressure pad. The head hears the tape\'s field fall away over the gap, more for short wavelengths, so more spacing takes the top off every echo, and more off each repeat.' },
+  { id: 'gap', label: 'Head gap', min: 1e-6, max: 20e-6, def: 5e-6, log: true, unit: 'µm', scale: 1e6, decimals: 1,
+    hint: 'The width of the playback head\'s gap. A wavelength that fits in the gap cancels itself: the response falls to nothing where the wavelength equals the gap, which a wide gap at a slow speed brings down into hearing.' },
+  { id: 'flutter', label: 'Capstan eccentricity', min: 0, max: 20e-6, def: 3e-6, unit: 'µm', scale: 1e6, decimals: 1,
+    hint: 'How far the capstan\'s shaft is off centre. It speeds and slows the tape once a turn, so the echoes waver in pitch: flutter, at the capstan\'s turning rate.' },
+];
+
+const mix = [
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in.' },
+  { id: 'wet', label: 'Echo', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of the playback heads is mixed in.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The tape', params: tape },
+  { name: 'The machine', params: machine },
+  { name: 'The mix', params: mix },
+];
+
+const PRESETS = {
+  'Slapback': { speed: 0.38, heads: '1', repeats: 0, record: 0, spacing: 3e-6, gap: 5e-6, flutter: 3e-6, dry: 1, wet: 0.6 },
+  'Dub bass': { speed: 0.19, heads: '2', repeats: 0.55, record: 3, spacing: 6e-6, gap: 5e-6, flutter: 3e-6, dry: 1, wet: 0.6 },
+  'Three heads': { speed: 0.19, heads: '123', repeats: 0.3, record: 0, spacing: 4e-6, gap: 5e-6, flutter: 3e-6, dry: 1, wet: 0.5 },
+  'Worn machine': { speed: 0.095, heads: '12', repeats: 0.5, record: 6, spacing: 15e-6, gap: 10e-6, flutter: 12e-6, dry: 1, wet: 0.6 },
+  'Runaway': { speed: 0.19, heads: '13', repeats: 1.1, record: 6, spacing: 5e-6, gap: 5e-6, flutter: 4e-6, dry: 0.8, wet: 0.5 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- echo/src/echo-pedal.js
+const __m25 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m26;
+// echo-pedal.js — the Tape Echo's descriptor: everything a host needs to run it without its page.
+// Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'echo',
+  name: 'Tape Echo',
+  description: 'A tape loop past a record head and three playback heads: echoes from distance over speed, coloured by the tape\'s magnetisation and the heads\' losses',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/echo.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- rotary/src/rotary-params.js
+const __m28 = (() => {
+
+// rotary-params.js — the Rotary Speaker's controls. Values in SI units (rotation rates in hertz,
+// shown in rpm; angles in radians, shown in degrees). A horn and a drum spin in a cabinet past two
+// microphones; what the microphones hear is the physics of a moving source.
+
+const DEG = 180 / Math.PI;
+
+const rotors = [
+  { id: 'fast', label: 'Fast (tremolo)', type: 'checkbox', def: false, perform: true,
+    hint: 'The two-speed switch: off, the rotors turn slowly (chorale); on, fast (tremolo). The horn, light, gets there in about a second; the drum, heavy, takes several, so for a while the two beat against each other. Fast, the horn swings the pitch of a high note about ±30 cents; slow, about ±4.' },
+  { id: 'balance', label: 'Horn and drum', min: -12, max: 12, def: 0, unit: 'dB', decimals: 1, perform: true,
+    hint: 'The horn\'s level against the drum\'s: up, more of the horn, which carries everything above the crossover; down, more of the drum and its low end.' },
+  { id: 'distance', label: 'Mic distance', min: 0.3, max: 3, def: 1, log: true, unit: 'm', decimals: 2, perform: true,
+    hint: 'How far the microphones are from the rotors\' axis. Close, the horn swings nearer and further by a large share of the distance, so its level throbs: at 30 cm about 9 dB from near to far, at 3 m under 1 dB. The pitch swings the same at any distance.' },
+  { id: 'spread', label: 'Mic spread', min: 0, max: Math.PI, def: (2 * Math.PI) / 3, unit: '°', scale: DEG, decimals: 0, perform: true,
+    hint: 'The angle between the two microphones around the cabinet. At 0 both hear the same; at 180° they are on opposite sides, and as the horn comes toward one it goes away from the other, so the pitch rises in one ear as it falls in the other.' },
+];
+
+const speeds = [
+  { id: 'hornSlow', label: 'Horn, slow', min: 0.3, max: 1.5, def: 50 / 60, unit: 'rpm', scale: 60, decimals: 0,
+    hint: 'The horn\'s chorale speed. A Leslie\'s is about 50 rpm: a slow swirl.' },
+  { id: 'hornFast', label: 'Horn, fast', min: 4, max: 8, def: 400 / 60, unit: 'rpm', scale: 60, decimals: 0,
+    hint: 'The horn\'s tremolo speed, about 400 rpm. Faster swings the pitch further, since the horn\'s mouth moves faster.' },
+  { id: 'drumSlow', label: 'Drum, slow', min: 0.3, max: 1.5, def: 40 / 60, unit: 'rpm', scale: 60, decimals: 0,
+    hint: 'The drum\'s chorale speed, about 40 rpm, a little slower than the horn\'s.' },
+  { id: 'drumFast', label: 'Drum, fast', min: 4, max: 8, def: 340 / 60, unit: 'rpm', scale: 60, decimals: 0,
+    hint: 'The drum\'s tremolo speed, about 340 rpm: slower than the horn\'s, so the two never quite line up.' },
+  { id: 'hornTau', label: 'Horn spin-up', min: 0.1, max: 2, def: 0.35, log: true, unit: 's', decimals: 2,
+    hint: 'The time constant with which the horn follows the switch: its inertia against its motor and its drag. 0.35 s brings it 95 % of the way in about a second.' },
+  { id: 'drumTau', label: 'Drum spin-up', min: 0.5, max: 6, def: 1.7, log: true, unit: 's', decimals: 1,
+    hint: 'The same for the drum, heavier: 1.7 s brings it 95 % of the way in about five seconds, long after the horn.' },
+];
+
+const cabinet = [
+  { id: 'crossover', label: 'Crossover', min: 400, max: 1600, def: 800, log: true, unit: 'Hz', decimals: 0,
+    hint: 'Where the signal divides: below it to the drum, above it to the horn. A Leslie\'s is 800 Hz; higher keeps more of a bass note in the drum, whose swirl is gentler.' },
+  { id: 'hornR', label: 'Horn radius', min: 0.08, max: 0.25, def: 0.15, unit: 'cm', scale: 100, decimals: 1,
+    hint: 'How far the horn\'s mouth is from the axis it turns on. The mouth moves at the radius times the rotation, so a longer horn swings the pitch further.' },
+  { id: 'hornA', label: 'Horn mouth', min: 0.02, max: 0.08, def: 0.04, unit: 'cm', scale: 100, decimals: 1,
+    hint: 'The radius of the horn\'s mouth. A wavelength much longer than the mouth spreads out every way; a shorter one beams along the horn, so the high notes come and go as it turns, the more the wider the mouth.' },
+  { id: 'drumR', label: 'Drum radius', min: 0.08, max: 0.25, def: 0.18, unit: 'cm', scale: 100, decimals: 1,
+    hint: 'How far the drum\'s opening is from its axis: with the drum\'s rotation, how far its pitch swings.' },
+  { id: 'drumA', label: 'Drum opening', min: 0.05, max: 0.2, def: 0.15, unit: 'cm', scale: 100, decimals: 1,
+    hint: 'The radius of the drum\'s opening. Bass wavelengths are metres long, much more than the opening, so the drum\'s low end hardly beams at all: what it does to a bass note is mostly the pitch swing. Wider beams the upper notes more.' },
+];
+
+const output = [
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the microphones, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'Rotors', params: rotors },
+  { name: 'Speeds', params: speeds },
+  { name: 'The cabinet', params: cabinet },
+  { name: 'Output', params: output },
+];
+
+const PRESETS = {
+  'Chorale': { fast: false, balance: 0, distance: 1, spread: (2 * Math.PI) / 3 },
+  'Tremolo': { fast: true, balance: 0, distance: 1, spread: (2 * Math.PI) / 3 },
+  'Mics up close': { fast: false, distance: 0.35, spread: Math.PI },
+  'Drum only': { fast: true, balance: -12 },
+  'Horn only': { fast: true, balance: 12, distance: 0.5 },
+  'Long horn, slow motor': { fast: true, hornR: 0.24, hornTau: 1.5, drumTau: 5 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- rotary/src/rotary-pedal.js
+const __m27 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m28;
+// rotary-pedal.js — the Rotary Speaker's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'rotary',
+  name: 'Rotary Speaker',
+  description: 'A horn and a drum spinning past two microphones: the Doppler shift of a moving source, its directivity, and motors with inertia',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/rotary.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- plate/src/plate-params.js
+const __m30 = (() => {
+
+// plate-params.js — the Plate Reverb's controls. Values in SI units. A steel plate, 2 m by 1 m and
+// half a millimetre thick, hung in a frame: a driver shakes it, two contact pickups listen.
+
+const plate = [
+  { id: 'decay', label: 'Decay', min: 0.6, max: 10, def: 3, log: true, unit: 's', decimals: 1, perform: true,
+    hint: 'The damper: a porous mat brought nearer the plate or moved away, as a plate\'s lever sets it. It is the time a low note (100 Hz) takes to die by 60 dB. The steel\'s own losses shorten the highs further: alone, the steel lets a note above 1 kHz ring only 2.1 to 2.4 s, so long settings ring darker at the top than at the bottom.' },
+  { id: 'reverb', label: 'Reverb', min: 0, max: 1, def: 0.35, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of the pickups is mixed in.' },
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in.' },
+];
+
+const model = [
+  { id: 'top', label: 'Modes up to', min: 2000, max: 8000, def: 5000, log: true, unit: 'Hz', decimals: 0,
+    hint: 'The highest of the plate\'s modes that is played. The plate has about 1.3 modes in every hertz, so 5 kHz is about 6400 of them; above this it is silent here. Higher is brighter and costs more of the computer.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The plate', params: plate },
+  { name: 'Model and output', params: model },
+];
+
+const PRESETS = {
+  'Studio plate': { decay: 2.5, reverb: 0.35, dry: 1 },
+  'Short and tight': { decay: 0.8, reverb: 0.4, dry: 1 },
+  'Long and dark': { decay: 8, reverb: 0.3, dry: 1 },
+  'All plate': { decay: 3, reverb: 1, dry: 0 },
+  'Light on the computer': { top: 2500 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- plate/src/plate-pedal.js
+const __m29 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m30;
+// plate-pedal.js — the Plate Reverb's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'plate',
+  name: 'Plate Reverb',
+  description: 'A steel plate in a frame, its bending modes from thin-plate theory, its losses the steel\'s and a damper\'s, heard by two pickups',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/plate.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- sympathetic/src/sympathetic-params.js
+const __m32 = (() => {
+
+// sympathetic-params.js — the Sympathetic Strings' controls. Values in SI units. A frame of steel
+// strings tuned to a scale, all across one bridge; a driver moves the bridge with your bass, and a
+// pickup under the bridge hears the strings pull on it.
+
+const KEYS = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+// each scale's strings, in semitones above the key's root
+const SCALES = {
+  major: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19],
+  minor: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19],
+  'major-pent': [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24],
+  'minor-pent': [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24],
+  drone: [0, 7, 12, 19, 24],
+  chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+};
+
+const strings = [
+  { id: 'sustain', label: 'Sustain', min: 1, max: 20, def: 6, log: true, unit: 's', decimals: 1, perform: true,
+    hint: 'How long a string\'s low partials ring: the time a 100 Hz partial takes to die by 60 dB. The strings lose energy at a rate b₁ + b₃ω² (Chaigne and Askenfelt\'s form), so the higher partials always die sooner.' },
+  { id: 'highs', label: 'Highs ring', min: 0.2, max: 5, def: 1, log: true, unit: 's', decimals: 2, perform: true,
+    hint: 'How long a 2 kHz partial rings. Short is a dark, mellow halo; long is a bright, glassy one. Never longer than Sustain: the strings\' losses do not fall with frequency.' },
+  { id: 'mix', label: 'Strings', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of the pickup under the bridge is mixed in: the strings ringing along.' },
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0,
+    hint: 'Your bass as it came in.' },
+];
+
+const tuning = [
+  { id: 'key', label: 'Key', type: 'select', def: '4', options: KEYS.map((k, i) => [String(i), k]),
+    hint: 'The root the strings are tuned from. A note whose harmonics land on the strings sets them ringing; one between them leaves them nearly still, so the halo follows the key: in E, an open E string rings the strings far more than an F would.' },
+  { id: 'scale', label: 'Scale', type: 'select', def: 'major',
+    options: [['major', 'Major'], ['minor', 'Minor'], ['major-pent', 'Major pentatonic'], ['minor-pent', 'Minor pentatonic'], ['drone', 'Drone'], ['chromatic', 'Chromatic']],
+    hint: 'The notes the strings are tuned to, upward from the root: twelve strings for Major, Minor and Chromatic, eleven for the pentatonics. Drone is five strings, root and fifth only, the most open; Chromatic rings along with any note.' },
+  { id: 'octave', label: 'Lowest string', type: 'select', def: '2',
+    options: [['1', 'Octave 1'], ['2', 'Octave 2'], ['3', 'Octave 3']],
+    hint: 'The octave of the lowest string (E1 is the bass\'s open E). Octave 1 is the bass\'s own register, and long strings: 3.4 m for E1. Higher strings are shorter and ring to the bass\'s harmonics.' },
+  { id: 'wire', label: 'Wire diameter', min: 0.2e-3, max: 1e-3, def: 0.3e-3, log: true, unit: 'mm', scale: 1000, decimals: 2,
+    hint: 'The steel wire every string is made of. Each is tensioned to the same stress, 600 MPa, so a thicker wire is stiffer for its tension and its partials go sharp, more for the higher ones: Fletcher\'s inharmonicity B grows as the diameter squared.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The strings', params: strings },
+  { name: 'Tuning and output', params: tuning },
+];
+
+const PRESETS = {
+  'Halo in E': { key: '4', scale: 'major', octave: '2', sustain: 6, highs: 1, mix: 0.5, dry: 1 },
+  'Drone on A': { key: '9', scale: 'drone', octave: '2', sustain: 10, highs: 1.5, mix: 0.6, dry: 1 },
+  'Minor pentatonic in E': { key: '4', scale: 'minor-pent', octave: '2', sustain: 6, highs: 1, mix: 0.5, dry: 1 },
+  'Glassy': { highs: 3.5, sustain: 12, mix: 0.4 },
+  'Dark and short': { highs: 0.3, sustain: 2.5, mix: 0.7 },
+  'Strings alone': { mix: 1, dry: 0 },
+  'Thick wire': { wire: 1e-3 },
+};
+const KEEP = ['level'];
+
+return { KEYS, SCALES, GROUPS, PRESETS, KEEP };
+})();
+
+// ---- sympathetic/src/sympathetic-pedal.js
+const __m31 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m32;
+// sympathetic-pedal.js — the Sympathetic Strings' descriptor: everything a host needs to run it
+// without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'sympathetic',
+  name: 'Sympathetic Strings',
+  description: 'A frame of stiff steel strings tuned to a key, all on one bridge your bass shakes: they ring along with the notes whose harmonics they share',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/sympathetic.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- blackhole/src/blackhole-params.js
+const __m34 = (() => {
+
+// blackhole-params.js — the Black Hole's controls. Values in SI units, and the hole's mass in suns:
+// your bass perturbs a spinning black hole, and you hear it ring in its quasinormal modes.
+
+const hole = [
+  { id: 'mass', label: 'Mass', min: 30, max: 3000, def: 200, log: true, unit: 'M☉', decimals: 0, perform: true,
+    hint: 'The hole\'s mass in suns. Its ringing scales as one over the mass: at the default spin, 65 suns rings at middle C (262 Hz), and the remnant of LIGO\'s first detection, 62 suns at a = 0.67, at 271 Hz; 200 suns rings at 85 Hz, just above the open E\'s second harmonic, and 414 suns on the open E itself (41 Hz).' },
+  { id: 'nines', label: 'Spin', min: 0, max: 6, def: 0.509, unit: 'nines', decimals: 2, perform: true,
+    hint: 'How fast the hole spins, a = 1 − 10^(−nines): 0 is a hole that does not spin (Schwarzschild), 0.51 is a = 0.69, 2 is 0.99, 6 is 0.999999. Without spin a hole rings for barely two cycles, a thud; as a → 1 its l = m modes slide onto multiples of the horizon\'s spin, 2 : 3 : 4, and ring longer and longer, a bell (Q about 3 at a = 0.69, 15 at 0.99, 1400 at 0.999999).' },
+  { id: 'mix', label: 'Hole', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of the ringing is mixed in.' },
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in.' },
+];
+
+const merger = [
+  { id: 'ratio', label: 'Mass ratio', min: 1, max: 10, def: 1.2, log: true, unit: ':1', decimals: 1,
+    hint: 'How lopsided the merger that made the hole was, the heavier over the lighter: it sets how strongly each mode rings (Kamaretsos et al.\'s fits). Equal masses leave the odd-m modes, (2,1) and (3,3), silent; a lopsided merger switches them on.' },
+  { id: 'inclination', label: 'Inclination', min: 0, max: 90, def: 30, unit: '°', decimals: 0,
+    hint: 'Where you hear the hole from: 0° along its spin axis (face-on), 90° in its equator (edge-on). The left channel is h₊ and the right h×: face-on the two are a quarter cycle apart, circularly polarised; edge-on h× of the (2,2) mode vanishes.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The hole', params: hole },
+  { name: 'The merger and output', params: merger },
+];
+
+const PRESETS = {
+  'Bass hole': { mass: 200, nines: 0.509, ratio: 1.2, inclination: 30, mix: 0.5, dry: 1 },
+  'GW150914': { mass: 62, nines: 0.481, ratio: 1.2 },
+  'Thud: no spin': { nines: 0 },
+  'Bell: nearly extremal': { nines: 4, mix: 0.3 },
+  'On the open E': { mass: 414 },
+  'Lopsided merger': { ratio: 8 },
+  'Edge-on': { inclination: 90 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- blackhole/src/blackhole-pedal.js
+const __m33 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m34;
+// blackhole-pedal.js — the Black Hole's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'blackhole',
+  name: 'Black Hole',
+  description: 'Your bass perturbs a spinning black hole, and it rings in its quasinormal modes, as LIGO hears after a merger: mass sets the pitch, spin the ring',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/blackhole.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- doppler/src/doppler-params.js
+const __m36 = (() => {
+
+// doppler-params.js — the Doppler's controls. Values in SI units: a source plays your bass as it
+// passes you on a straight road, again and again, and you hear it at its retarded time.
+
+const pass = [
+  { id: 'speed', label: 'Speed', min: 0, max: 700, def: 25, unit: 'm/s', decimals: 0, perform: true,
+    hint: 'How fast the source passes, through still air: 25 m/s is 90 km/h. Coming it sounds higher, going lower: at 25 m/s a note falls by 2.5 semitones as it passes. Above the speed of sound (343 m/s at 20 °C) the source outruns its sound: nothing, then the boom as its Mach cone sweeps over you, then two sounds at once, the one from its approach played backwards. The boom is far louder than the pass: the Mach presets turn Level down by 24 dB. A change takes effect from the next pass.' },
+  { id: 'distance', label: 'Distance', min: 1, max: 100, def: 4, log: true, unit: 'm', decimals: 1, perform: true,
+    hint: 'How close the road comes to you. Close, the pitch drops fast as it passes and the level swells; far, the pitch glides down slowly. From the next pass.' },
+  { id: 'period', label: 'Every', min: 1, max: 8, def: 4, unit: 's', decimals: 1, perform: true,
+    hint: 'The time from one pass to the next: each source is heard for this long, fading in and out at the ends of its stretch of road, and passes you halfway. From the next pass.' },
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in, as if you stood by the road playing too.' },
+];
+
+const air = [
+  { id: 'listener', label: 'Your speed', min: -50, max: 50, def: 0, unit: 'm/s', decimals: 0,
+    hint: 'How fast you move along the road, through the air: plus the way the source goes, minus toward it. Riding at 25 m/s past a source standing still, you hear it 122 cents high as you come and 131 cents low as you go; a source passing you at 25 m/s is the other way round, 131 cents high and 122 low. The pitch depends on who moves through the air, not only on how fast you close. From the next pass.' },
+  { id: 'temp', label: 'Air', min: -20, max: 40, def: 20, unit: '°C', decimals: 0,
+    hint: 'The air\'s temperature, which sets the speed of sound: 331 m/s at 0 °C, 343 m/s at 20 °C. From the next pass.' },
+  { id: 'mix', label: 'Fly-by', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0,
+    hint: 'How much of the passing source is heard.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The pass', params: pass },
+  { name: 'The air and output', params: air },
+];
+
+const PRESETS = {
+  'Car at 90 km/h': { speed: 25, distance: 4, period: 4, listener: 0, dry: 0, mix: 1 },
+  'Race car': { speed: 90, distance: 6, period: 3 },
+  'Train': { speed: 40, distance: 20, period: 8 },
+  'You ride past': { speed: 0, listener: 25, distance: 4, period: 4 },
+  'Head on': { speed: 25, listener: -25, distance: 4, period: 4 },
+  'Jet, low pass': { speed: 250, distance: 60, period: 6 },
+  'Just past Mach 1': { speed: 380, distance: 30, period: 5, level: -24 },
+  'Mach 2': { speed: 686, distance: 100, period: 6, level: -24 },
+};
+const KEEP = [];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- doppler/src/doppler-pedal.js
+const __m35 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m36;
+// doppler-pedal.js — the Doppler's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'doppler',
+  name: 'Doppler',
+  description: 'A source plays your bass as it passes you, again and again, heard at its retarded time: the pitch falls as it goes by, and above Mach 1 the boom',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/doppler.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue } = __m1;
@@ -1968,6 +2519,13 @@ const { PEDAL: OPTO } = __m15;
 const { PEDAL: CABINET } = __m17;
 const { PEDAL: ENVELOPE } = __m19;
 const { PEDAL: OCTAVE } = __m21;
+const { PEDAL: SPRING } = __m23;
+const { PEDAL: ECHO } = __m25;
+const { PEDAL: ROTARY } = __m27;
+const { PEDAL: PLATE } = __m29;
+const { PEDAL: SYMPATHETIC } = __m31;
+const { PEDAL: BLACKHOLE } = __m33;
+const { PEDAL: DOPPLER } = __m35;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -1989,7 +2547,14 @@ const { PEDAL: OCTAVE } = __m21;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE].map((d) => [d.id, d]));
+
+
+
+
+
+
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

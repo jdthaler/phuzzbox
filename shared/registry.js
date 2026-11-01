@@ -49,6 +49,41 @@ export const PEDALS = [
     after: 'the analog octave dividers of the 1980s',
     blurb: 'A comparator and two flip-flops that flip your bass\'s polarity once a cycle: an octave below, and two.',
   },
+  {
+    id: 'spring', name: 'Spring Reverb', version: '0.1.0', ready: true, plugin: { code: 'Sprg' },
+    after: 'the reverb tanks of guitar and organ amplifiers',
+    blurb: 'Steel springs from measured tanks, whose waves travel slower the higher they are: every echo comes back as a chirp.',
+  },
+  {
+    id: 'echo', name: 'Tape Echo', version: '0.1.0', ready: true, plugin: { code: 'Tape' },
+    after: 'the multi-head tape echoes of the 1970s',
+    blurb: 'A loop of tape past a record head and three playback heads: every repeat recorded again, darker and more saturated, wavering with the capstan.',
+  },
+  {
+    id: 'rotary', name: 'Rotary Speaker', version: '0.1.0', ready: true, plugin: { code: 'Rtry' },
+    after: 'the rotating-horn organ speakers of the 1960s',
+    blurb: 'A horn and a drum spinning past two microphones: the pitch rises as each comes toward you and falls as it goes, heard at the retarded time.',
+  },
+  {
+    id: 'plate', name: 'Plate Reverb', version: '0.1.0', ready: true, plugin: { code: 'Plat' },
+    after: 'the steel plate reverbs of 1960s studios',
+    blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',
+  },
+  {
+    id: 'sympathetic', name: 'Sympathetic Strings', version: '0.1.0', ready: true, plugin: { code: 'Symp' },
+    after: 'the sitar\'s sympathetic strings',
+    blurb: 'A frame of steel strings tuned to a key, all on one bridge your bass shakes: the strings whose partials your notes share ring along, a halo that follows the key.',
+  },
+  {
+    id: 'blackhole', name: 'Black Hole', version: '0.1.0', ready: true, plugin: { code: 'BHol' },
+    after: 'the ringdown LIGO hears after a merger',
+    blurb: 'Your bass perturbs a spinning black hole and it rings in its quasinormal modes: a thud without spin, a bell near the limit. Mass sets the pitch.',
+  },
+  {
+    id: 'doppler', name: 'Doppler', version: '0.1.0', ready: true, plugin: { code: 'Dopp' },
+    after: 'a car, a train, a jet going by',
+    blurb: 'Your bass rides past you on a straight road, again and again, heard at its retarded time: the pitch falls as it goes, and past Mach 1 it arrives as a boom, half of it backwards.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

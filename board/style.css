@@ -1,0 +1,38 @@
+/* the Pedalboard: its face a plain black box (the board's own controls are in Controls), and the
+   pedals below it as small enclosures, top to bottom from the bass to the amp */
+:root { --enclosure: #1b1b1e; --enclosure-ink: #ecebe8; }
+.board { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.board-tools { display: flex; gap: 6px; }
+.board-tools select { flex: 1 1 0; min-width: 0; }
+.board-end { text-align: center; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.board-end::before { content: "↓ "; }
+.board-end:first-of-type::before { content: ""; }
+.board-end:first-of-type::after { content: " ↓"; }
+.slots { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.pedal.mini { padding: 12px 14px 12px; gap: 8px; border-radius: 12px; align-items: stretch; }
+.pedal.mini::before { inset: 4px; background-size: 9px 9px; }
+.pedal.mini .slot-head { display: flex; align-items: center; gap: 4px; padding: 0 8px; }
+.pedal.mini .slot-head a { font: 800 18px/1.1 Georgia, "Times New Roman", serif; color: inherit; text-decoration: none; letter-spacing: 0.5px; }
+.pedal.mini .slot-head a:hover { text-decoration: underline; }
+.pedal.mini .slot-head .spacer { flex: 1; }
+.pedal.mini .slot-head button { padding: 1px 7px; font-size: 13px; line-height: 1.3; color: inherit; border-color: color-mix(in srgb, var(--enclosure-ink) 35%, transparent); background: rgb(0 0 0 / 0.18); }
+.pedal.mini .slot-head button:disabled { opacity: 0.35; }
+.pedal.mini .knobs { gap: 4px 6px; }
+.pedal.mini .knob { width: 62px; }
+.pedal.mini .dial { width: 40px; height: 40px; margin: 6px 0 1px; }
+.pedal.mini .dial .mark { height: 14px; }
+.pedal.mini .klabel { font-size: 9.5px; letter-spacing: 0.3px; }
+.pedal.mini .kval { font-size: 10px; }
+.pedal.mini .slot-foot { display: flex; align-items: center; gap: 12px; padding: 0 4px; }
+.pedal.mini .slot-foot select { flex: 1 1 auto; min-width: 0; font-size: 12px; }
+.pedal.mini .footswitch { width: 34px; height: 34px; margin: 6px; flex: none; }
+.board-empty { text-align: center; font-size: 13px; color: var(--ink-2); padding: 14px 6px; border: 1px dashed var(--line); border-radius: 10px; }
+/* the chain's view: a list of jacks */
+.card .canvas.chain-view, body.one-screen .card .canvas.chain-view { height: auto; min-height: 120px; overflow: auto; }
+.jacks-list { list-style: none; margin: 0; padding: 2px 4px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.jacks-list li { display: grid; grid-template-columns: 9em 1fr 5em; gap: 8px; align-items: baseline; padding: 3px 0; border-bottom: 1px solid var(--line); }
+.jacks-list li.off { opacity: 0.55; }
+.jacks-list li span { color: var(--ink-2); }
+.jacks-list li output { text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { .jacks-list li { grid-template-columns: 1fr auto; } .jacks-list li span { grid-column: 1 / -1; grid-row: 2; } }
+.pedal.mini .slot-foot select { background: rgb(0 0 0 / 0.55); color: #ecebe8; border-color: rgb(0 0 0 / 0.5); }
