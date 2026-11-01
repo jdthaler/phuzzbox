@@ -11,6 +11,95 @@ Versions change only when `main` is released to `live`, the branch the site is p
 each pull request into `main` leaves a note in `changes/` (`changes/README.md`), and
 `node tools/release.mjs` gathers them into one entry here, bumping each version once.
 
+## 2026-11-01 — bends, fret dots and the iPad; every page checked in a browser; the footswitch doesn't jump; plugins to download; the rig at the foot of the page, and a metronome; the Wah's rocker, and a slimmer front page
+
+### PhuzzBox 0.5.0
+- **Bends:** drag across a string on the test bass's or guitar's fretboard, up or down, to bend the note. The finger pushes the string across the neck, stretching it from nut to bridge, and its tension rises by E A ΔL / L; a drag of one string's row pushes it one string's spacing at the bridge. Each mode keeps its action through a bend (and now through a slide, exactly, on a stiff string).
+- **Fret dots** sit between the middle two strings (the bass's D and A, the guitar's G and D), where they belong.
+- **iPad and iPhone:** the test instruments play without turning on an audio input first. Any tap or key resumes audio that Safari left suspended, and the page asks for a playback audio session, which the ringer switch does not silence.
+- **No text selection** on the playing surface: a long press or a drag across the knobs, the fretboard or the views no longer selects text (How it works and typed values still do).
+- `tools/check-pages.mjs`, Forte's: every page opened in headless Chromium at six sizes, from a
+  phone to a desktop, failing on console errors, sideways scrolling, a pedal without its knobs,
+  footswitch, ⓘ buttons or presets, and toggles that don't turn their view or controls off and on.
+  CI runs it on every pull request and lists what differs from the base.
+- **Loudness matching:** `tools/loudness.mjs`, as Forte's, measures each pedal engaged against bypassed
+  on the test bass's riff, as BS.1770 integrated loudness, and `test/level-tests.mjs` keeps every pedal
+  at its defaults within 1 dB of bypass, so engaging one no longer jumps by up to 15 dB.
+- The Pedalboard's Amp's input hint says the Tube Preamp's 16 dB is with its Master at 40 %.
+- **Plugins and the app to download:** a Plugins tab in How it works on every page (and on the front
+  page, Plugins and the app) downloads the latest plugin release's files: on a pedal's page that
+  pedal for macOS, Windows or Linux, and everywhere every pedal with the PhuzzBox app, or the app
+  alone, with a line saying which release they are. Below them, how to install them on each system.
+- Each archive has every format its system builds (AU, VST3, CLAP and standalone apps), the guide,
+  `install.sh` on macOS and Linux (`bash install.sh install`), the licence and
+  `THIRD-PARTY-NOTICES.md`. The macOS bundles are signed ad hoc so Apple silicon loads them.
+- `tools/package-plugins.sh` packs them in every `native` run, and the `release-plugins` workflow
+  publishes `live`'s as a GitHub release after each site release that changes them.
+- **The rig**, at the foot of every page: its bar has the input and its channel, the output, the
+  **Master** volume (after the pedal and the metronome) and the latency, moved from the header.
+  Under it, with the test bass or guitar, the fretboard; with your interface, the interface's
+  settings (Instrument, Model and gain, Full scale, moved from Controls) and five units before the
+  pedal, each with its knobs and footswitch, the same on every page: **Gain**, **Hum filter**
+  (notches at 50 or 60 Hz and its harmonics), **Gate**, **EQ** (bass and treble shelves, a
+  sweepable mid) and **Compressor**. The test instruments skip them. How it works has a Rig tab.
+- **Metronome**, under the pedal beside the tuner: each beat a struck maple block, the first of the
+  bar a steel bar's bell, modelled from their bending modes; its pendulum's sliding weight sits
+  where the tempo puts it. Tempo by −/+, typing or tapping; 2 to 7 beats a bar or no bell; its own
+  level. How it works has a Metronome tab.
+- The pedal is always shown (its toggle is gone); the Tuner and Metronome toggles are under it,
+  not in the Views bar.
+- The presets are on the pedal itself, in a window in the enclosure, on the pages and in the app.
+- The front page draws each pedal without its knobs, as a small stompbox with its name and
+  footswitch, so a board of them takes far less room; the knobs are on each pedal's page.
+- A control a foot rocks can be drawn as a rocker pedal on the face (`face: 'treadle'`,
+  `shared/treadle.js`), on the pedal pages, the Pedalboard, the app and the plugins' window.
+
+### Phuzz 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Volume's default goes from 100 % to 77 %.
+
+### Wah 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to +1.3 dB.
+- **Rocker:** the face's Rocker is a rocker pedal, a treadle seen from the side rocking from heel
+  down to toe down, in place of a knob; drag it up or right toward the toe. In Auto it rocks with
+  the envelope follower as you play.
+
+### Tube Preamp 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Master's default goes from 40 % to 24 %.
+- The Cable to the amp and Amp's input hints give their figures with the Master at 40 %, and say they are smaller turned down.
+
+### Opto Compressor 0.2.0
+- Engaged at its defaults it is as loud as bypassed: the Gain's default goes from 10 to 8.5 dB.
+
+### Cabinet 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Microphone sensitivity's default goes from 15 to 18.6 mV/Pa.
+
+### Envelope Filter 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to +6.1 dB.
+
+### Octave Down 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to +2.7 dB.
+
+### Spring Reverb 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to −0.6 dB.
+
+### Tape Echo 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to −3.5 dB.
+
+### Rotary Speaker 0.2.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to +0.4 dB.
+
+### Plate Reverb 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to −3 dB.
+
+### Sympathetic Strings 0.2.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to −11.5 dB.
+
+### Black Hole 0.3.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to −15.1 dB.
+
+### Doppler 0.2.0
+- Engaged at its defaults it is as loud as bypassed: the Level's default goes from 0 to +12 dB.
+
 ## 2026-11-01 — slides on the test bass and guitar
 
 ### PhuzzBox 0.4.0
