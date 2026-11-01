@@ -62,6 +62,8 @@ class Engine : public phuzzbox::Effect {
   int mm[MAX_MODES] = {}, nn[MAX_MODES] = {};
   double freq[MAX_MODES] = {}, decay[MAX_MODES] = {};
   double gain = 1;  // the transducers: a volt in, a volt out (plate-engine.cpp)
+  // each mode's shape at the driver and at the left and right pickups, where they are now
+  double shapeD[MAX_MODES] = {}, shapeL[MAX_MODES] = {}, shapeR[MAX_MODES] = {};
   // the plate alone, n ≤ 128 samples of the driver in, the pickups out
   void run(const float *x, float *yl, float *yr, int n);
 
@@ -69,7 +71,9 @@ class Engine : public phuzzbox::Effect {
   static constexpr int W = 8, BLOCK = 128;
   double P[kParamCount] = {};
   double builtTop = -1;
+  double placed[6] = {-1, -1, -1, -1, -1, -1}; // where the driver and the pickups were when shaped
   void build();
+  void shape();
   void tune();
   // the modes from..to, n samples at rate fs/D
   void bank(int from, int to, const float *x, float *yl, float *yr, int n);
@@ -77,7 +81,6 @@ class Engine : public phuzzbox::Effect {
   alignas(32) float wl[MAX_MODES] = {}, wr[MAX_MODES] = {};
   alignas(32) float zr[MAX_MODES] = {}, zi[MAX_MODES] = {};
   alignas(32) float accL[BLOCK * W] = {}, accR[BLOCK * W] = {};
-  double shapeD[MAX_MODES] = {}, shapeL[MAX_MODES] = {}, shapeR[MAX_MODES] = {};
   Lowpass f1, f2;  // fs ↔ fs/2, fs/2 ↔ fs/4
   Down d1, d2;
   Up u1[2], u2[2];

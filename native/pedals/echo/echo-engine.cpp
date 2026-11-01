@@ -9,7 +9,7 @@ namespace echo {
 
 Engine::Engine(double fs) : Effect(fs) {
   // the tape holds the longest echo at the slowest speed, and some
-  N = (int)std::ceil(fs * HEAD[2] / 0.05) + 4 * TAPS + 64;
+  N = (int)std::ceil(fs * HEAD_MAX / 0.05) + 4 * TAPS + 64;
   buf.assign(N, 0.f);
   pos.assign(N, 0.0);
   every = (int)std::lround(0.020 * fs);
@@ -25,15 +25,20 @@ void Engine::reset() {
   std::fill(buf.begin(), buf.end(), 0.f);
   X = 0; w = 0;
   for (int i = 0; i < N; i++) pos[(w - i + N) % N] = -i * v / fs;
-  for (int j = 0; j < 3; j++) {
-    const double p = X - HEAD[j];
-    int k = w;
-    while (pos[k] > p) k = (k - 1 + N) % N;
-    at[j] = k;
-  }
+  for (int j = 0; j < 3; j++) seat(j);
   std::fill(hist, hist + TAPS, 0.0);
   fb = 0; hpS = 0; theta = 0; recordPeak = 0;
+  stripe = 0; stripes = 0; inStripe = 0; tapeAt = 0;
   blank = true;
+}
+
+// head j's place: back from the record head to the last sample written at or before the head
+void Engine::seat(int j) {
+  placed[j] = M.at[j];
+  const double p = X - M.at[j];
+  int k = w;
+  for (int n = 0; n < N - 1 && pos[k] > p; n++) k = (k - 1 + N) % N;
+  at[j] = k;
 }
 
 void Engine::setParams(const double *Pn) {
@@ -44,6 +49,8 @@ void Engine::setParams(const double *Pn) {
   // a blank tape (nothing recorded since a reset) runs at the knob's speed at once: no one hears
   // the motor come up to speed until there is something on the tape
   if (blank && v != M.speed) { v = vTape = M.speed; reset(); }
+  // a head slid along the tape reads from its new place at once
+  for (int j = 0; j < 3; j++) if (M.at[j] != placed[j]) seat(j);
   redesign();
 }
 
@@ -89,7 +96,7 @@ double Engine::step(double x) {
   const double ahead = vTape * HALF / fs;
   double sum = 0;
   for (int j = 0; j < 3; j++) {
-    const double y = read(j, X - HEAD[j] + ahead); // read every head, so each keeps its place
+    const double y = read(j, X - M.at[j] + ahead); // read every head, so each keeps its place
     if (M.head[j]) sum += y;
   }
   // the heads' losses
@@ -106,6 +113,21 @@ void Engine::process(const float *in, float *L, float *R, int n) {
     if ((i & 31) == 0) redesign();
     const double x = in[i];
     const double e = step(x);
+    if (messages) { // the tape's magnetisation, for the page's picture of the loop
+      const int share = std::max(1, every / STRIPES);
+      if (inStripe == 0 && stripes == 0) tapeAt = std::fmod(X, 1000.0);
+      stripe += buf[w];
+      if (++inStripe == share) {
+        tapeMsg.values[2 + stripes] = (float)(stripe / share);
+        stripe = 0; inStripe = 0;
+        if (++stripes == STRIPES) {
+          tapeMsg.type = kTape; tapeMsg.count = 2 + STRIPES;
+          tapeMsg.values[0] = (float)tapeAt; tapeMsg.values[1] = (float)(share * STRIPES);
+          post(tapeMsg);
+          stripes = 0;
+        }
+      }
+    }
     const float out = (float)(M.level * (M.dry * x + M.wet * e));
     L[i] = out;
     R[i] = out;
@@ -114,7 +136,7 @@ void Engine::process(const float *in, float *L, float *R, int n) {
       msg.type = kState;
       msg.count = 5;
       msg.values[0] = (float)vTape;
-      for (int j = 0; j < 3; j++) msg.values[1 + j] = (float)(HEAD[j] / v);
+      for (int j = 0; j < 3; j++) msg.values[1 + j] = (float)(M.at[j] / v);
       msg.values[4] = (float)recordPeak;
       recordPeak = 0;
       post(msg);

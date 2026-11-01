@@ -32,7 +32,7 @@ class Engine : public phuzzbox::Effect {
   static constexpr int W = 8, BLOCK = 128;
   double P[kParamCount] = {};
   Model M;
-  int built = -1; double builtWire = 0; // the geometry the bank was built for
+  int built = -1; double builtWire = 0; bool builtAcross = false; // the geometry the bank was built for
   void build();
   void tune();
   // the bank as complex one-poles z ← p·z + c·x, out Re z, W at a time
