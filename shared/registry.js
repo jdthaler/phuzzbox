@@ -21,7 +21,11 @@ export const PEDALS = [
     after: 'the inductor wah of the late 1960s, swept low for bass',
     blurb: 'Two transistors and a coil resonating with a capacitor; your foot, or a MIDI expression pedal, turns the pot that sets how hard the loop pushes back.',
   },
-  { id: 'preamp', name: 'Tube Preamp', ready: false, after: 'all-tube bass amp', blurb: 'Triodes with grid conduction, a passive tone stack, and an output transformer that saturates at the bottom first.' },
+  {
+    id: 'preamp', name: 'Tube Preamp', version: '0.1.0', ready: true, plugin: { code: 'Tube' },
+    after: 'the 1959 Fender Bassman\'s preamp',
+    blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
+  },
   { id: 'opto', name: 'Opto Compressor', ready: false, after: 'electro-optical leveler', blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.' },
   { id: 'cabinet', name: 'Cabinet', ready: false, after: '8×10 and 1×15 bass cabinets', blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.' },
 ];
