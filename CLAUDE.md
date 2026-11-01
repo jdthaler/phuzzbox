@@ -18,7 +18,7 @@ Read first:
 
 - `npm run serve` serves the site at <http://localhost:8766> (AudioWorklets need HTTP).
 - `npm test` runs every `test/*-tests.mjs` in parallel; `npm test buffer` runs one.
-- `node tools/bundle-app.mjs` rebuilds the app's window (`native/app/buffer.html`) from
+- `node tools/bundle-app.mjs` rebuilds the app's window (`native/app/window.html`) from
   `native/app/app.js` and the site's modules it imports; `test/native-tests.mjs` fails when stale.
 - `node tools/gen-native-params.mjs` rewrites each pedal's C++ parameter tables from its
   descriptor (after changing parameters or presets); `test/native-tests.mjs` fails when stale.

@@ -66,8 +66,10 @@ Your settings stay in your browser.
 
 ## The app
 
-**Phuzzbox.app** (`native/app/`) plays a pedal with no browser and no DAW. It shows the page's face,
-tuner and Controls in a window of its own, built from the same modules. Its audio runs in C++
+**Phuzzbox.app** (`native/app/`) plays the pedals with no browser and no DAW, one at a time: the
+menu in its title picks the Buffer or the Phuzz, and each keeps its own settings (your bass and
+how it is plugged in go with you from one to the other). It shows the page's face, tuner and
+Controls in a window of its own, built from the same modules; the pages' views stay on the site. Its audio runs in C++
 through CoreAudio (WASAPI on Windows, ALSA on Linux) at the buffer you choose, 64 samples unless
 you change it. At 48 kHz the buffers then make a round trip of about 3 ms, where Chrome's is
 15–25 ms. Pick your interface for In and Out, the input your bass is on, and the buffer: the
@@ -86,7 +88,7 @@ microphone: that permission covers the interface's inputs too.
 ```bash
 npm run serve        # http://localhost:8766 (AudioWorklets need HTTP)
 npm test             # every test/*-tests.mjs
-node tools/bundle-app.mjs   # the app's window, native/app/buffer.html, after changing a module it uses
+node tools/bundle-app.mjs   # the app's window, native/app/window.html, after changing a module it uses
 node tools/render-phuzz.mjs # the Phuzz's demos to examples/phuzz/ (and render-buffer.mjs, the Buffer's)
 ```
 

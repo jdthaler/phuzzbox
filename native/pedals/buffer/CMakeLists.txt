@@ -1,7 +1,7 @@
 # The Buffer: its model and engine in C++, its plugins and its WebAssembly.
 include(buffer-info.cmake) # generated: PHUZZ_NAME, PHUZZ_VERSION, PHUZZ_AU_SUBTYPE
 
-add_library(phuzz_buffer STATIC buffer-model.cpp buffer-engine.cpp buffer-pedal.cpp)
+add_library(phuzz_buffer STATIC buffer-model.cpp buffer-engine.cpp buffer-pedal.cpp buffer-entry.cpp)
 target_include_directories(phuzz_buffer PUBLIC .)
 target_link_libraries(phuzz_buffer PUBLIC phuzzbox_core)
 
