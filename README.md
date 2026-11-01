@@ -157,6 +157,20 @@ cd native && cmake --preset wasm && cmake --build --preset wasm                 
 
 See [CLAUDE.md](CLAUDE.md) and [docs/PEDAL_GUIDE.md](docs/PEDAL_GUIDE.md) for how a pedal is built.
 
+## Versions
+
+PhuzzBox and each pedal carry their own [semantic version](https://semver.org), as Forte and its
+instruments do: on the front page and in each pedal's How it works, kept in `shared/registry.js`
+(and `package.json` for PhuzzBox) and logged in [CHANGELOG.md](CHANGELOG.md). The plugins carry
+their pedal's version, the app PhuzzBox's. Everything is pre-release (0.x) for now:
+
+* **MINOR** (0.**x**.0) for new features, or for changes to a pedal's sound or parameters.
+* **PATCH** (0.x.**y**) for fixes that leave the intended sound alone.
+
+From 1.0 on, a pedal's MAJOR version will change only when songs saved with its plugins, or the
+sound of its presets, break. Versions move only at a release: each change leaves a note in
+[changes/](changes/README.md), and `node tools/release.mjs` gathers them.
+
 ## Licence
 
 MIT. The page code, the build and the plugin follow Forte's (also MIT, same author).

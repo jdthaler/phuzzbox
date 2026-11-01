@@ -1,0 +1,21 @@
+{"slug": "doppler",
+ "params": [
+  {"id":"speed","kind":"continuous","min":0,"max":700,"step":0,"log":false,"def":25},
+  {"id":"distance","kind":"continuous","min":1,"max":100,"step":0,"log":true,"def":4},
+  {"id":"period","kind":"continuous","min":1,"max":8,"step":0,"log":false,"def":4},
+  {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0},
+  {"id":"listener","kind":"continuous","min":-50,"max":50,"step":0,"log":false,"def":0},
+  {"id":"temp","kind":"continuous","min":-20,"max":40,"step":0,"log":false,"def":20},
+  {"id":"mix","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"Car at 90 km/h","values":{"speed":25,"distance":4,"period":4,"listener":0,"dry":0,"mix":1}},
+  {"name":"Race car","values":{"speed":90,"distance":6,"period":3}},
+  {"name":"Train","values":{"speed":40,"distance":20,"period":8}},
+  {"name":"You ride past","values":{"speed":0,"listener":25,"distance":4,"period":4}},
+  {"name":"Head on","values":{"speed":25,"listener":-25,"distance":4,"period":4}},
+  {"name":"Jet, low pass","values":{"speed":250,"distance":60,"period":6}},
+  {"name":"Just past Mach 1","values":{"speed":380,"distance":30,"period":5,"level":-24}},
+  {"name":"Mach 2","values":{"speed":686,"distance":100,"period":6,"level":-24}}
+ ]}
