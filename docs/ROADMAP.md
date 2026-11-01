@@ -40,6 +40,15 @@ plays every ready pedal, one at a time, from a menu in its title (2026-11-01: th
 site measured 70 ms in Chrome on the owner's Mac). Next: the same face as the plugins' panel in
 MainStage and Logic (Forte's editor.cpp).
 
+## The page
+
+Decided 2026-11-01 (Jesse): the pages look and work like Forte's. One screen, with toggles to show
+and hide each view and group of controls, Discover and Perform, and a handle sharing the height
+(`shared/layout.js`); a dark theme with skeuomorphic hardware (powder-coated enclosure, knurled
+knobs on a scale, a chrome footswitch, LED-ladder meters, a lit tuner display, faders, a rosewood
+fretboard); the test bass on screen only while it is the input; the spectra mark the note being
+played. The app's window takes the dark theme; giving it the one-screen layout is still to do.
+
 ## Open
 
 - The site is up at `phuzzbox.jthaler.net` (GitHub Pages from `live`, 2026-10-31).

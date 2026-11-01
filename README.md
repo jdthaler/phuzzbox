@@ -28,7 +28,18 @@ nothing is plugged in, and that the tests and demos use as their signal.
 ## Playing
 
 The pedals play at **<https://phuzzbox.jthaler.net>**, served by GitHub Pages from the `live`
-branch, which takes `main` at each release; it installs as a web app from the browser's menu. Open a pedal's page and press **Start audio**. Then either:
+branch, which takes `main` at each release; it installs as a web app from the browser's menu. Open a pedal's page and press **Start audio**.
+
+A pedal's page fits one screen, as Forte's do: the pedal on its board at the left; the **Views**
+bar with a toggle for each view (the pedal, the tuner, the plots) and the **Controls** bar with a
+toggle for each group of controls (the pedal's, the **Rig** and the **MIDI pedals**), with the
+presets beside them. Drag the handle on the Controls bar to share the height between them, or fold
+either away with its chevron. **Discover** shows every view with its explanations behind ⓘ;
+**Perform** clears the text off the views and folds the controls behind More controls. The test
+bass sits at the bottom while it is the input. On a phone the page scrolls instead. What you turn
+on is remembered for each pedal.
+
+Then either:
 
 - **Plug in.** Connect your bass to an audio interface's instrument (Hi-Z) input, choose the
   interface in the source menu, and allow the browser to use it. Pick **In 1** or **In 2** for the
@@ -37,9 +48,9 @@ branch, which takes `main` at each release; it installs as a web app from the br
   browser's estimate of the round trip; Chrome on a Mac with a class-compliant interface does best.
 - **Play the test bass.** The rows of letter keys are its strings, as tablature has them: the
   `Z` row is the low E, then the `A` row, the `Q` row and the number row, each from the open
-  string to the ninth fret. **Play a riff** loops a short line.
+  string to the ninth fret. **Play a riff** loops a short line. The fretboard shows only while the test bass is the input, and the letter keys play it only then.
 
-`Space` is the footswitch. **Full scale** (in Controls) says how many volts at the input jack make
+`Space` is the footswitch. **Full scale** (in Controls, under Rig) says how many volts at the input jack make
 a full-scale signal in the browser. It doesn't matter to the Buffer, but it does to the Phuzz and
 every pedal that distorts: a fuzz clips at a voltage, not at a fraction of full scale. Choose your interface beside it and type its gain, and the page works it out from
 the maker's specification ([shared/interfaces.js](shared/interfaces.js)). The maximum input level
@@ -54,7 +65,7 @@ browser's address bar) puts Phuzzbox in a window of its own, with its own Dock i
 worker ([sw.js](sw.js)) keeps a copy of every file it has loaded, so the app opens even with
 `npm run serve` stopped. Open each page once with the server running so that its files are kept.
 
-The **tuner** above the plots reads whatever is coming in, your bass or the test bass, in cents
+The **tuner** among the views reads whatever is coming in, your bass or the test bass, in cents
 from the nearest note, against a reference A4 you can set (440 Hz unless you change it). It reads
 the string's first partial, not the period of the whole waveform. A real string is stiff, so its
 upper partials run sharp of whole multiples, f_n = n f₁ √(1 + Bn²). The period is a compromise

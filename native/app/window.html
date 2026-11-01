@@ -7,24 +7,20 @@
   <title>Phuzzbox</title>
   <style>
 /* ---- shared/pedal.css */
-/* pedal.css — every pedal page: the layout, the pedal's enclosure, knobs, footswitch, meters,
-   the fretboard and the Controls panel. A pedal's style.css sets its enclosure's colours
-   (--enclosure, --enclosure-ink, --accent). */
+/* pedal.css — every page: a dark stage, as Forte's, and the hardware drawn as hardware: the pedal's
+   enclosure (powder coat, screws), its knobs (knurled, on a scale of ticks), the footswitch and
+   its LED, LED-ladder meters, the tuner's display, faders and toggle switches in the Controls
+   panel, and the test bass's fretboard. A pedal's style.css sets its enclosure's colours
+   (--enclosure, --enclosure-ink). The app's window (native/app) uses these too, in its own flow;
+   the site's pedal pages add the one-screen layout of shared/layout.js, under body.one-screen,
+   at the end. */
 
 :root {
-  --bg: #f4f1ec; --panel: #ffffff; --ink: #1d1b19; --ink-2: #6b655e; --line: #ddd6cc; --grid: #ebe5dc;
-  --accent: #c2410c; --accent-2: #2563eb; --good: #15803d; --enclosure: #3f6f5a; --enclosure-ink: #f5f1e8; --led: #ff3b2f;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #121212; --panel: #1b1b1d; --ink: #ece8e1; --ink-2: #a39d94; --line: #2e2e31; --grid: #262629;
-    --accent: #fb923c; --accent-2: #60a5fa; --good: #4ade80; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #121212; --panel: #1b1b1d; --ink: #ece8e1; --ink-2: #a39d94; --line: #2e2e31; --grid: #262629;
-  --accent: #fb923c; --accent-2: #60a5fa; --good: #4ade80; color-scheme: dark;
+  --bg: #0c0c0e; --panel: #151518; --panel-2: #1c1c20; --ink: #ece8e1; --ink-2: #9b958b; --line: #2b2a30; --grid: #232228;
+  --accent: #fb923c; --accent-ink: #1b1006; --accent-2: #60a5fa; --good: #4ade80; --warn: #fb923c;
+  --enclosure: #3f6f5a; --enclosure-ink: #f5f1e8; --led: #ff3b2f;
+  --metal: linear-gradient(180deg, #f2f2f2, #b9b9b9 45%, #8e8e8e 55%, #d0d0d0);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -32,11 +28,19 @@
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
 #app { max-width: 1200px; margin: 0 auto; padding: 0 16px 24px; }
+a { color: var(--accent); }
 button, select, input { font: inherit; color: inherit; }
-button, select { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
-button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
-button.ghost { background: transparent; }
+button, select {
+  background: linear-gradient(180deg, #24242a, #1b1b20); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; cursor: pointer;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+button:hover, select:hover { border-color: #46454d; }
+select option { background: var(--panel); color: var(--ink); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+button.ghost { background: transparent; box-shadow: none; }
 button:disabled { opacity: 0.6; cursor: default; }
+input[type="number"] { background: #0e0e11; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); padding: 3px 6px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 0; }
@@ -44,121 +48,223 @@ header.top .home { font-weight: 700; color: var(--ink); text-decoration: none; l
 header.top h1 { font-size: 20px; margin: 0 4px 0 0; }
 header.top .spacer { flex: 1; }
 .pill { font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
-.pill.warn { color: var(--accent); border-color: var(--accent); }
+.pill.warn { color: var(--warn); border-color: var(--warn); }
 .status { font-size: 13px; color: var(--accent); }
+.inline { display: inline-flex; align-items: center; gap: 6px; }
 
+/* an explanation behind ⓘ */
+button.info {
+  display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border-radius: 50%; flex: none;
+  border: 1px solid #4a4950; background: transparent; box-shadow: none; color: var(--ink-2);
+  font: italic 700 12px/1 Georgia, "Times New Roman", serif;
+}
+button.info:hover, button.info[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); }
+
+/* ---- the enclosure: powder coat over a bent steel box, four screws in the corners -------------- */
 .stage { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 16px; align-items: start; }
 @media (max-width: 760px) { .stage { grid-template-columns: 1fr; } }
-
-/* the enclosure */
 .pedal {
-  background: var(--enclosure); color: var(--enclosure-ink); border-radius: 18px; padding: 16px 18px 20px;
-  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.15), inset 0 -3px 0 rgb(0 0 0 / 0.25);
-  display: flex; flex-direction: column; align-items: center; gap: 14px; position: relative;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 -.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 22%, rgb(0 0 0 / 0) 70%, rgb(0 0 0 / 0.28)), var(--grain), var(--enclosure);
+  color: var(--enclosure-ink); border-radius: 16px; padding: 22px 20px 24px; position: relative;
+  box-shadow: inset 0 2px 1px rgb(255 255 255 / 0.22), inset 0 -4px 2px rgb(0 0 0 / 0.35), inset 2px 0 1px rgb(255 255 255 / 0.06), inset -2px 0 1px rgb(0 0 0 / 0.2),
+    0 14px 24px rgb(0 0 0 / 0.55), 0 2px 0 rgb(0 0 0 / 0.6);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
 }
-.pedal .jacks { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-.meter { display: grid; grid-template-columns: 28px 1fr 64px; align-items: center; gap: 8px; font-size: 12px; }
-.meter .track { height: 6px; border-radius: 3px; background: rgb(0 0 0 / 0.3); overflow: hidden; }
-.meter .bar { display: block; height: 100%; width: 0; background: #a7f3d0; transition: width 60ms linear; }
-.meter.clip .bar { background: var(--led); }
-.meter .mtxt { text-align: right; font-variant-numeric: tabular-nums; }
-.knobs { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 18px; }
-.knob { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 84px; text-align: center; }
-.dial {
-  --turn: 0deg; width: 62px; height: 62px; border-radius: 50%; position: relative; touch-action: none; cursor: grab;
-  background: radial-gradient(circle at 40% 35%, #4a4a4a, #111 70%); box-shadow: 0 3px 6px rgb(0 0 0 / 0.45);
+.pedal::before { /* the screws */
+  --screw: radial-gradient(circle at 40% 35%, #f4f4f4 0, #a9a9a9 2.5px, #5c5c5c 4.5px, rgb(0 0 0 / 0.5) 5.2px, transparent 6px);
+  content: ""; position: absolute; inset: 7px; pointer-events: none;
+  background: var(--screw) 0 0 / 12px 12px no-repeat, var(--screw) 100% 0 / 12px 12px no-repeat,
+    var(--screw) 0 100% / 12px 12px no-repeat, var(--screw) 100% 100% / 12px 12px no-repeat;
 }
-.dial:focus-visible { outline: 3px solid var(--enclosure-ink); outline-offset: 3px; }
-.dial .mark { position: absolute; left: 50%; top: 50%; width: 3px; height: 26px; margin-left: -1.5px; background: #f5f1e8;
-  transform-origin: 50% 0; transform: rotate(calc(var(--turn) + 180deg)); border-radius: 2px; }
-.klabel { font-size: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
-.kval { font-size: 12px; opacity: 0.85; font-variant-numeric: tabular-nums; }
-.pedal .name { text-align: center; }
-.pedal .name span { display: block; font: 800 26px/1 Georgia, "Times New Roman", serif; letter-spacing: 1px; }
-.pedal .name small { opacity: 0.8; font-size: 12px; }
-.switchrow { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.led { width: 12px; height: 12px; border-radius: 50%; background: #5a1a16; box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5); }
-.led.on { background: var(--led); box-shadow: 0 0 10px var(--led); }
-.footswitch { width: 64px; height: 64px; border-radius: 50%; border: none;
-  background: radial-gradient(circle at 40% 35%, #f1f1f1, #9a9a9a 70%); box-shadow: 0 4px 0 #555, 0 6px 10px rgb(0 0 0 / 0.4); }
-.footswitch:active { transform: translateY(3px); box-shadow: 0 1px 0 #555, 0 2px 6px rgb(0 0 0 / 0.4); }
+.pedal .jacks { display: flex; flex-direction: column; gap: 5px; width: 100%; padding: 6px 8px; border-radius: 6px; background: rgb(0 0 0 / 0.28); box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.6), 0 1px 0 rgb(255 255 255 / 0.08); }
 
-/* the tuner: 1 % of the scale's width is one cent, the green zone ±3 cents */
-.tunercard figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+/* meters: an LED ladder, green to amber to red, lit to the level */
+.meter { display: grid; grid-template-columns: 26px 1fr 58px; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 0.3px; }
+.meter .mlabel { text-transform: uppercase; font-weight: 700; opacity: 0.85; }
+.meter .track {
+  --ladder: linear-gradient(90deg, #22c55e 0 66%, #facc15 66% 85%, #ef4444 85%);
+  container-type: inline-size; position: relative; height: 8px; border-radius: 2px; overflow: hidden;
+  background: var(--ladder); -webkit-mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px); mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px);
+}
+.meter .track::before { content: ""; position: absolute; inset: 0; background: rgb(0 0 0 / 0.78); } /* unlit */
+.meter .bar { position: relative; display: block; height: 100%; width: 0; background: var(--ladder); background-size: 100cqw 100%; transition: width 60ms linear; filter: brightness(1.15); }
+.meter.clip .bar { background: var(--led); }
+.meter .mtxt { text-align: right; font-variant-numeric: tabular-nums; opacity: 0.9; }
+
+/* knobs: a knurled black skirt, a domed cap with a white line, on a scale of eleven ticks */
+.knobs { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 16px; }
+.knob { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 80px; text-align: center; }
+.dial {
+  --turn: 0deg; width: 58px; height: 58px; border-radius: 50%; position: relative; touch-action: none; cursor: grab; margin: 7px 0 2px;
+  background:
+    radial-gradient(circle at 38% 30%, rgb(255 255 255 / 0.28), rgb(255 255 255 / 0) 30%),
+    radial-gradient(circle closest-side, #34343a 0, #1d1d21 64%, #050506 70%, transparent 72%),
+    repeating-conic-gradient(#3a3a40 0 5deg, #111114 5deg 10deg);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.55), 0 1px 1px rgb(0 0 0 / 0.6), inset 0 0 0 1px rgb(0 0 0 / 0.7);
+}
+.dial::before { /* the scale, printed on the enclosure */
+  content: ""; position: absolute; inset: -8px; border-radius: 50%; pointer-events: none; opacity: 0.75;
+  background: repeating-conic-gradient(from -135.75deg, var(--enclosure-ink) 0 1.5deg, transparent 1.5deg 27deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 84%, #000 85%), conic-gradient(from -137deg, #000 0 274deg, transparent 274deg);
+  -webkit-mask-composite: source-in;
+  mask: radial-gradient(circle closest-side, transparent 84%, #000 85%) intersect, conic-gradient(from -137deg, #000 0 274deg, transparent 274deg);
+}
+.dial:active { cursor: grabbing; }
+.dial:focus-visible { outline: 2px solid var(--enclosure-ink); outline-offset: 9px; }
+.dial .mark { position: absolute; left: 50%; top: 50%; width: 3px; height: 21px; margin-left: -1.5px; background: #f7f3ea;
+  transform-origin: 50% 0; transform: rotate(calc(var(--turn) + 180deg)); border-radius: 2px; box-shadow: 0 0 1px rgb(0 0 0 / 0.6); }
+.klabel { font-size: 11px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+.kval { font-size: 11px; opacity: 0.85; font-variant-numeric: tabular-nums; }
+.pedal .name { text-align: center; }
+.pedal .name span { display: block; font: 800 26px/1 Georgia, "Times New Roman", serif; letter-spacing: 1px; text-shadow: 0 1px 0 rgb(0 0 0 / 0.35); }
+.pedal .name small { opacity: 0.8; font-size: 11px; }
+
+/* the footswitch: a chrome dome on a hex nut, and its LED in a chrome bezel */
+.switchrow { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.led { width: 11px; height: 11px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #8a2a22, #3a0d0a); box-shadow: 0 0 0 2px #1a1a1a, 0 0 0 3.5px #b5b5b5, 0 0 0 4.5px #444; }
+.led.on { background: radial-gradient(circle at 40% 35%, #ffd1cc, var(--led) 45%, #b3140c); box-shadow: 0 0 0 2px #1a1a1a, 0 0 0 3.5px #b5b5b5, 0 0 0 4.5px #444, 0 0 14px 3px rgb(255 59 47 / 0.7); }
+.footswitch {
+  width: 54px; height: 54px; border-radius: 50%; border: none; padding: 0; margin: 8px;
+  background: radial-gradient(circle at 38% 30%, #ffffff 0, #d9d9d9 18%, #9b9b9b 52%, #6a6a6a 75%, #9c9c9c 100%);
+  box-shadow: 0 0 0 3px #3a3a3a, 0 0 0 8px #a9a9a9, 0 0 0 9px #3c3c3c, 0 8px 12px 6px rgb(0 0 0 / 0.5), inset 0 -3px 4px rgb(0 0 0 / 0.35);
+  transition: transform 50ms;
+}
+.footswitch:hover { border: none; filter: brightness(1.05); }
+.footswitch:active { transform: translateY(2px) scale(0.98); }
+
+/* ---- the tuner: a lit display, its needle on a scale of cents (1 % of the width a cent, the
+   green zone ±3) -------------------------------------------------------------------------------- */
+.tunercard figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
 .tunercard figcaption span { display: inline-flex; align-items: center; gap: 5px; }
-.tunercard figcaption input { width: 62px; padding: 2px 5px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: inherit; }
-.tunercard .mute { margin-left: auto; font-size: 13px; padding: 4px 10px; }
-.tunercard .mute[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-.t-body { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "name scale" "name read"; gap: 2px 14px; align-items: center; padding: 4px 2px 2px; }
-.t-name { grid-area: name; min-width: 2.2em; text-align: center; font: 700 50px/1 Georgia, "Times New Roman", serif; }
+.tunercard figcaption input { width: 64px; padding: 2px 5px; }
+.tunercard .mute { margin-left: auto; font-size: 12px; padding: 3px 10px; }
+.tunercard .mute[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.t-body {
+  display: grid; grid-template-columns: auto 1fr; grid-template-areas: "name scale" "name read"; gap: 2px 14px; align-items: center;
+  padding: 10px 6px 8px; border-radius: 8px; color: #c6f6d5;
+  background: radial-gradient(ellipse at 50% 0, #14231a, #0a110c 70%); border: 1px solid #000;
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.8), 0 1px 0 rgb(255 255 255 / 0.05);
+}
+.t-name { grid-area: name; min-width: 2.2em; text-align: center; font: 700 50px/1 Georgia, "Times New Roman", serif; text-shadow: 0 0 12px rgb(134 239 172 / 0.35); }
 .t-name sub { font: 600 18px/1 system-ui, sans-serif; vertical-align: baseline; margin-left: 1px; }
-.t-scale { grid-area: scale; position: relative; height: 34px; margin: 0 14px 18px; border-bottom: 2px solid var(--line); }
-.t-zone { position: absolute; left: 47%; width: 6%; top: 0; bottom: 0; border-radius: 4px 4px 0 0; background: color-mix(in srgb, var(--good) 25%, transparent); }
-.t-tick { position: absolute; bottom: 0; width: 2px; height: 10px; margin-left: -1px; background: var(--ink-2); }
-.t-tick i { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font: 11px/1 system-ui, sans-serif; font-style: normal; color: var(--ink-2); white-space: nowrap; }
-.t-needle { position: absolute; bottom: 0; left: 50%; width: 4px; height: 32px; margin-left: -2px; border-radius: 2px; background: var(--accent); transition: left 90ms linear; }
-.t-read { grid-area: read; display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 0 14px; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.t-cents { color: var(--ink); font-weight: 600; min-width: 5.5ch; }
-.tunercard.intune .t-name, .tunercard.intune .t-cents { color: var(--good); }
-.tunercard.intune .t-needle { background: var(--good); }
+.t-scale { grid-area: scale; position: relative; height: 34px; margin: 0 14px 18px; border-bottom: 2px solid #2d4436; }
+.t-zone { position: absolute; left: 47%; width: 6%; top: 0; bottom: 0; border-radius: 4px 4px 0 0; background: rgb(74 222 128 / 0.18); }
+.t-tick { position: absolute; bottom: 0; width: 2px; height: 10px; margin-left: -1px; background: #4f7a5f; }
+.t-tick i { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font: 11px/1 system-ui, sans-serif; font-style: normal; color: #6f9a7f; white-space: nowrap; }
+.t-needle { position: absolute; bottom: 0; left: 50%; width: 4px; height: 32px; margin-left: -2px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 8px var(--accent); transition: left 90ms linear; }
+.t-read { grid-area: read; display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 0 14px; font-size: 13px; color: #7fae8e; font-variant-numeric: tabular-nums; }
+.t-cents { color: #d9fbe5; font-weight: 600; min-width: 5.5ch; }
+.tunercard.intune .t-name, .tunercard.intune .t-cents { color: var(--good); text-shadow: 0 0 14px rgb(74 222 128 / 0.6); }
+.tunercard.intune .t-needle { background: var(--good); box-shadow: 0 0 10px var(--good); }
 .tunercard.idle .t-needle { opacity: 0; }
 .tunercard.stale .t-name, .tunercard.stale .t-needle, .tunercard.stale .t-cents { opacity: 0.45; }
 @media (max-width: 420px) { .t-name { font-size: 40px; } .t-scale, .t-read { margin-left: 4px; margin-right: 8px; } }
 
-/* views */
+/* ---- views ----------------------------------------------------------------------------------- */
 .views { display: grid; gap: 16px; }
 .card { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
-.card figcaption { font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+.card figcaption { font-size: 13px; color: var(--ink-2); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
 .card figcaption b { color: var(--ink); }
 .card .canvas { height: 230px; }
 .card canvas { width: 100%; height: 100%; display: block; }
+.card .caption { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
 .legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
 
-/* the test bass */
+/* ---- the test bass: a rosewood board, nickel frets, a bone nut, pearl dots, four strings ------- */
 .fretboard { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .fret-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
 .fret-head b { color: var(--ink); }
 .fret-head button { margin-left: auto; }
-.frets { display: grid; gap: 4px; }
-.string { display: grid; grid-template-columns: 18px repeat(10, 1fr); gap: 4px; align-items: center; }
-.sname { font-size: 12px; font-weight: 700; color: var(--ink-2); text-align: center; }
-.string button { height: 30px; padding: 0; border-radius: 6px; touch-action: none; position: relative; }
-.string button::after { content: ""; position: absolute; left: 4px; right: 4px; top: 50%; height: 2px; background: var(--ink-2); opacity: 0.5; }
-.string button.open { background: var(--grid); }
-.string button:active { background: var(--accent); }
+.frets {
+  display: grid; border-radius: 6px; overflow: hidden; padding: 3px 0;
+  background: repeating-linear-gradient(180deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 4px), linear-gradient(180deg, #4a2c1d, #2f1a10 50%, #3d2416);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.6), 0 2px 0 #18100b, 0 6px 14px rgb(0 0 0 / 0.5);
+}
+.string { display: grid; grid-template-columns: 22px repeat(10, 1fr); align-items: stretch; }
+.sname { display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #d9c7a8; background: #241510; }
+.string button {
+  --gauge: 2px; height: 28px; padding: 0; border: 0; border-radius: 0; box-shadow: none; touch-action: none; position: relative;
+  background: transparent; border-right: 3px solid #b9b6ae; box-shadow: inset -1px 0 0 #6f6c66;
+}
+.string button:hover { border-color: #b9b6ae; background: rgb(255 255 255 / 0.04); }
+.string button.open { background: rgb(0 0 0 / 0.25); border-right: 6px solid #ece3c9; box-shadow: inset -1px 0 0 #a49b81; }
+.string button::after { /* the string */
+  content: ""; position: absolute; left: 0; right: -3px; top: 50%; height: var(--gauge); margin-top: calc(var(--gauge) / -2); z-index: 2;
+  background: linear-gradient(180deg, #fafafa, #9a9a9a); box-shadow: 0 1px 1px rgb(0 0 0 / 0.6);
+}
+.s0 button { --gauge: 3.5px; } .s1 button { --gauge: 3px; } .s2 button { --gauge: 2.4px; } .s3 button { --gauge: 1.8px; }
+.s0 button::after, .s1 button::after { background: repeating-linear-gradient(90deg, #e6e6e6 0 1px, #a5a5a5 1px 2px); }
+.string button.inlay::before { /* the dots between the D and A strings */
+  content: ""; position: absolute; left: 50%; bottom: 0; width: 10px; height: 10px; margin-left: -5px; transform: translateY(50%); z-index: 1; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fffaf0, #d8d2c4 60%, #b7b0a0);
+}
+.string button:active, .string button.down { background: radial-gradient(circle, var(--accent) 0 5px, rgb(251 146 60 / 0.35) 6px, transparent 13px); }
 
-/* controls */
+/* ---- controls: faders, toggle switches -------------------------------------------------------- */
 .controls { margin-top: 16px; }
 .controls-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; }
-.controls-bar .inline { font-size: 13px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
-.controls-bar input[type="number"] { width: 70px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+.controls-bar .inline { font-size: 13px; color: var(--ink-2); }
+.controls-bar input[type="number"] { width: 70px; }
 .groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-.group { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin: 0; padding: 8px 12px 10px; min-width: 0; }
-.group legend { font-weight: 700; padding: 0 4px; }
+.group {
+  background: linear-gradient(180deg, #1b1b1f, #151518); border: 1px solid var(--line); border-radius: 10px; margin: 0; padding: 8px 12px 10px; min-width: 0;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+.group legend { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); padding: 0 6px; }
 .row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "label info" "input value" "hint hint"; gap: 2px 8px; padding: 6px 0; border-top: 1px solid var(--grid); }
 .row:first-of-type { border-top: none; }
 .row[hidden] { display: none; }
 .row label { grid-area: label; font-size: 13px; }
-.row .info { grid-area: info; padding: 0 6px; border: none; background: none; color: var(--ink-2); }
+.row .info { grid-area: info; justify-self: end; }
 .row input[type="range"], .row select { grid-area: input; width: 100%; min-width: 0; accent-color: var(--accent); }
 .row input[type="checkbox"] { grid-area: input; justify-self: start; width: 18px; height: 18px; accent-color: var(--accent); }
-.row output { grid-area: value; font-size: 13px; font-variant-numeric: tabular-nums; min-width: 72px; text-align: right; }
+.row output { grid-area: value; font-size: 13px; font-variant-numeric: tabular-nums; min-width: 72px; text-align: right; color: var(--accent); }
 .row .hint { grid-area: hint; margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+
+/* a fader: a slot in the panel and a cap with a line across it */
+input[type="range"].fader { -webkit-appearance: none; appearance: none; height: 26px; background: transparent; cursor: pointer; }
+input[type="range"].fader::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: #08080a; box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.06); }
+input[type="range"].fader::-moz-range-track { height: 6px; border-radius: 3px; background: #08080a; box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.06); }
+input[type="range"].fader::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 24px; margin-top: -9px; border-radius: 3px; border: 1px solid #111;
+  background: linear-gradient(90deg, transparent 5px, #2a2a2a 5px 8px, transparent 8px), linear-gradient(180deg, #f0f0f0, #a8a8a8 48%, #8a8a8a 52%, #c9c9c9);
+  box-shadow: 0 2px 3px rgb(0 0 0 / 0.6);
+}
+input[type="range"].fader::-moz-range-thumb {
+  width: 12px; height: 22px; border-radius: 3px; border: 1px solid #111;
+  background: linear-gradient(90deg, transparent 5px, #2a2a2a 5px 7px, transparent 7px), linear-gradient(180deg, #f0f0f0, #a8a8a8 48%, #8a8a8a 52%, #c9c9c9);
+  box-shadow: 0 2px 3px rgb(0 0 0 / 0.6);
+}
+input[type="range"].fader:focus-visible { outline: none; }
+input[type="range"].fader:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--accent); }
+/* a toggle switch */
+input[type="checkbox"].switch {
+  -webkit-appearance: none; appearance: none; width: 36px; height: 20px; border-radius: 10px; position: relative; cursor: pointer; margin: 2px 0;
+  background: #08080a; box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.06); transition: background 0.15s;
+}
+input[type="checkbox"].switch::before {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fff, #bdbdbd 55%, #8d8d8d); box-shadow: 0 1px 2px rgb(0 0 0 / 0.7); transition: transform 0.15s;
+}
+input[type="checkbox"].switch:checked { background: color-mix(in srgb, var(--accent) 70%, #000); }
+input[type="checkbox"].switch:checked::before { transform: translateX(16px); }
 
 footer { margin-top: 24px; font-size: 13px; color: var(--ink-2); }
 footer a { color: inherit; }
 
-/* How it works */
+/* ---- How it works ----------------------------------------------------------------------------- */
 dialog.notes { width: min(820px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); }
-dialog.notes::backdrop { background: rgb(0 0 0 / 0.45); }
+dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
 .notes-bar { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--panel); border-bottom: 1px solid var(--line); }
 .notes-body { padding: 4px 18px 18px; overflow-wrap: anywhere; }
 .notes-body table { border-collapse: collapse; display: block; overflow-x: auto; }
 .notes-body td, .notes-body th { border: 1px solid var(--line); padding: 4px 8px; }
-.notes-body pre { overflow-x: auto; background: var(--grid); padding: 8px; border-radius: 8px; }
+.notes-body pre, .notes-body code { background: var(--grid); border-radius: 4px; }
+.notes-body pre { overflow-x: auto; padding: 8px; border-radius: 8px; }
 
-/* MIDI pedals */
+/* ---- MIDI pedals ------------------------------------------------------------------------------ */
 .midi { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .midi-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
 .midi-status { font-size: 13px; color: var(--ink-2); }
@@ -168,13 +274,190 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.45); }
 .mrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 8px; border: 1px solid var(--grid); border-radius: 8px; transition: background 0.4s; }
 .mrow.hit { animation: midi-hit 0.5s; }
 @keyframes midi-hit { from { background: color-mix(in srgb, var(--accent) 22%, transparent); } to { background: transparent; } }
-.mrow .inline { font-size: 13px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 5px; }
-.mrow input[type="number"] { width: 62px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+.mrow .inline { font-size: 13px; color: var(--ink-2); gap: 5px; }
+.mrow input[type="number"] { width: 62px; }
 .mrow input[type="checkbox"] { accent-color: var(--accent); }
 .mrow select { min-width: 0; max-width: 100%; }
 .mrow .arrow { color: var(--ink-2); }
-.mrow .learn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.mrow .learn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .midi-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+/* ================================================================================================
+   The one-screen layout of a pedal's page (shared/layout.js), after Forte's: the header; the pedal
+   on its board at the left; the views' bar, the views, the controls' bar (its top edge the handle
+   that shares the height) and the Controls panel; the test bass pinned to the bottom. Each panel
+   scrolls on its own. Body classes: perform, views-folded, controls-folded, no-rack (the pedal
+   hidden), bass-off (the test bass isn't the input), audio-on, sharing (the handle dragged).
+   A phone (as layout.js's phoneQuery) scrolls instead, at the end.
+   ================================================================================================ */
+body.one-screen { height: 100vh; height: 100dvh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+body.one-screen #app { max-width: none; height: 100%; padding: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+
+/* the header: Phuzzbox, the pedal (its menu), How it works; then the audio */
+body.one-screen header.top { padding: max(8px, env(safe-area-inset-top)) 14px 8px; gap: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); position: relative; z-index: 5; }
+body.one-screen header.top .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+body.one-screen header.top .home {
+  padding: 4px 10px; border-radius: 7px; border: 1px solid var(--line); font-size: 14px;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0));
+}
+body.one-screen header.top .home:hover { border-color: var(--accent); }
+body.one-screen header.top .audio { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 8px; margin-left: auto; min-width: 0; }
+body.one-screen header.top .audio select { max-width: 220px; text-overflow: ellipsis; }
+body.audio-on .start, body:not(.audio-on) header.top .cpu { display: none; }
+header.top .volume { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 0 4px 0 10px; }
+header.top .volume .fader { width: 110px; height: 24px; }
+.pedal-menu { position: relative; }
+.pedal-menu summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 3px 10px; border-radius: 8px;
+  border: 1px solid var(--line); background: linear-gradient(90deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0));
+}
+.pedal-menu summary::-webkit-details-marker { display: none; }
+.pedal-menu summary h1 { margin: 0; font-size: 19px; white-space: nowrap; }
+.pedal-menu .caret { color: var(--ink-2); font-size: 11px; }
+.pedal-menu[open] summary, .pedal-menu summary:hover { border-color: var(--accent); }
+.menu-list {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; min-width: 290px; padding: 6px; display: grid; gap: 2px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 30px rgb(0 0 0 / 0.6);
+}
+.menu-list a { display: block; padding: 6px 10px; border-radius: 7px; color: var(--ink); text-decoration: none; }
+.menu-list a:hover { background: rgb(255 255 255 / 0.06); }
+.menu-list a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.menu-list small { display: block; color: var(--ink-2); font-size: 12px; }
+.menu-list .menu-home { border-top: 1px solid var(--line); border-radius: 0 0 7px 7px; margin-top: 4px; }
+
+/* the work: the pedal at the left, the views and the controls sharing the height beside it */
+body.one-screen .work {
+  display: grid; min-height: 0; overflow: hidden;
+  grid-template-columns: clamp(250px, 22vw, 330px) minmax(0, 1fr);
+  grid-template-rows: var(--work-rows, auto minmax(0, 0.6fr) auto minmax(0, 0.4fr));
+}
+body.one-screen.no-rack .work { grid-template-columns: 0 minmax(0, 1fr); }
+/* the pedalboard: hook-and-loop on a dark board */
+body.one-screen .rack {
+  grid-column: 1; grid-row: 1 / -1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 16px 14px 20px; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: stretch;
+  background: repeating-linear-gradient(45deg, rgb(255 255 255 / 0.018) 0 2px, transparent 2px 5px), repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.25) 0 2px, transparent 2px 5px), #111113;
+}
+body.one-screen .rack .pedal { margin: auto 0; }
+body.one-screen .work > :not(.rack) { grid-column: 2; min-width: 0; }
+
+/* the bars: the toggles, the tools, the fold button */
+.bar { position: relative; display: flex; align-items: center; gap: 6px 12px; min-width: 0; padding: 6px 10px 6px 14px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.controls-bar.bar { border-top: 1px solid var(--line); margin: 0; flex-wrap: nowrap; }
+.toggles { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.toggles-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); margin-right: 2px; white-space: nowrap; }
+.toggles button, .mode button {
+  white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; padding: 2px 12px 2px 10px; border-radius: 999px; font-size: 12px; color: var(--ink-2);
+  background: transparent; border: 1px solid var(--line); box-shadow: none;
+}
+.toggles button::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0.7; }
+.toggles button:hover, .mode button:hover { color: var(--ink); }
+.toggles button[aria-pressed="true"] { color: var(--ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.toggles button[aria-pressed="true"]::before { background: var(--accent); border-color: var(--accent); opacity: 1; box-shadow: 0 0 6px var(--accent); }
+.bar-tools { flex: none; display: flex; align-items: center; gap: 8px; margin-left: auto; min-width: 0; }
+.bar-tools:empty { display: none; }
+.bar-tools .presets { width: clamp(140px, 14vw, 220px); padding: 3px 8px; border-color: var(--accent); text-overflow: ellipsis; }
+.mode { display: inline-flex; padding: 2px; gap: 2px; border: 1px solid var(--line); border-radius: 9px; background: rgb(0 0 0 / 0.3); }
+.mode button { border: 0; border-radius: 7px; padding: 2px 11px; }
+.mode button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.bar .fold { flex: none; display: grid; place-items: center; width: 30px; height: 26px; padding: 0; border-radius: 7px; background: transparent; color: var(--ink-2); box-shadow: none; }
+.bar .fold:hover { color: var(--ink); }
+.bar .fold svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.15s; }
+/* each chevron points the way its panel will go */
+.views-bar .fold[aria-expanded="true"] svg, .controls-bar .fold[aria-expanded="false"] svg, .bass-bar .fold[aria-expanded="false"] svg { transform: rotate(180deg); }
+/* the handle on the controls' bar: drag it to share the height */
+.split { position: absolute; left: 50%; top: -6px; width: 64px; height: 12px; margin-left: -32px; cursor: row-resize; z-index: 2; touch-action: none; }
+.split::before { content: ""; position: absolute; left: 12px; right: 12px; top: 4px; height: 4px; border-radius: 2px; background: #3d3c44; }
+.split:hover::before, .split:focus-visible::before, body.sharing .split::before { background: var(--accent); }
+body.one-screen .controls-bar { cursor: row-resize; }
+body.one-screen .controls-bar :is(button, select) { cursor: pointer; }
+body.sharing { cursor: row-resize; user-select: none; }
+
+/* the views: the ones turned on share the room in rows of a twelve-column grid */
+body.one-screen .views { display: block; grid-row: 2; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.view-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 1), minmax(0, 1fr)); gap: 12px; padding: 12px; height: 100%; min-height: 0; }
+.view-grid .card { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
+body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 90px; }
+body.one-screen .card:not(.notes-open) .caption { display: none; }
+body.one-screen .card.notes-open .caption { flex: none; max-height: 40%; overflow-y: auto; }
+body.one-screen .tunercard .t-body { flex: 1 1 auto; min-height: 0; align-content: center; }
+body.one-screen .tunercard .t-name { font-size: clamp(40px, 7vh, 72px); }
+body.one-screen .tunercard .a4 { color: var(--ink-2); font-size: 12px; }
+.no-view { color: var(--ink-2); font-size: 13px; padding: 12px 14px; margin: 0; grid-column: 1 / -1; }
+body.one-screen .controls-bar { grid-row: 3; }
+/* the Controls panel: the groups side by side, as many columns as fit */
+body.one-screen .controls { grid-row: 4; margin: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px; }
+body.one-screen .groups { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); align-items: start; }
+body.one-screen .groups > .midi { margin: 0; grid-column: 1 / -1; }
+body.one-screen .row:not(.hint-open) .hint { display: none; }
+body.one-screen .rig .row { grid-template-areas: "label label" "input value"; }
+body.one-screen .rig .row > select { grid-area: input; }
+body.one-screen .rig .row > .inline { grid-area: input; font-size: 13px; color: var(--ink-2); }
+body.one-screen .rig .row > label.inline { grid-area: value; }
+body.one-screen .rig .row input[type="number"] { width: 70px; }
+.rig-note { margin: 6px 0 0; font-size: 12px; color: var(--ink-2); }
+
+/* the dock: a tour's card, then the test bass */
+body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+.tour-slot:empty { display: none; }
+.bass-bar.bar { border-bottom: 0; padding-top: 5px; padding-bottom: 5px; gap: 8px; }
+.bass-bar .spacer { flex: 1; }
+.bass-hint { font-size: 12px; color: var(--ink-2); min-width: 0; }
+.bass:not(.hint-open) .bass-hint { display: none; }
+.bass .frets { margin: 0 14px 12px; }
+/* a short screen: a smaller fretboard and a more compact pedal */
+@media (max-height: 820px) {
+  .string button { height: 22px; }
+  body.one-screen .pedal { padding: 16px 16px 18px; gap: 10px; }
+  body.one-screen .dial { width: 50px; height: 50px; }
+  body.one-screen .dial .mark { height: 18px; }
+  body.one-screen .knobs { gap: 8px 14px; }
+  body.one-screen .pedal .name span { font-size: 22px; }
+  body.one-screen .footswitch { width: 46px; height: 46px; }
+}
+/* the tuner in a narrow card: the note beside its readout, the scale across under them */
+.tunercard { container-type: inline-size; }
+@container (max-width: 400px) {
+  .t-body { grid-template-columns: auto 1fr; grid-template-areas: "name read" "scale scale"; row-gap: 8px; }
+  .t-scale { margin: 0 12px 18px; }
+  .t-read { flex-direction: column; margin: 0; }
+}
+
+/* Perform: the views fill the room with no text in them; the controls wait behind More controls */
+body.perform .views-bar .toggles, body.perform .views-bar > .fold, body.perform .controls-bar .toggles > button { display: none; }
+body.perform .view-grid .card:not(.tunercard) figcaption, body.perform .view-grid .legend, body.perform .view-grid .caption { display: none !important; }
+body.perform .tunercard .caption, body.perform .tunercard .info { display: none !important; }
+body.perform .split { display: none; }
+body.perform .controls-bar { cursor: default; }
+
+/* ---- a phone: the page scrolls, the pedal and the views above the controls, the test bass stuck
+   to the bottom -------------------------------------------------------------------------------- */
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen { height: auto; overflow: visible; }
+  body.one-screen #app { display: block; height: auto; }
+  body.one-screen header.top { padding-left: 10px; padding-right: 10px; }
+  body.one-screen header.top .audio { margin-left: 0; justify-content: flex-start; }
+  body.one-screen header.top .audio select { max-width: 160px; }
+  body.one-screen .work { display: flex; flex-direction: column; overflow: visible; }
+  body.one-screen .views-bar { order: -1; } /* the views' bar, with the pedal's toggle, above the pedal */
+  body.one-screen .rack { border-right: 0; border-bottom: 1px solid var(--line); overflow: visible; padding: 16px 12px; }
+  body.one-screen .views, body.one-screen .controls { overflow: visible; }
+  .view-grid { grid-template-rows: none; grid-auto-rows: auto; height: auto; }
+  body.one-screen .view-grid .card { grid-column: 1 / -1 !important; }
+  body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: none; height: 240px; }
+  body.one-screen .card .canvas.transistors { height: 420px; }
+  .bar { flex-wrap: wrap; padding-left: 10px; }
+  .split { display: none; }
+  body.one-screen .controls-bar { cursor: default; }
+  body.one-screen .dock { position: sticky; bottom: 0; }
+  .bass-bar .toggles-label { margin-right: 0; }
+  .string button { height: 24px; }
+}
+@media (max-width: 1050px) and (max-height: 500px) { .string button { height: 17px; } .bass .frets { margin-bottom: 6px; } }
+@media (max-width: 600px) {
+  body.one-screen .groups { grid-template-columns: minmax(0, 1fr); }
+  .bar-tools .presets { width: 150px; }
+}
 
 /* ---- buffer/style.css */
 /* the Buffer's enclosure: a plain grey box, as a buffer is */
@@ -979,7 +1262,7 @@ async function main(info, carry = {}) {
   const gainInput = h('input', { type: 'number', min: 0, max: 62, step: 1, 'aria-label': 'Interface gain in decibels' });
   const gainLabel = h('label', { class: 'inline' }, 'gain ', gainInput, ' dB');
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, 'aria-label': 'Volts at full scale' });
-  const volInput = h('input', { type: 'range', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
+  const volInput = h('input', { type: 'range', class: 'fader', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
   const volOut = h('output', {});
   const audioCard = h('section', { class: 'card audiocard', 'aria-label': 'Audio' },
     h('div', { class: 'audio-row' }, h('b', {}, 'Audio'),
@@ -1091,11 +1374,11 @@ async function main(info, carry = {}) {
     for (const p of g.params) {
       const val = h('output', {});
       let input;
-      if (p.type === 'checkbox') { input = h('input', { type: 'checkbox', id: `p-${p.id}` }); input.addEventListener('change', () => set(p.id, input.checked)); }
+      if (p.type === 'checkbox') { input = h('input', { type: 'checkbox', class: 'switch', id: `p-${p.id}` }); input.addEventListener('change', () => set(p.id, input.checked)); }
       else if (p.type === 'select') { input = h('select', { id: `p-${p.id}` }, ...p.options.map(([v, l]) => h('option', { value: v }, l))); input.addEventListener('change', () => set(p.id, input.value)); }
-      else { input = h('input', { type: 'range', min: 0, max: 1000, step: 1, id: `p-${p.id}` }); input.addEventListener('input', () => set(p.id, fromUnit(p, input.value / 1000))); }
+      else { input = h('input', { type: 'range', class: 'fader', min: 0, max: 1000, step: 1, id: `p-${p.id}` }); input.addEventListener('input', () => set(p.id, fromUnit(p, input.value / 1000))); }
       const hint = h('p', { class: 'hint', hidden: true }, p.hint ?? '');
-      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, onclick: () => hint.toggleAttribute('hidden') }, 'ⓘ') : null;
+      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, onclick: () => hint.toggleAttribute('hidden') }, 'i') : null;
       const row = h('div', { class: 'row' }, h('label', { for: `p-${p.id}` }, p.label), infoBtn, input, val, hint);
       rows.push({ p, row, input, val });
       box.append(row);
