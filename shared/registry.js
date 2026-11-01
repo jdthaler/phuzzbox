@@ -39,6 +39,11 @@ export const PEDALS = [
     after: '8×10 and 1×15 bass cabinets',
     blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.',
   },
+  {
+    id: 'envelope', name: 'Envelope Filter', version: '0.1.0', ready: true, plugin: { code: 'Envf' },
+    after: 'the envelope-controlled filters of the 1970s',
+    blurb: 'A resonant state-variable filter whose resistors are photocells, lit by an LED that follows how hard you play.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

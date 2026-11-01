@@ -36,6 +36,11 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    space; tested against Small's closed box, the Helmholtz tuning, Small's reference efficiency
    and an independent complex solve (`test/cabinet-circuit.mjs`). Next for it: Wah Auto mode (an
    envelope follower on the rocker), which Jesse asked for, then the queue.
+   The **Envelope Filter** landed 2026-11-01: a state-variable filter whose integrators' resistors
+   are CdS photocells (the Opto's rate equations), lit by an LED that an ideal-diode envelope
+   follower drives, up or down; tested against the cells' closed-form steady state, the filter's
+   bilinear image, and an RK4 integration of the follower and cells together
+   (`test/envelope-circuit.mjs`).
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.

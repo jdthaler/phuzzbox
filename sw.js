@@ -3,8 +3,8 @@
 // isn't there (the app opened with `npm run serve` stopped, or no network), the copy is used.
 // It lives at the site's root so that its scope covers every page.
 
-const CACHE = 'phuzzbox-6';
-const PAGES = ['./', './index.html', './buffer/', './phuzz/', './wah/', './preamp/', './opto/', './cabinet/', './manifest.webmanifest'];
+const CACHE = 'phuzzbox-7';
+const PAGES = ['./', './index.html', './buffer/', './phuzz/', './wah/', './preamp/', './opto/', './cabinet/', './envelope/', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PAGES)).then(() => self.skipWaiting()));
