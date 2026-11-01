@@ -71,6 +71,12 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    piston whose off-axis impulse response is a semicircle (2 J1(x)/x exactly), first-order motors;
    tested against the retarded time by bisection (a 3 kHz note's phase within 0.009 rad of a
    16.5 rad swing) and J1 by its series.
+   The **Plate Reverb** landed 2026-11-01: the EMT 140's steel plate as Kirchhoff's thin plate,
+   simply supported, 6432 modes to 5 kHz (1.31 per hertz), with the steel's thermoelastic and
+   radiation losses and a damper, played at a quarter and a half of the sample rate between
+   linear-phase filters; tested against the lattice and Weyl's law, every mode summed at the full
+   rate in double precision, the decay by Schroeder's integral, and the bending waves' arrival at
+   the pickups at their group velocity 2√(κω).
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.
