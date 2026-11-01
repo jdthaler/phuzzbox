@@ -20,6 +20,7 @@ struct PedalInfo {
   int presetCount;
 
   Effect *(*create)(double fs);
+  int expression = -1;     // the parameter an expression pedal moves (MIDI CC 1), or −1
 };
 
 } // namespace phuzzbox
