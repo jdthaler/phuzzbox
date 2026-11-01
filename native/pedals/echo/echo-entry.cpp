@@ -1,0 +1,9 @@
+// echo-entry.cpp — phuzz_pedal(), by which a host of this pedal alone (its plugin, its WebAssembly,
+// the native tests) finds the Tape Echo. It is a file of its own so that the app, which links every
+// pedal and names each as <slug>::pedalInfo(), never pulls in a second phuzz_pedal().
+
+#include "phuzzbox/pedal.h"
+
+namespace echo { const phuzzbox::PedalInfo &pedalInfo(); }
+
+const phuzzbox::PedalInfo &phuzz_pedal() { return echo::pedalInfo(); }

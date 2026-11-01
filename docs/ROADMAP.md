@@ -54,6 +54,11 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    wavenumber), played as 2300 modes with Forte's loss model and bead filter; tested against
    Parker and Bilbao's T_D and F_C, an independent eigen-solve, and the echoes' arrival times at
    the group delay (`test/spring-circuit.mjs`).
+   The **Tape Echo** landed 2026-11-01: a tape loop kept as samples and the positions they were
+   written at, so speed changes bend the pitch; the record head on the anhysteretic (Langevin)
+   curve; the playback heads' spacing, coating and gap losses as an FIR from their closed form; the
+   motor's lag and the capstan's flutter; tested against those closed forms, the curve's harmonics
+   by Simpson's rule, and the delays to the sample (`test/echo-circuit.mjs`).
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.

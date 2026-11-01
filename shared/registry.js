@@ -54,6 +54,11 @@ export const PEDALS = [
     after: 'the reverb tanks of guitar and organ amplifiers',
     blurb: 'Steel springs from measured tanks, whose waves travel slower the higher they are: every echo comes back as a chirp.',
   },
+  {
+    id: 'echo', name: 'Tape Echo', version: '0.1.0', ready: true, plugin: { code: 'Tape' },
+    after: 'the multi-head tape echoes of the 1970s',
+    blurb: 'A loop of tape past a record head and three playback heads: every repeat recorded again, darker and more saturated, wavering with the capstan.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);
