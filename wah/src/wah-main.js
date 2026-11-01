@@ -33,7 +33,7 @@ const peakOf = (H) => { let k = 0; H.forEach((v, i) => { if (v > H[k]) k = i; })
 // The filter: where the rocker has it now, and its two ends.
 const filterView = {
   title: 'The sweep',
-  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide. Plugged in backwards (Reversed) it is the input jack\'s voltage per volt from the bass, far lower; and where the circuit oscillates on its own there is no response to draw, only the squeal\'s pitch.',
+  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide. In Auto the envelope follower rocks it: play, and watch each note push the peak and let it fall back. Plugged in backwards (Reversed) it is the input jack\'s voltage per volt from the bass, far lower; and where the circuit oscillates on its own there is no response to draw, only the squeal\'s pitch.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -41,16 +41,33 @@ const filterView = {
     legend.className = 'legend';
     holder.after(legend);
     let now = null, heel = null, toe = null, ends = '', squeals = null, heelSq = null, toeSq = null;
+    // in Auto the envelope follower has the rocker: where it last said (the engine's messages)
+    let rocker = null, drawn = null, last = 0;
+    const auto = () => api.P.control === 'auto';
+    // the squeal check plays the circuit for 0.4 s: remember it for each rocker position (to 2 %)
+    let squealAt = new Map();
+    const squealFor = (position) => {
+      const k = Math.round(position * 50);
+      if (!squealAt.has(k)) squealAt.set(k, squeal({ ...api.P, position: k / 50 }));
+      return squealAt.get(k);
+    };
     const compute = () => {
       const key = JSON.stringify({ ...api.P, position: 0, level: 0, blend: 0 });
       if (key !== ends) {
         heel = response({ ...api.P, position: 0 }); toe = response({ ...api.P, position: 1 }); ends = key;
-        heelSq = api.P.reversed ? squeal({ ...api.P, position: 0 }) : null;
-        toeSq = api.P.reversed ? squeal({ ...api.P, position: 1 }) : null;
+        squealAt = new Map();
+        heelSq = api.P.reversed ? squealFor(0) : null;
+        toeSq = api.P.reversed ? squealFor(1) : null;
       }
-      now = response(api.P);
-      squeals = api.P.reversed ? squeal(api.P) : null;
+      drawn = auto() && rocker !== null ? rocker : api.P.position;
+      now = response({ ...api.P, position: drawn });
+      squeals = api.P.reversed ? squealFor(drawn) : null;
     };
+    api.on('pedal', (messages) => {
+      for (const m of messages) if (m.type === 1) rocker = m.values[0];
+      const t = performance.now();
+      if (auto() && rocker !== null && Math.abs(rocker - drawn) > 0.01 && t - last > 40) { last = t; compute(); show(); draw(); }
+    });
     const draw = () => {
       const { g, w, h } = fit(canvas);
       g.clearRect(0, 0, w, h);
@@ -79,7 +96,8 @@ const filterView = {
     };
     const show = () => {
       const end = (r, sq, name, how) => (sq ? `<span>${name}: squeals at ${sq.f.toFixed(0)} Hz</span>` : `<span>${how}: ${name}, ${peakOf(r).f.toFixed(0)} Hz</span>`);
-      legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>${squeals ? 'squealing now' : 'now'}</span>${end(heel, heelSq, 'heel down', 'dashed')}${end(toe, toeSq, 'toe down', 'dotted')}${api.P.reversed ? '<span>plugged in backwards</span>' : ''}`;
+      const nowText = squeals ? 'squealing now' : 'now';
+      legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>${auto() ? `${nowText}: the follower has it at ${(100 * drawn).toFixed(0)} %` : nowText}</span>${end(heel, heelSq, 'heel down', 'dashed')}${end(toe, toeSq, 'toe down', 'dotted')}${api.P.reversed ? '<span>plugged in backwards</span>' : ''}`;
     };
     api.on('params', () => { compute(); show(); draw(); });
     new ResizeObserver(draw).observe(canvas);

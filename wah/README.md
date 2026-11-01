@@ -143,7 +143,10 @@ your interface's recording saw (the coil, the cables' capacitance, the pots, the
 the voltage it recorded, put into the wah's output jack instead. The input jack drives the cable to
 the amp through R1's 68 kΩ: 30 m of cable takes the squeal down by about 7 dB, and an input of
 10 kΩ by about 18 dB. The cable from the bass hardly matters, since the circuit loads its jack so
-heavily. **The sweep** shows the squeal's pitch while it squeals, since then there is no steady
+heavily. In **Auto** the follower listens at the input jack, which backwards carries the squeal:
+rocking up from the heel, the squeal pushes the rocker toward the toe until it holds itself at
+the edge, steady and much quieter (about 0.14 V); rocking down from near the toe, it never starts.
+**The sweep** shows the squeal's pitch while it squeals, since then there is no steady
 response to draw, and the filter's response from an active bass, far lower than the wah's.
 
 ## Playing it with your feet
@@ -168,6 +171,29 @@ a footswitch row says whether it latches (127, then 0) or is momentary (127 whil
 kept in your browser, one per pedal page. The plugins listen too: their MIDI input moves Rocker,
 Volume pedal and Bypass by the same defaults.
 
+## Auto: rocked by how hard you play
+
+**Rocked by** on Auto hands the rocker to an envelope follower, which is how an auto-wah plays
+without a foot. The follower is a capacitor C charged from the full-wave rectified input through an
+attack resistor R_a, while the input is above it (an ideal diode), and always discharged through a
+decay resistor R_d:
+
+  C dv/dt = (|v_in| − v)/R_a · [|v_in| > v] − v/R_d,  τ_a = R_a C,  τ_d = R_d C
+
+Its voltage moves the rocker from where it rests, the Rocker knob or your expression pedal, toward
+the toe (Direction up) or the heel (down):
+
+  up: x = x_rest + (1 − x_rest)·min(1, v/V_full),  down: x = x_rest·(1 − min(1, v/V_full))
+
+V_full is **Full sweep at**. A steady note charges the capacitor with τ = τ_a τ_d/(τ_a + τ_d)
+toward τ_d/(τ_a + τ_d) of its peak. With the defaults, 5 ms and 0.25 s, that is 98 %, so the
+follower reads close to the note's peak. Let go, and it falls through R_d alone, as e^(−t/τ_d).
+
+Each sample takes the exact step of those equations with the input held through it. The wiper
+moves to the follower's rocker every 32 samples (0.7 ms) and the circuit is updated there. Auto has
+no glide of its own, because the follower is its glide. The test bass's A through **Auto: funky
+envelope** takes the peak to 1477 Hz in its first 150 ms and lets it fall to 473 Hz by 1.5 s.
+
 ## What to listen for
 
 - **Sweep it slowly on a held low A**: the peak walks up through the harmonics, each ringing out in
@@ -176,6 +202,8 @@ Volume pedal and Bypass by the same defaults.
   fundamental.
 - **Bass wah, bottom kept**: the blend keeps the note's weight under the vowel.
 - **Q at 100 kΩ**: nasal and vocal; at 15 kΩ a gentle tone control.
+- **Auto: funky envelope**: each pluck says *wow*, harder ones longer. **Auto: downward** turns
+  it round, the pluck dark and the note opening up as it fades.
 - **Plugged in backwards**: the seagull. Rock it slowly from the heel: the squeal climbs and fades,
   and stops past three quarters. Dig into a low note and hear it shake the squeal.
 
@@ -194,6 +222,9 @@ Volume pedal and Bypass by the same defaults.
 - Nothing is oversampled. The junctions bend gently, and their harmonics of a bass note sit far
   below Nyquist.
 - The rocker's glide is a first-order lag of 10 ms, not a model of a gear and a pedal's mass.
+- In Auto the follower's voltage sets the wiper directly, as if a perfect motor turned the pot.
+  Real auto-wahs drive a photocell or a transistor in the pot's place, each with a law and lag of
+  its own. The follower's diode is ideal, and its rectifier has no offset or droop.
 - Plugged in backwards: a real pickup's losses (eddy currents in its pole pieces and cover) damp
   it more than its wire's resistance alone does. The loop grows by hundreds per second, far past the
   edge, so they would not stop the squeal, but they would move where it gives out near three

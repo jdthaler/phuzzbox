@@ -62,6 +62,15 @@ The classic value is 33 kΩ. **Q** on the pedal's face is that resistor.`,
 Bass wahs add a **Clean blend** pot, which mixes the dry signal back in under the wah. Halfway it goes to 40 %: the bottom comes back, and the sweep rides on top of it.`,
   },
   {
+    title: 'Auto: rocked by how hard you play',
+    views: ['The sweep', 'Scope'],
+    preset: 'Auto: funky envelope',
+    play: [note('A1', { dur: 1.5, vel: 0.9 }), note('D2', { at: 1.5, dur: 1.5, vel: 0.5 }), note('E1', { at: 3, dur: 2, vel: 1 }), riff({ at: 5.5 })],
+    text: `With **Rocked by** on Auto, an envelope follower moves the rocker for you. A capacitor charges from the rectified bass through an attack resistor (5 ms) and drains through a decay resistor (0.25 s), so its voltage reads close to each note's peak.
+
+That voltage pushes the rocker from heel toward toe. Each pluck opens the peak upward, and as the note fades the peak falls back: *wow*. A harder note goes further and stays up longer. Watch the solid curve in **The sweep** jump with every note.`,
+  },
+  {
     title: 'Plugged in backwards',
     views: ['The sweep', 'Spectrum'],
     preset: 'Plugged in backwards',
