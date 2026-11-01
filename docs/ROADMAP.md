@@ -30,6 +30,12 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    free and trapped electrons (Rose 1951), tuned to the LA-2A's published timing (attack 10 ms,
    half the release in 0.06 s, all of it in 0.5–5 s) and tested against them and an independent
    model (`test/opto-circuit.mjs`).
+   The **Speaker Cabinet** landed 2026-11-01: drivers from their Thiele–Small parameters (coil,
+   cone, box air, port air as four coupled equations, by RK4), sealed or ported, 1 × 15 to 8 × 10,
+   with the force factor and suspension nonlinear in the cone's travel, heard at 1 m in half
+   space; tested against Small's closed box, the Helmholtz tuning, Small's reference efficiency
+   and an independent complex solve (`test/cabinet-circuit.mjs`). Next for it: Wah Auto mode (an
+   envelope follower on the rocker), which Jesse asked for, then the queue.
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.

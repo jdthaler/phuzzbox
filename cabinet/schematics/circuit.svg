@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="260" viewBox="0 0 800 260" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="The Speaker Cabinet as one circuit: the coil, the cone on its suspension, and the air in the box and the port">
+<title>The Speaker Cabinet as one circuit: the coil, the cone on its suspension, and the air in the box and the port</title>
+<rect width="800" height="260" rx="10" fill="#151518" stroke="#2b2a30"/>
+<circle cx="20" cy="60" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="32" y="116" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">the amp</text>
+<circle cx="20" cy="160" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<path d="M20 60 L37 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M73 60 L90 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(37 60) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="55" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Rg</text>
+<text x="55" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">amp</text>
+<path d="M90 60 L107 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M143 60 L160 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(107 60) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="125" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Re</text>
+<text x="125" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">coil</text>
+<path d="M160 60 L177 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M213 60 L230 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(177 60) rotate(0)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="195" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Le</text>
+<text x="195" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">coil</text>
+<path d="M230 60 L240 60 L240 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M240 160 L20 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M240 80 L240 102" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M240 138 L240 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(240 102) rotate(90)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<path d="M280 80 L280 102" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M280 138 L280 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(280 102) rotate(90)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="260" y="72" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">Bl</text>
+<path d="M280 80 L280 60 L290 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M290 60 L307 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M343 60 L360 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(307 60) rotate(0)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="325" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Mms</text>
+<text x="325" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">cone</text>
+<path d="M360 60 L381 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M389 60 L410 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(381 60) rotate(0)"><path d="M0 -10 L0 10" fill="none" stroke="#fb923c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#fb923c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="385" y="34" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">Cms(x)</text>
+<text x="385" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">suspension</text>
+<path d="M410 60 L427 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M463 60 L480 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(427 60) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="445" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Rms</text>
+<text x="445" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">friction</text>
+<path d="M480 60 L500 60 L500 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M500 160 L280 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M500 80 L500 102" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M500 138 L500 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(500 102) rotate(90)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<path d="M540 80 L540 102" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M540 138 L540 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(540 102) rotate(90)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<path d="M517 92 L517 148" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M523 92 L523 148" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="520" y="72" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Sd</text>
+<path d="M540 80 L540 60 L760 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M540 160 L760 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="580" cy="60" r="3" fill="#ece8e1"/>
+<circle cx="580" cy="160" r="3" fill="#ece8e1"/>
+<circle cx="660" cy="60" r="3" fill="#ece8e1"/>
+<circle cx="660" cy="160" r="3" fill="#ece8e1"/>
+<path d="M580 60 L580 106" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M580 114 L580 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(580 106) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="594" y="107" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">Cab</text>
+<text x="594" y="121" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">box air</text>
+<path d="M660 60 L660 92" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M660 128 L660 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(660 92) rotate(90)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="674" y="107" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">Ra</text>
+<text x="674" y="121" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">leaks</text>
+<path d="M760 60 L760 92" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M760 128 L760 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(760 92) rotate(90)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 3"/></g>
+<text x="746" y="107" text-anchor="end" fill="#ece8e1" font-size="12" font-weight="400">Mp</text>
+<text x="746" y="121" text-anchor="end" fill="#9b958b" font-size="12" font-weight="400">port</text>
+<text x="120" y="200" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">electrical: volts, amps</text>
+<text x="380" y="200" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">mechanical: newtons, m/s</text>
+<text x="640" y="200" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">acoustic: pascals, m³/s</text>
+<text x="400" y="232" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">Bl(x) weakens as the coil leaves the gap; the microphone hears d/dt of the cones’ and the port’s volume velocities</text>
+</svg>
