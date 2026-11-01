@@ -29,6 +29,13 @@ resistors, capacitors, inductors, sources, diodes and transistors, solved by the
 with Newton on the junctions only; `response(f)` gives its small-signal response for the views and
 tests. The Wah (`native/pedals/wah/wah-model.cpp`) is the example.
 
+The page lays itself out (`shared/layout.js`, after Forte's): the pedal at the left, a Views bar
+with a toggle for each view, a Controls bar with a toggle for each group, the test bass below. A
+view's `title` names its toggle and its `caption` waits behind ⓘ; `perform: true` shows it at first
+(by default the first two are). A view draws to fill its card, whatever shape it is given, and
+redraws on resize. A spectrum marks the note being played with `markNote(g, x, box, api.note)`
+(`shared/plot.js`). Every page is dark, with the hardware drawn as hardware (`shared/pedal.css`).
+
 Add the pedal to `shared/registry.js` (`ready: true`, `version`, a unique four-letter
 `plugin.code`) and to `native/CMakeLists.txt`.
 

@@ -73,7 +73,7 @@ async function main(info, carry = {}) {
   const gainInput = h('input', { type: 'number', min: 0, max: 62, step: 1, 'aria-label': 'Interface gain in decibels' });
   const gainLabel = h('label', { class: 'inline' }, 'gain ', gainInput, ' dB');
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, 'aria-label': 'Volts at full scale' });
-  const volInput = h('input', { type: 'range', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
+  const volInput = h('input', { type: 'range', class: 'fader', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
   const volOut = h('output', {});
   const audioCard = h('section', { class: 'card audiocard', 'aria-label': 'Audio' },
     h('div', { class: 'audio-row' }, h('b', {}, 'Audio'),
@@ -185,11 +185,11 @@ async function main(info, carry = {}) {
     for (const p of g.params) {
       const val = h('output', {});
       let input;
-      if (p.type === 'checkbox') { input = h('input', { type: 'checkbox', id: `p-${p.id}` }); input.addEventListener('change', () => set(p.id, input.checked)); }
+      if (p.type === 'checkbox') { input = h('input', { type: 'checkbox', class: 'switch', id: `p-${p.id}` }); input.addEventListener('change', () => set(p.id, input.checked)); }
       else if (p.type === 'select') { input = h('select', { id: `p-${p.id}` }, ...p.options.map(([v, l]) => h('option', { value: v }, l))); input.addEventListener('change', () => set(p.id, input.value)); }
-      else { input = h('input', { type: 'range', min: 0, max: 1000, step: 1, id: `p-${p.id}` }); input.addEventListener('input', () => set(p.id, fromUnit(p, input.value / 1000))); }
+      else { input = h('input', { type: 'range', class: 'fader', min: 0, max: 1000, step: 1, id: `p-${p.id}` }); input.addEventListener('input', () => set(p.id, fromUnit(p, input.value / 1000))); }
       const hint = h('p', { class: 'hint', hidden: true }, p.hint ?? '');
-      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, onclick: () => hint.toggleAttribute('hidden') }, 'ⓘ') : null;
+      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, onclick: () => hint.toggleAttribute('hidden') }, 'i') : null;
       const row = h('div', { class: 'row' }, h('label', { for: `p-${p.id}` }, p.label), infoBtn, input, val, hint);
       rows.push({ p, row, input, val });
       box.append(row);
