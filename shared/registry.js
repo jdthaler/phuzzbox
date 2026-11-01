@@ -79,6 +79,11 @@ export const PEDALS = [
     after: 'the ringdown LIGO hears after a merger',
     blurb: 'Your bass perturbs a spinning black hole and it rings in its quasinormal modes: a thud without spin, a bell near the limit. Mass sets the pitch.',
   },
+  {
+    id: 'doppler', name: 'Doppler', version: '0.1.0', ready: true, plugin: { code: 'Dopp' },
+    after: 'a car, a train, a jet going by',
+    blurb: 'Your bass rides past you on a straight road, again and again, heard at its retarded time: the pitch falls as it goes, and past Mach 1 it arrives as a boom, half of it backwards.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);
