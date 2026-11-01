@@ -44,6 +44,11 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    follower drives, up or down; tested against the cells' closed-form steady state, the filter's
    bilinear image, and an RK4 integration of the follower and cells together
    (`test/envelope-circuit.mjs`).
+   The **Octave Down** landed 2026-11-01: the analog divider, a two-pole tracking filter, a
+   comparator with hysteresis and two flip-flops that switch the filtered bass's polarity; tested
+   against its ideal waveforms' Fourier coefficients by Simpson's rule (8/(3π) for one octave), the
+   RC sections' bilinear images, and its tracking on the test bass's strings
+   (`test/octave-circuit.mjs`).
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.

@@ -18,6 +18,7 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | ✅ | [Opto Compressor](opto/) | the electro-optical leveling amplifiers of the 1960s | a glowing panel and a photocell whose free and trapped electrons set the attack (10 ms) and the program-dependent release |
 | ✅ | [Speaker Cabinet](cabinet/) | 8 × 10, 4 × 10, 2 × 10 and 1 × 15 bass cabinets | drivers from their Thiele–Small parameters, in a sealed or ported box, with the cones running out of travel on loud low notes |
 | ✅ | [Envelope Filter](envelope/) | the envelope-controlled filters of the 1970s | a state-variable filter whose resistors are photocells, lit by an LED that an envelope follower drives; the cells' electrons set how it sweeps and remembers |
+| ✅ | [Octave Down](octave/) | the analog octave dividers of the 1980s | a tracking filter, a comparator with hysteresis and two flip-flops that flip the bass's polarity every cycle or every other: one and two octaves down, with the real thing's warble and dropouts |
 
 ✅ playable · 🛠 in the workshop. The plan and the rest of the lineup are in
 [docs/ROADMAP.md](docs/ROADMAP.md).
