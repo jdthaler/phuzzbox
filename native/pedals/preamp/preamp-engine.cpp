@@ -38,7 +38,7 @@ void Engine::setParams(const double *Pn) {
 
 void Engine::reset() {
   os.reset();
-  settle();
+  if (haveParams) settle(); // before the first parameters there is no circuit yet
 }
 
 void Engine::settle() {

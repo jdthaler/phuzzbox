@@ -1,0 +1,5 @@
+/* the Tube Preamp's enclosure: the tweed of the amp it comes from, a lacquered tan */
+:root { --enclosure: #b08a55; --enclosure-ink: #2a1d10; }
+/* the tubes' view: three plots side by side, stacked on a phone */
+.card .canvas.tubes { height: 260px; }
+@media (max-width: 640px) { .card .canvas.tubes { height: 660px; } }

@@ -22,7 +22,7 @@ export const PEDALS = [
     blurb: 'Two transistors and a coil resonating with a capacitor; your foot, or a MIDI expression pedal, turns the pot that sets how hard the loop pushes back.',
   },
   {
-    id: 'preamp', name: 'Tube Preamp', version: '0.1.0', ready: false, plugin: { code: 'Tube' },
+    id: 'preamp', name: 'Tube Preamp', version: '0.1.0', ready: true, plugin: { code: 'Tube' },
     after: 'the 1959 Fender Bassman\'s preamp',
     blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
   },

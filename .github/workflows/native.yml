@@ -15,6 +15,13 @@ jobs:
         run: |
           cd native && cmake --preset wasm && cmake --build --preset wasm && ctest --preset wasm
           cd .. && git diff --exit-code -- '*.wasm'
+      # what it built, so a change made where Emscripten isn't installed can take CI's build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wasm
+          path: '*/wasm/*.wasm'
+          retention-days: 7
   plugins:
     strategy:
       fail-fast: false

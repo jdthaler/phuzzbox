@@ -13,7 +13,8 @@ import { midiPanel } from '../../shared/midi-panel.js';
 import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
 import { PEDAL as PHUZZ } from '../../phuzz/src/phuzz-pedal.js';
 import { PEDAL as WAH } from '../../wah/src/wah-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH].map((d) => [d.id, d]));
+import { PEDAL as PREAMP } from '../../preamp/src/preamp-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
