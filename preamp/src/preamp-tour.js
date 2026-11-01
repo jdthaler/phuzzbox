@@ -7,7 +7,9 @@ export const TOUR = tour('preamp', [
     views: ['The tubes', 'Scope'],
     preset: 'Clean and warm',
     play: [riff({ times: 2 })],
-    text: `Each 12AX7 is a cathode that emits, a grid that controls, and a plate that collects. The cathode's current follows Child's law, smoothed at cut-off:
+    text: `![The three triodes: V1a and V2a amplify, with the Gain pot between them; V2b follows](schematics/stages.svg)
+
+Each 12AX7 is a cathode that emits, a grid that controls, and a plate that collects. The cathode's current follows Child's law, smoothed at cut-off:
 
   Ik = G (ln(1 + e^(C (Va/µ + Vg))) / C)^γ
 
@@ -36,7 +38,9 @@ So when V2a swings hard, the follower's grid conducts too, and loads V2a's plate
     views: ['The tone stack', 'Spectrum'],
     preset: 'Edge of break-up',
     play: [riff({ times: 3 }), sweep('middle', 1, 0, { at: 1, dur: 5 }), sweep('bass', 0.5, 1, { at: 7, dur: 3 })],
-    text: `The tone stack is three capacitors and three pots, passive: with every knob at halfway it takes about 12 dB off at 1 kHz, and scoops the middle most, near 700 Hz. Watch the dashed curve.
+    text: `![The tone stack: three capacitors and the Treble, Bass and Middle pots, then the Master](schematics/tonestack.svg)
+
+The tone stack is three capacitors and three pots, passive: with every knob at halfway it takes about 12 dB off at 1 kHz, and scoops the middle most, near 700 Hz. Watch the dashed curve.
 
 **Middle** goes from full up to all the way down: the scoop deepens to about 22 dB near 900 Hz, the famous scooped sound. Then **Bass** goes up, which lifts 60 Hz by about 4 dB. No knob adds anything: each only takes away less. The gain the tubes made before the stack is what lets it.`,
   },
