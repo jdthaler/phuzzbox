@@ -24,9 +24,12 @@ export function freqAxes(g, w, h, { fmin = 20, fmax = 20000, dbMin = -30, dbMax 
     if (w > 320 || [100, 1000, 10000].includes(f)) g.fillText(f >= 1000 ? `${f / 1000}k` : `${f}`, x(f), h - 6);
   }
   g.textAlign = 'right';
+  // a label on every line while they are 14 px apart or more, else on every second or fourth, so a
+  // short plot's numbers don't run into each other
+  const px = ((box.b - box.t) * step) / (dbMax - dbMin), every = px >= 14 ? 1 : px >= 7 ? 2 : 4;
   for (let d = Math.ceil(dbMin / step) * step; d <= dbMax; d += step) {
     g.beginPath(); g.moveTo(box.l, y(d)); g.lineTo(box.r, y(d)); g.stroke();
-    g.fillText(`${d}`, box.l - 6, y(d) + 4);
+    if (d % (every * step) === 0) g.fillText(`${d}`, box.l - 6, y(d) + 4);
   }
   return { x, y, box };
 }

@@ -44,15 +44,16 @@
     </section>
     <section class="grid" id="pedals"></section>
     <p class="also" id="also">Every page plays the test bass, a bass made of physics, and has a tuner that reads a stiff string's first partial, a scope and a spectrum.</p>
-    <footer>PhuzzBox <span id="ver"></span> · vibe coded by Jesse Thaler · MIT licence</footer>
+    <footer>PhuzzBox <span id="ver"></span> · Vibe coded by Jesse Thaler · MIT licence · <a id="source">source</a></footer>
   </main>
   <script type="module">
-    import { PEDALS, PHUZZBOX_VERSION } from './shared/registry.js';
+    import { PEDALS, PHUZZBOX_VERSION, SOURCE } from './shared/registry.js';
     import { registerApp, offerInstall } from './shared/app.js';
     import { howItWorks } from './shared/notes.js';
     registerApp();
     offerInstall(document.getElementById('install'));
     document.getElementById('ver').textContent = PHUZZBOX_VERSION;
+    document.getElementById('source').href = SOURCE; // the credits' link, the site's only one to GitHub
     const grid = document.getElementById('pedals');
     // a ready pedal's tile opens its page; its Tour and How it works open the page with them
     for (const p of PEDALS) {

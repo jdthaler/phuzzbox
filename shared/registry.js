@@ -4,6 +4,9 @@
 //   plugin: { code } the AU subtype (four characters, unique)
 
 export const PHUZZBOX_VERSION = '0.1.0';
+// the site's credits link to the source; the only link to GitHub on the site (Jesse, 2026-11-01):
+// everything a reader needs is on the site itself, in How it works
+export const SOURCE = 'https://github.com/jdthaler/phuzzbox';
 
 export const PEDALS = [
   {
