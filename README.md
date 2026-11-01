@@ -147,7 +147,10 @@ node tools/render-phuzz.mjs # the Phuzz's demos to examples/phuzz/ (and render-b
 ```
 
 The physics is C++ in `native/`, built as WebAssembly (committed, so the site needs no build
-step) and as plugins (CLAP, VST3, AU and a standalone app, through clap-wrapper):
+step) and as plugins (CLAP, VST3, AU and a standalone app, through clap-wrapper). A plugin opens
+the app's window as its own, in a web view (`native/plugin/editor.cpp`, Forte's): the same knobs,
+footswitch, meters and tuner, with the host's parameters behind them, so a song saves what
+the window shows and an automation lane moves its knobs.
 
 ```bash
 cd native && cmake --preset linux && cmake --build --preset linux && ctest --preset linux   # or macos, windows
