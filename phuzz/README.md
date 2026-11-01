@@ -149,6 +149,17 @@ medium 2×, low 1×.
   apart, and the same transistor with Q2's collector resistor raised to 20 kΩ, which evens them
   (1 % apart) at the cost of some level.
 
+## Plugged in backwards
+
+The Phuzz has no **Reversed** switch, unlike the [Wah](../wah/README.md), which squeals when its
+cables are swapped. Plugged in backwards, the bass would drive the Volume pot; through the 10 nF
+that reaches the 470 Ω to the battery and, through the 8.2 kΩ, Q2's collector. There it stops. A
+transistor in its active region carries its base's signal to its collector, but its collector is
+a current source: nothing done to it reaches the base, except through the few picofarads between
+them and the Early effect, and this model has neither (see below). In a real one, what leaks back
+to the input jack is faint and thin; here it would be silence for the wrong reason, so the pedal
+has no switch rather than a wrong one.
+
 ## What is simplified
 
 - The transistors have no junction or diffusion capacitance, no base resistance and no Early

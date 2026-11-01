@@ -18,28 +18,50 @@ function response(P) {
   model.wah_response(s.at, N);
   return Array.from(s.f64(N, 8 * (v.length + N)));
 }
+// Plugged in backwards from a passive bass, the circuit can oscillate on its own: is it squealing,
+// at what pitch, how loud (the C++ plays it for 0.4 s from its operating point after a nudge)
+function squeal(P) {
+  const v = Effect.native(P), s = scratch(model);
+  s.f64(v.length).set(v);
+  model.wah_squeal(s.at);
+  const [on, f, peak] = s.f64(3);
+  return on ? { f, peak } : null;
+}
 const db = (x) => 20 * Math.log10(x);
 const peakOf = (H) => { let k = 0; H.forEach((v, i) => { if (v > H[k]) k = i; }); return { f: FREQS[k], db: db(H[k]) }; };
 
 // The filter: where the rocker has it now, and its two ends.
 const filterView = {
   title: 'The sweep',
-  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide. In Auto the envelope follower rocks it: play, and watch each note push the peak and let it fall back.',
+  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide. In Auto the envelope follower rocks it: play, and watch each note push the peak and let it fall back. Plugged in backwards (Reversed) it is the input jack\'s voltage per volt from the bass, far lower; and where the circuit oscillates on its own there is no response to draw, only the squeal\'s pitch.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
     const legend = document.createElement('div');
     legend.className = 'legend';
     holder.after(legend);
-    let now = null, heel = null, toe = null, ends = '';
+    let now = null, heel = null, toe = null, ends = '', squeals = null, heelSq = null, toeSq = null;
     // in Auto the envelope follower has the rocker: where it last said (the engine's messages)
     let rocker = null, drawn = null, last = 0;
     const auto = () => api.P.control === 'auto';
+    // the squeal check plays the circuit for 0.4 s: remember it for each rocker position (to 2 %)
+    let squealAt = new Map();
+    const squealFor = (position) => {
+      const k = Math.round(position * 50);
+      if (!squealAt.has(k)) squealAt.set(k, squeal({ ...api.P, position: k / 50 }));
+      return squealAt.get(k);
+    };
     const compute = () => {
-      const key = ['sweepC', 'qR', 'inductor', 'vcc', 'taper'].map((k) => api.P[k]).join();
-      if (key !== ends) { heel = response({ ...api.P, position: 0 }); toe = response({ ...api.P, position: 1 }); ends = key; }
+      const key = JSON.stringify({ ...api.P, position: 0, level: 0, blend: 0 });
+      if (key !== ends) {
+        heel = response({ ...api.P, position: 0 }); toe = response({ ...api.P, position: 1 }); ends = key;
+        squealAt = new Map();
+        heelSq = api.P.reversed ? squealFor(0) : null;
+        toeSq = api.P.reversed ? squealFor(1) : null;
+      }
       drawn = auto() && rocker !== null ? rocker : api.P.position;
       now = response({ ...api.P, position: drawn });
+      squeals = api.P.reversed ? squealFor(drawn) : null;
     };
     api.on('pedal', (messages) => {
       for (const m of messages) if (m.type === 1) rocker = m.values[0];
@@ -49,14 +71,23 @@ const filterView = {
     const draw = () => {
       const { g, w, h } = fit(canvas);
       g.clearRect(0, 0, w, h);
-      const { x, y, box } = freqAxes(g, w, h, { dbMin: -30, dbMax: 30 });
+      const { x, y, box } = freqAxes(g, w, h, api.P.reversed ? { dbMin: -80, dbMax: 20, step: 20 } : { dbMin: -30, dbMax: 30 });
       const line = (vals, color, width, dash = []) => {
         g.beginPath(); g.setLineDash(dash); g.strokeStyle = color; g.lineWidth = width;
         vals.forEach((v, i) => { const X = x(FREQS[i]), Y = Math.max(box.t, Math.min(box.b, y(db(v)))); i ? g.lineTo(X, Y) : g.moveTo(X, Y); });
         g.stroke(); g.setLineDash([]);
       };
-      line(heel, css('--ink-2'), 1.2, [5, 4]);
-      line(toe, css('--ink-2'), 1.2, [2, 3]);
+      if (!heelSq) line(heel, css('--ink-2'), 1.2, [5, 4]);
+      if (!toeSq) line(toe, css('--ink-2'), 1.2, [2, 3]);
+      g.fillStyle = css('--ink');
+      if (squeals) { // no steady response: the circuit is oscillating; mark its pitch
+        const X = x(squeals.f);
+        g.strokeStyle = css('--accent'); g.lineWidth = 2.5;
+        g.beginPath(); g.moveTo(X, box.t); g.lineTo(X, box.b); g.stroke();
+        g.textAlign = X > (box.l + box.r) / 2 ? 'right' : 'left';
+        g.fillText(` squealing at ${squeals.f.toFixed(0)} Hz, ${squeals.peak.toFixed(2)} V peak `, X, box.t + 14);
+        return;
+      }
       line(now, css('--accent'), 2.5);
       const p = peakOf(now);
       g.fillStyle = css('--ink');
@@ -64,8 +95,9 @@ const filterView = {
       g.fillText(` ${p.f.toFixed(0)} Hz, ${p.db >= 0 ? '+' : '−'}${Math.abs(p.db).toFixed(1)} dB `, x(p.f), Math.max(box.t + 12, y(p.db) - 6));
     };
     const show = () => {
-      const a = peakOf(heel), b = peakOf(toe);
-      legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>${auto() ? `now: the follower has it at ${(100 * drawn).toFixed(0)} %` : 'now'}</span><span>dashed: heel down, ${a.f.toFixed(0)} Hz</span><span>dotted: toe down, ${b.f.toFixed(0)} Hz</span>`;
+      const end = (r, sq, name, how) => (sq ? `<span>${name}: squeals at ${sq.f.toFixed(0)} Hz</span>` : `<span>${how}: ${name}, ${peakOf(r).f.toFixed(0)} Hz</span>`);
+      const nowText = squeals ? 'squealing now' : 'now';
+      legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>${auto() ? `${nowText}: the follower has it at ${(100 * drawn).toFixed(0)} %` : nowText}</span>${end(heel, heelSq, 'heel down', 'dashed')}${end(toe, toeSq, 'toe down', 'dotted')}${api.P.reversed ? '<span>plugged in backwards</span>' : ''}`;
     };
     api.on('params', () => { compute(); show(); draw(); });
     new ResizeObserver(draw).observe(canvas);
