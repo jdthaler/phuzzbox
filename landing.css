@@ -1,5 +1,5 @@
 /* landing.css — the front page (landing.js): the pedals drawn as themselves, standing on boards by
-   their physics. The enclosures, knobs and footswitches are shared/pedal.css's, made smaller. */
+   their physics. The enclosures and footswitches are shared/pedal.css's, made smaller. */
 
 #app { max-width: 1320px; }
 .hero { padding: 28px 0 8px; }
@@ -50,18 +50,11 @@
 .tile .more a { text-decoration: none; }
 .tag { align-self: flex-start; display: inline-block; margin-top: 8px; font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; }
 
-/* the face, smaller: the page's enclosure and parts, scaled down */
-.pedal.face { max-width: 230px; margin: 0 auto; padding: 16px 12px 16px; gap: 10px; border-radius: 13px; min-height: 330px; justify-content: space-between; transition: transform 0.15s, box-shadow 0.15s; }
+/* the face, smaller and without its knobs (its page has them): the page's enclosure, name and
+   footswitch, scaled down, in a stompbox's proportions */
+.pedal.face { width: 150px; max-width: 100%; margin: 0 auto; padding: 26px 10px 14px; gap: 10px; border-radius: 12px; min-height: 184px; justify-content: space-between; transition: transform 0.15s, box-shadow 0.15s; }
 .pedal.face::before { inset: 5px; background-size: 10px 10px; }
-.pedal.face .knobs { gap: 6px 4px; }
-.pedal.face .knob { width: 62px; gap: 2px; }
-.pedal.face .dial { width: 40px; height: 40px; margin: 7px 0 1px; cursor: inherit; }
-.pedal.face .dial .mark { height: 14px; width: 2.5px; margin-left: -1.25px; }
-.pedal.face .klabel { font-size: 9px; letter-spacing: 0.3px; line-height: 1.2; }
-.pedal.face .kval { font-size: 9.5px; }
-.pedal.face .knob.toggle .rocker { display: block; width: 28px; height: 36px; margin: 6px 0 1px; cursor: inherit; }
-.pedal.face .knob.toggle .rocker-led { top: 5px; }
-.pedal.face .name span { font-size: 20px; }
+.pedal.face .name span { font-size: 19px; overflow-wrap: anywhere; }
 .pedal.face .switchrow { gap: 8px; }
 .pedal.face .footswitch { display: block; width: 36px; height: 36px; margin: 6px; box-shadow: 0 0 0 2px #3a3a3a, 0 0 0 6px #a9a9a9, 0 0 0 7px #3c3c3c, 0 6px 10px 4px rgb(0 0 0 / 0.5), inset 0 -3px 4px rgb(0 0 0 / 0.35); }
 .pedal.face .led { width: 9px; height: 9px; }
@@ -98,12 +91,7 @@ footer a { color: inherit; }
   .hero .install { float: none; margin-bottom: 10px; }
   .boardwalk { gap: 16px 12px; padding: 12px; width: auto; }
   .tile { width: calc(50% - 6px); }
-  .pedal.face { min-height: 280px; padding: 14px 8px; }
-  .pedal.face .knobs { gap: 4px 2px; }
-  .pedal.face .knob { width: 58px; }
-  .pedal.face .klabel { font-size: 8px; letter-spacing: 0; }
-  .pedal.face .dial { width: 34px; height: 34px; }
-  .pedal.face .dial .mark { height: 12px; }
+  .pedal.face { width: 130px; min-height: 160px; padding: 22px 8px 12px; }
   .pedal.face .name span { font-size: 17px; }
   .tile-text p { font-size: 13px; }
   .board-art { gap: 8px; padding: 18px 10px; }
