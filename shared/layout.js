@@ -68,11 +68,11 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
   viewsEl.append(stage);
   const pedalView = { key: 'pedal', name: 'Pedal', card: rack, on: true };
   const all = [pedalView, ...views];
-  for (const v of all) v.shown = () => (touring ? touring.has(v.name) : prefs.views[v.key] ?? v.on);
+  for (const v of all) v.shown = () => (touring && v !== pedalView ? touring.has(v.name.toLowerCase()) : prefs.views[v.key] ?? v.on);
   const vbar = bar('views', 'Views', viewsEl);
   for (const v of all) {
     v.toggle = toggle(v.name, 'Show or hide this view', v.shown(), () => {
-      if (touring) { if (!touring.delete(v.name)) touring.add(v.name); } else { prefs.views[v.key] = !v.shown(); save(); }
+      if (touring && v !== pedalView) { const n = v.name.toLowerCase(); if (!touring.delete(n)) touring.add(n); } else { prefs.views[v.key] = !v.shown(); save(); }
       apply();
     });
     vbar.row.append(v.toggle);
@@ -231,13 +231,14 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
   phoneQuery.addEventListener?.('change', apply);
   apply();
 
-  // a tour (shared/tour.js) shows only the views it is about, for a while
+  // a tour (shared/tour.js) shows only the views it is about (by title, any case), for a while;
+  // the pedal stays
   const tourSlot = h('div', { class: 'tour-slot' });
   dock.prepend(tourSlot);
   return {
     tourSlot,
     arrange,
     viewNames: () => all.map((v) => v.name),
-    showViews(names) { touring = names ? new Set(names) : null; apply(); },
+    showViews(names) { touring = names ? new Set(names.map((n) => n.toLowerCase())) : null; apply(); },
   };
 }
