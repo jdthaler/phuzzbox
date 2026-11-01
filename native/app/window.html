@@ -586,6 +586,10 @@ body.one-screen .card .canvas.echoes { flex: 1 1 0; height: auto; min-height: 14
 /* the Sympathetic Strings' enclosure: the brass of a string frame's tuning pins */
 :root[data-pedal="sympathetic"] { --enclosure: #7a5a1f; --enclosure-ink: #f7efdc; }
 
+/* ---- blackhole/style.css */
+/* the Black Hole's enclosure: night, with the gold of an accretion disc's light */
+:root[data-pedal="blackhole"] { --enclosure: #0d0d12; --enclosure-ink: #f3d9a4; }
+
 /* ---- native/app/app.css */
 /* app.css — the app window's own styles, after the site's shared/pedal.css (whose one-screen
    layout, from shared/layout.js, the window uses as the pages do). */
@@ -2362,6 +2366,69 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- blackhole/src/blackhole-params.js
+const __m34 = (() => {
+
+// blackhole-params.js — the Black Hole's controls. Values in SI units, and the hole's mass in suns:
+// your bass perturbs a spinning black hole, and you hear it ring in its quasinormal modes.
+
+const hole = [
+  { id: 'mass', label: 'Mass', min: 30, max: 3000, def: 200, log: true, unit: 'M☉', decimals: 0, perform: true,
+    hint: 'The hole\'s mass in suns. Its ringing scales as one over the mass: at the default spin, 65 suns rings at middle C (262 Hz), and the remnant of LIGO\'s first detection, 62 suns at a = 0.67, at 271 Hz; 200 suns rings at 85 Hz, just above the open E\'s second harmonic, and 414 suns on the open E itself (41 Hz).' },
+  { id: 'nines', label: 'Spin', min: 0, max: 6, def: 0.509, unit: 'nines', decimals: 2, perform: true,
+    hint: 'How fast the hole spins, a = 1 − 10^(−nines): 0 is a hole that does not spin (Schwarzschild), 0.51 is a = 0.69, 2 is 0.99, 6 is 0.999999. Without spin a hole rings for barely two cycles, a thud; as a → 1 its l = m modes slide onto multiples of the horizon\'s spin, 2 : 3 : 4, and ring longer and longer, a bell (Q about 3 at a = 0.69, 15 at 0.99, 1400 at 0.999999).' },
+  { id: 'mix', label: 'Hole', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of the ringing is mixed in.' },
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in.' },
+];
+
+const merger = [
+  { id: 'ratio', label: 'Mass ratio', min: 1, max: 10, def: 1.2, log: true, unit: ':1', decimals: 1,
+    hint: 'How lopsided the merger that made the hole was, the heavier over the lighter: it sets how strongly each mode rings (Kamaretsos et al.\'s fits). Equal masses leave the odd-m modes, (2,1) and (3,3), silent; a lopsided merger switches them on.' },
+  { id: 'inclination', label: 'Inclination', min: 0, max: 90, def: 30, unit: '°', decimals: 0,
+    hint: 'Where you hear the hole from: 0° along its spin axis (face-on), 90° in its equator (edge-on). The left channel is h₊ and the right h×: face-on the two are a quarter cycle apart, circularly polarised; edge-on h× of the (2,2) mode vanishes.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The hole', params: hole },
+  { name: 'The merger and output', params: merger },
+];
+
+const PRESETS = {
+  'Bass hole': { mass: 200, nines: 0.509, ratio: 1.2, inclination: 30, mix: 0.5, dry: 1 },
+  'GW150914': { mass: 62, nines: 0.481, ratio: 1.2 },
+  'Thud: no spin': { nines: 0 },
+  'Bell: nearly extremal': { nines: 4, mix: 0.3 },
+  'On the open E': { mass: 414 },
+  'Lopsided merger': { ratio: 8 },
+  'Edge-on': { inclination: 90 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- blackhole/src/blackhole-pedal.js
+const __m33 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m34;
+// blackhole-pedal.js — the Black Hole's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'blackhole',
+  name: 'Black Hole',
+  description: 'Your bass perturbs a spinning black hole, and it rings in its quasinormal modes, as LIGO hears after a merger: mass sets the pitch, spin the ring',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/blackhole.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue } = __m1;
@@ -2382,6 +2449,7 @@ const { PEDAL: ECHO } = __m25;
 const { PEDAL: ROTARY } = __m27;
 const { PEDAL: PLATE } = __m29;
 const { PEDAL: SYMPATHETIC } = __m31;
+const { PEDAL: BLACKHOLE } = __m33;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -2408,7 +2476,8 @@ const { PEDAL: SYMPATHETIC } = __m31;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
