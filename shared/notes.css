@@ -1,0 +1,145 @@
+/* notes.css — How it works (shared/notes.js) and the guided tours (shared/tour.js), as Forte's:
+   two pill buttons by the page's title, the README in a dialog with its contents, and the tour's
+   card under the pedal's face. Loaded by shared/shell.js on every pedal page, and by the landing
+   page. Colours are pedal.css's tokens. */
+
+/* the buttons: How it works and Tour */
+.pz-about {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  font: 600 12.5px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--accent); background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 999px; padding: 5px 11px 5px 6px; cursor: pointer;
+}
+.pz-about:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.pz-about-i {
+  display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid currentColor; font: italic 700 11px/1 Georgia, "Times New Roman", serif;
+}
+.pz-tour-glyph { font: 700 7px/1 system-ui, sans-serif; font-style: normal; padding-left: 1px; }
+.pz-tour-start[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* the notes */
+dialog.pz-notes {
+  width: min(880px, calc(100vw - 32px));
+  height: min(88vh, 1100px); height: min(88dvh, 1100px);
+  max-width: none; max-height: none; padding: 0;
+  border: 1px solid var(--line); border-radius: 14px;
+  background: var(--panel); color: var(--ink);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.35);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  overflow: hidden;
+}
+dialog.pz-notes[open] { display: flex; flex-direction: column; }
+dialog.pz-notes::backdrop { background: rgb(10 8 6 / 0.55); }
+.pz-notes-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px 8px 28px; }
+.pz-notes-head { min-width: 0; }
+.pz-notes-kicker { color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+.pz-notes-ver { margin-left: 10px; color: var(--ink-2); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.pz-notes-bar h2 { margin: 0; font: 400 24px/1.2 Georgia, "Times New Roman", serif; }
+.pz-notes-close { flex: none; }
+.pz-notes-tabs { display: flex; gap: 4px; padding: 0 28px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.pz-notes-tabs button {
+  flex: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none;
+  padding: 6px 10px 7px; color: var(--ink-2); font-size: 13.5px; font-weight: 600;
+}
+.pz-notes-tabs button:hover { color: var(--ink); }
+.pz-notes-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.pz-notes-body { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 4px 28px 28px; outline: none; overflow-wrap: anywhere; }
+.pz-notes-toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; }
+.pz-notes-toc a {
+  color: var(--ink-2); font-size: 12.5px; line-height: 1.4; text-decoration: none;
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px;
+}
+.pz-notes-toc a:hover { color: var(--ink); border-color: var(--accent); }
+.pz-notes-text { max-width: 74ch; }
+.pz-notes-text h2 {
+  margin: 30px 0 10px; padding-top: 14px; border-top: 1px solid var(--line);
+  font: 400 23px/1.25 Georgia, "Times New Roman", serif;
+}
+.pz-notes-text h3 { margin: 24px 0 6px; font-size: 16px; }
+.pz-notes-text h4 { margin: 18px 0 4px; font-size: 15px; }
+.pz-notes-text p { margin: 12px 0; }
+.pz-notes-text ul, .pz-notes-text ol { margin: 12px 0; padding-left: 24px; }
+.pz-notes-text li { margin: 5px 0; }
+.pz-notes-text li > p { margin: 6px 0; }
+.pz-notes-text a { color: var(--accent); }
+.pz-notes-text code { padding: 1px 4px; border-radius: 4px; background: var(--grid); font: 0.86em ui-monospace, Menlo, monospace; }
+.pz-notes-text pre { margin: 14px 0; padding: 10px 14px; overflow-x: auto; border-radius: 8px; background: var(--grid); font: 12.5px/1.45 ui-monospace, Menlo, monospace; overflow-wrap: normal; }
+.pz-notes-text pre code { padding: 0; background: none; font: inherit; }
+.pz-notes-text pre.eq { background: none; border-left: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); border-radius: 0; padding: 4px 14px; font: 15px/1.5 "Cambria Math", Georgia, serif; white-space: pre-wrap; }
+.pz-notes-text .table { margin: 14px 0; overflow-x: auto; }
+.pz-notes-text table { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.pz-notes-text th, .pz-notes-text td { padding: 5px 12px 5px 0; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: normal; }
+.pz-notes-text th { color: var(--ink-2); font-weight: 600; }
+.pz-notes-src { margin: 30px 0 0; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 12.5px; }
+.pz-notes-src a { color: inherit; }
+.pz-notes-status { color: var(--ink-2); }
+
+/* phones: the notes fill the screen, and the buttons are their icons */
+@media (max-width: 600px) {
+  dialog.pz-notes { width: 100%; height: 100%; max-height: none; border: 0; border-radius: 0; }
+  .pz-notes-bar { padding: max(8px, env(safe-area-inset-top)) 12px 6px 16px; }
+  .pz-notes-bar h2 { font-size: 20px; }
+  .pz-notes-tabs { padding: 0 10px; }
+  .pz-notes-body { padding: 0 16px max(24px, env(safe-area-inset-bottom)); }
+  header.top .pz-about:not(.pz-tour-start) { width: 30px; height: 30px; padding: 0; justify-content: center; }
+  header.top .pz-about:not(.pz-tour-start) .pz-about-label { display: none; }
+  header.top .pz-tour-start { padding: 5px 10px; }
+  header.top .pz-tour-start .pz-tour-glyph { display: none; }
+}
+
+/* the tour's card: under the pedal's face, which stays in sight while the views scroll by */
+.stage > .side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+/* side by side, the face and the card share the window's height, and the card's text scrolls */
+@media (min-width: 761px) and (min-height: 860px) {
+  body.touring .stage > .side { position: sticky; top: 10px; max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px); } /* below the header */
+  body.touring .stage > .side > .pedal { flex: none; }
+  body.touring .stage > .side > .pz-tour { flex: 0 1 auto; min-height: 150px; }
+  body.touring .pz-tour-text { flex: 1 1 auto; min-height: 2.5em; max-height: none; }
+}
+.pz-tour {
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 14px 12px;
+  border: 1.5px solid var(--accent); border-radius: 12px; background: var(--panel); color: var(--ink);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+}
+.pz-tour[hidden] { display: none; }
+.pz-tour-head { display: flex; align-items: center; gap: 6px; }
+.pz-tour-kicker { flex: 1 1 auto; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+.pz-tour-head button { flex: none; display: grid; place-items: center; width: 28px; height: 26px; padding: 0; border-radius: 7px; background: transparent; color: var(--ink-2); }
+.pz-tour-fold svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.15s; }
+.pz-tour.folded .pz-tour-fold svg { transform: rotate(180deg); }
+.pz-tour-title { margin: 0; font-size: 16px; font-weight: 650; line-height: 1.25; }
+.pz-tour-text { font-size: 13.5px; line-height: 1.5; max-height: min(46vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
+.pz-tour-text p { margin: 0 0 0.6em; }
+.pz-tour-text :is(ul, ol) { margin: 0 0 0.6em; padding-left: 1.3em; }
+.pz-tour-text pre { margin: 0 0 0.6em; white-space: pre-wrap; font: 13.5px/1.45 "Cambria Math", Georgia, serif; }
+.pz-tour-text code { padding: 0 3px; border-radius: 4px; background: var(--grid); font: 0.88em ui-monospace, Menlo, monospace; }
+.pz-tour-text a { color: var(--accent-2); }
+.pz-tour.folded .pz-tour-text { display: none; }
+.pz-tour-nav { display: flex; gap: 8px; }
+.pz-tour-nav button { flex: 1 1 0; min-width: 0; padding: 6px 8px; white-space: nowrap; }
+.pz-tour-nav .pz-tour-next { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+/* the views a step isn't about step aside while it lasts */
+.views > .card.pz-aside { display: none; }
+/* what a step changes, marked: its rows in Controls and its knobs */
+.row.pz-mark { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.knob.pz-mark .dial { box-shadow: 0 0 0 3px var(--enclosure-ink), 0 3px 6px rgb(0 0 0 / 0.45); }
+/* the frets the test bass is playing */
+.string button.down { background: var(--accent); }
+.pedal.pz-bypassed-mark { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* side by side on a short window there is no room under the face: the card floats over its
+   lower half, as Forte's floats over the controls */
+@media (min-width: 761px) and (max-height: 859px) {
+  .pz-tour { position: fixed; z-index: 30; bottom: 12px; left: max(16px, calc((100vw - 1200px) / 2 + 16px)); width: 340px; max-height: min(52vh, 440px); }
+  .pz-tour-text { flex: 1 1 auto; min-height: 2.5em; max-height: none; }
+}
+@media (max-width: 760px) {
+  .pz-tour-text { max-height: none; overflow: visible; }
+  .pz-tour-nav button { min-height: 38px; }
+}
+
+/* ⓘ on the tuner's card and the test bass's: their How it works */
+button.about { border: 0; background: none; padding: 0 4px; margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1; }
+button.about:hover { color: var(--accent); }
+.fret-head button.about { margin-left: -4px; }

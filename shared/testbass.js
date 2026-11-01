@@ -7,6 +7,11 @@ import { instantiate, instantiateAsync } from './wasm.js';
 
 let x = null;
 export const TESTBASS_URL = () => new URL('../testbass/wasm/testbass.wasm', import.meta.url).href;
+// An original two-bar line to hear a pedal with when nothing is plugged in, at 96 beats a minute:
+// [key, beats], key 0 a rest. Play a riff loops it; the guided tours (shared/tour.js) play it too.
+export const RIFF = [[28, 0.5], [28, 0.5], [40, 0.5], [28, 0.5], [31, 0.5], [33, 0.5], [0, 0.5], [35, 0.5],
+  [28, 0.5], [28, 0.5], [38, 0.5], [40, 0.25], [38, 0.25], [35, 0.5], [33, 0.5], [31, 1]];
+export const RIFF_BPM = 96;
 
 export class TestBass {
   static async ready() { x ??= await instantiateAsync(TESTBASS_URL()); return x; }

@@ -25,6 +25,9 @@ same C++. The full write-up is the [Phuzzbox plan](https://claude.ai/artifact/A2
    wah from its circuit, by the nodal DK method in `phuzzbox/dk.h`, swept low for bass) for the
    expression pedal to rock. The app (`native/app/`) is to forward its MIDI to the page with
    `window.phuzzMidi(status, d1, d2)`.
+   For every pedal, done 2026-11-01: **How it works** as Forte's (the README in a dialog, with
+   contents and tabs for the test bass's and the new tuner's notes) and a **physics tour** of
+   each pedal (`shared/tour.js`), checked by `test/tour-tests.mjs`; a new pedal brings its tour.
 4. **Time and space**: spring reverb (Forte's springs), plate reverb, tape echo, rotary speaker.
 5. **The rest**: envelope filter, octave down, sympathetic strings, black hole, Doppler; a
    hardware pedal (Electrosmith Daisy Seed) if wanted.

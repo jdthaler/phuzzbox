@@ -2,7 +2,8 @@
 // bass → the pedal's AudioWorklet → volume → a safety limiter → the speakers), the pedal's face
 // (knobs for its `perform` controls, the footswitch and its LED), meters, a tuner, the latency,
 // the Controls panel with every parameter and the presets, the test bass's fretboard, and How it
-// works (the pedal's README). The page brings its descriptor, its worklet module and its views.
+// works (the READMEs: shared/notes.js). The page brings its descriptor, its worklet module and its
+// views; a guided tour (shared/tour.js) drives the page through `pageReady`.
 //
 //   createPedal({ PEDAL, worklet: new URL('./x-worklet.js', import.meta.url), views: [view, …] })
 //   view = { title, caption, perform?: true, mount(canvasHolder, api) }  where api = { P, ctx,
@@ -13,9 +14,9 @@
 import { params, defaults, fmt, toUnit, fromUnit } from './params.js';
 import { midiPanel } from './midi-panel.js';
 import { fetchBytes } from './wasm.js';
-import { TESTBASS_URL } from './testbass.js';
+import { TESTBASS_URL, RIFF, RIFF_BPM } from './testbass.js';
 import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
-import { renderMarkdown } from './markdown.js';
+import { howItWorks } from './notes.js';
 import { byId } from './registry.js';
 import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
@@ -43,9 +44,10 @@ const ROWS = [
 ];
 const OPEN = [28, 33, 38, 43];
 const STRING_NAMES = ['E', 'A', 'D', 'G'];
-// An original two-bar line to hear a pedal with when nothing is plugged in: [key, beats], 0 a rest.
-const RIFF = [[28, 0.5], [28, 0.5], [40, 0.5], [28, 0.5], [31, 0.5], [33, 0.5], [0, 0.5], [35, 0.5],
-  [28, 0.5], [28, 0.5], [38, 0.5], [40, 0.25], [38, 0.25], [35, 0.5], [33, 0.5], [31, 1]];
+
+// the page, once createPedal has built it: what a guided tour (shared/tour.js) drives
+let pageIs;
+export const pageReady = new Promise((r) => { pageIs = r; });
 
 export function createPedal({ PEDAL, worklet, views = [] }) {
   const reg = byId(PEDAL.id) ?? {};
@@ -73,7 +75,9 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const sinkSel = h('select', { 'aria-label': 'Output', class: 'sink', hidden: true, onchange: () => setSink(sinkSel.value) });
   const measureBtn = h('button', { type: 'button', class: 'ghost', hidden: true, title: 'Measure the real round trip: connect a cable from your interface\'s output to the input you chose, and turn its direct monitoring off', onclick: () => measure() }, 'Measure latency');
   const cpu = h('span', { class: 'pill', title: 'The share of the audio thread\'s time the pedal takes' }, 'CPU –');
-  const notesBtn = h('button', { type: 'button', class: 'ghost', onclick: () => showNotes() }, 'How it works');
+  const notes = howItWorks({ pedal: { id: PEDAL.id, name: PEDAL.name, version: reg.version } });
+  const notesBtn = notes.button();
+  const about = (key, what) => h('button', { type: 'button', class: 'info about', 'aria-label': `How the ${what} works`, title: `How the ${what} works`, onclick: () => notes.open(key) }, 'ⓘ');
   const installBtn = h('button', { type: 'button', class: 'ghost', title: 'Install Phuzzbox as an app with its own window, which opens without the browser\'s tabs and works without the server' }, 'Install app');
   registerApp();
   offerInstall(installBtn);
@@ -105,15 +109,15 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const muteBtn = h('button', { type: 'button', class: 'ghost mute', 'aria-pressed': 'false', title: 'Silence the output while you tune, as a tuner pedal does; the tuner still hears the input', onclick: () => setMute(!state.mute) }, 'Mute while tuning');
   const scale = h('div', { class: 't-scale', 'aria-hidden': 'true' }, h('span', { class: 't-zone' }),
     ...[-50, -25, 0, 25, 50].map((c) => { const t = h('span', { class: 't-tick' }, h('i', {}, c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0')); t.style.left = `${50 + c}%`; return t; }), tNeedle);
-  const tunerCard = h('figure', { class: 'card tunercard idle', 'aria-label': 'Tuner' },
-    h('figcaption', {}, h('b', {}, 'Tuner'), h('span', {}, 'the fundamental, in cents from A4 =', a4Input, 'Hz'), muteBtn),
+  const tunerCard = h('figure', { class: 'card tunercard idle', 'aria-label': 'Tuner', 'data-view': 'Tuner' },
+    h('figcaption', {}, h('b', {}, 'Tuner'), about('tuner', 'tuner'), h('span', {}, 'the fundamental, in cents from A4 =', a4Input, 'Hz'), muteBtn),
     h('div', { class: 't-body' }, h('div', { class: 't-name', role: 'status' }, tNote, tOct), scale, h('div', { class: 't-read' }, tCents, tHz, tString)));
 
   // views
   const viewWrap = h('section', { class: 'views' }, tunerCard);
   for (const v of views) {
     const holder = h('div', { class: 'canvas' });
-    const card = h('figure', { class: 'card' }, h('figcaption', {}, h('b', {}, v.title), ' ', h('span', {}, v.caption ?? '')), holder);
+    const card = h('figure', { class: 'card', 'data-view': v.title }, h('figcaption', {}, h('b', {}, v.title), ' ', h('span', {}, v.caption ?? '')), holder);
     viewWrap.append(card);
     v.mount(holder, api);
   }
@@ -122,6 +126,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const fret = h('section', { class: 'fretboard', 'aria-label': 'Test bass' });
   const riffBtn = h('button', { type: 'button', class: 'ghost', onclick: () => toggleRiff() }, 'Play a riff');
   const fretGrid = h('div', { class: 'frets' });
+  const fretOf = new Map(); // a key's button, on the string the test bass plays it on (the highest that can)
   for (let s = 3; s >= 0; s--) {
     const row = h('div', { class: 'string' }, h('span', { class: 'sname' }, STRING_NAMES[s]));
     for (let f = 0; f < 10; f++) {
@@ -130,11 +135,12 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture?.(e.pointerId); play(k, 0.75); });
       b.addEventListener('pointerup', () => stop(k));
       b.addEventListener('pointercancel', () => stop(k));
+      if (!fretOf.has(k)) fretOf.set(k, b);
       row.append(b);
     }
     fretGrid.append(row);
   }
-  fret.append(h('div', { class: 'fret-head' }, h('b', {}, 'Test bass'), h('span', {}, ' a bass made of physics, for when nothing is plugged in: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers), open to the ninth fret.'), riffBtn), fretGrid);
+  fret.append(h('div', { class: 'fret-head' }, h('b', {}, 'Test bass'), about('testbass', 'test bass'), h('span', {}, ' a bass made of physics, for when nothing is plugged in: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers), open to the ninth fret.'), riffBtn), fretGrid);
 
   // the Controls panel
   const controls = h('section', { class: 'controls' });
@@ -209,7 +215,8 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   } });
   api.midi = midi;
 
-  app.append(h('div', { class: 'stage' }, face, viewWrap), fret, controls, midi.el,
+  const side = h('div', { class: 'side' }, face);
+  app.append(h('div', { class: 'stage' }, side, viewWrap), fret, controls, midi.el,
     h('footer', {}, `${PEDAL.name} ${reg.version ?? ''} · Phuzzbox · physics, not samples · `,
       h('a', { href: '../' }, 'all pedals')));
 
@@ -259,7 +266,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   function knob(p) {
     const dial = h('div', { class: 'dial', role: 'slider', tabindex: 0, 'aria-label': p.label, title: p.hint ?? '' }, h('span', { class: 'mark' }));
     const val = h('div', { class: 'kval' });
-    const el = h('div', { class: 'knob' }, dial, h('div', { class: 'klabel' }, p.label.replace(/\s*\(.*\)$/, '')), val);
+    const el = h('div', { class: 'knob', 'data-param': p.id }, dial, h('div', { class: 'klabel' }, p.label.replace(/\s*\(.*\)$/, '')), val);
     el.refresh = () => {
       const u = toUnit(p, P[p.id]);
       dial.style.setProperty('--turn', `${-135 + 270 * u}deg`);
@@ -468,7 +475,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     if (riff) { clearTimeout(riff); riff = null; riffBtn.textContent = 'Play a riff'; return; }
     riffBtn.textContent = 'Stop';
     let i = 0;
-    const beat = 60 / 96;
+    const beat = 60 / RIFF_BPM;
     const next = () => {
       const [k, b] = RIFF[i % RIFF.length];
       if (k) { play(k, 0.6 + 0.2 * ((i % 4) === 0)); setTimeout(() => stop(k), 1000 * b * beat * 0.85); }
@@ -487,25 +494,48 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   });
   addEventListener('keyup', (e) => { const k = codeKey.get(e.code); if (k !== undefined && held.delete(e.code)) stop(k); });
 
-  // ---- How it works: the README
-  let dialog = null;
-  async function showNotes() {
-    if (!dialog) {
-      const body = h('div', { class: 'notes-body' }, 'Loading…');
-      dialog = h('dialog', { class: 'notes' }, h('div', { class: 'notes-bar' }, h('b', {}, `${PEDAL.name}: how it works`), h('button', { type: 'button', onclick: () => dialog.close() }, 'Close ✕')), body);
-      document.body.append(dialog);
-      try {
-        const text = await (await fetch('README.md')).text();
-        body.innerHTML = renderMarkdown(text, { skip: ['Files'] }).html;
-      } catch { body.textContent = 'The notes did not load.'; }
-    }
-    dialog.showModal();
-  }
-  if (location.hash === '#about') showNotes();
+  // ---- what a guided tour (shared/tour.js) drives: the settings, the footswitch, the source,
+  // the test bass (its frets lit as it plays), the views and the controls a step changes
+  // (the tour's only way into the page: a new layout keeps these and the tour follows it)
+  api.page = {
+    notesBtn, // Tour goes just before it
+    tourSlot: side, // the tour's card is appended here (under the pedal's face)
+    start,
+    // every parameter at once, and the same for the page's Controls, knobs, views and storage
+    get: () => ({ ...P }),
+    setAll(want) {
+      Object.assign(P, want);
+      store.set(`${key}.params`, P);
+      send({ type: 'params', P: { ...P } });
+      refresh();
+      emit('params');
+    },
+    defaults: () => defaults(PEDAL.groups),
+    bypassed: () => state.bypass, setBypass,
+    muted: () => state.mute, setMute,
+    // the tour plays the test bass; the source the player chose comes back when it ends
+    source: () => sourceSel.value,
+    useBass() { if (state.source !== 'bass') { sourceSel.value = 'bass'; state.source = 'bass'; send({ type: 'source', which: 'bass' }); } },
+    restoreSource(v) {
+      if (!v || v === 'bass' || !micStream || ![...sourceSel.options].some((o) => o.value === v)) return;
+      sourceSel.value = v; state.source = 'input'; send({ type: 'source', which: 'input' });
+    },
+    press(k, vel) { fretOf.get(k)?.classList.add('down'); play(k, vel); },
+    release(k) { fretOf.get(k)?.classList.remove('down'); stop(k); },
+    // the controls of these parameters: their rows in Controls, and their knobs
+    controls: (ids) => ids.flatMap((id) => [document.getElementById(`p-${id}`)?.closest('.row'), knobs.querySelector(`[data-param="${id}"]`)]).filter(Boolean),
+    // only these views, by title ('Tuner' too), for a while; null brings them all back
+    showViews(names) {
+      const want = names?.map((n) => n.toLowerCase());
+      for (const c of viewWrap.querySelectorAll('[data-view]')) c.classList.toggle('pz-aside', !!want && !want.includes(c.dataset.view.toLowerCase()));
+    },
+    viewNames: () => ['Tuner', ...views.map((v) => v.title)],
+  };
 
   setBypass(state.bypass);
   setInterface();
   chanSel.hidden = true;
   refresh();
+  pageIs(api);
   return api;
 }
