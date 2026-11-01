@@ -48,7 +48,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"inductor", "Inductor", "Circuit", phuzzbox::ParamKind::continuous, 0.1, 1.5, 0.5, 0.0, true, "mH", 1000.0, 0},
   {"vcc", "Supply", "Circuit", phuzzbox::ParamKind::continuous, 5.0, 12.0, 8.15, 0.0, false, "V", 1.0, 2},
   {"blend", "Clean blend", "Output", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.0, 0.0, false, "%", 100.0, 0},
-  {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 1.3, 0.0, false, "dB", 1.0, 1},
   {"control", "Rocked by", "Auto", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, controlChoices, 2},
   {"direction", "Direction", "Auto", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, directionChoices, 2},
   {"sens", "Full sweep at", "Auto", phuzzbox::ParamKind::continuous, 0.02, 1.0, 0.15, 0.0, true, "mV", 1000.0, 0},

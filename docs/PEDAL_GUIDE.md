@@ -187,6 +187,15 @@ against independent physics; the engine against the model; each hint; identity o
 the physics says so; silence, NaN recovery, latency and tail; presets in range; CPU (named
 `CPU: …`, skipped on CI).
 
+**Level.** Every pedal ends in a knob that sets its output without changing anything else (a
+Level in decibels, or the output pot its circuit has: the Phuzz's Volume, the Tube Preamp's
+Master, the Opto's Gain, the Cabinet's microphone). Its default makes the pedal, at its defaults,
+as loud engaged as bypassed on the test bass's riff, so the footswitch doesn't jump:
+`node tools/loudness.mjs` measures it (BS.1770 integrated loudness) and prints the default that
+would, and `test/level-tests.mjs` keeps every pedal within 1 dB (a new pedal names its knob in
+the tool's `KNOB` if it isn't `level`). A pedal's own tests set that knob to unity where they
+compare it with its model.
+
 ## Versions
 
 Each pedal has its own semantic version, kept in `shared/registry.js`; PhuzzBox has one

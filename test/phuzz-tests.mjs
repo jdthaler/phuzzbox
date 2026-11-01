@@ -14,7 +14,8 @@ import { operatingPoint, smallSignal, inputImpedance, mag, transistor, T0, PARTS
 const { PEDAL, Effect } = await loadPedal('phuzz');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), volume: 1 };
 const W = (over) => ({ ...D, ...over });
 
 // the C++ model through its exports

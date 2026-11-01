@@ -13,7 +13,8 @@ import { C, piston, retarded, highGain } from './rotary-circuit.mjs';
 const { PEDAL, Effect } = await loadPedal('rotary');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), level: 0 };
 const W = (over) => ({ ...D, ...over });
 const R_MAX = 0.25, HALF = Math.ceil(0.2 * fs / 343) + 1; // the patterns' half length (rotary-model.h)
 

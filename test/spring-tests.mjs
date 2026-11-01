@@ -14,7 +14,8 @@ import { TANKS, spring, tdPB, fcPB, beads, sigmaOf, kAt } from './spring-circuit
 const { PEDAL, Effect } = await loadPedal('spring');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), level: 0 };
 const W = (over) => ({ ...D, ...over });
 const preset = (name, over) => W({ ...PEDAL.presets[name], ...over });
 const LOSSLESS = { tank: 'one', mounts: 0.05, steel: 1e-5, oil: 0 };

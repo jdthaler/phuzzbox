@@ -17,7 +17,7 @@ const merger = [
     hint: 'How lopsided the merger that made the hole was, the heavier over the lighter: it sets how strongly each mode rings (Kamaretsos et al.\'s fits). Equal masses leave the odd-m modes, (2,1) and (3,3), silent; a lopsided merger switches them on.' },
   { id: 'inclination', label: 'Inclination', min: 0, max: 90, def: 30, unit: '°', decimals: 0,
     hint: 'Where you hear the hole from: 0° along its spin axis (face-on), 90° in its equator (edge-on). The left channel is h₊ and the right h×: face-on the two are a quarter cycle apart, circularly polarised; edge-on h× of the (2,2) mode vanishes.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -15.1, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 

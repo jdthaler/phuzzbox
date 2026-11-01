@@ -38,7 +38,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"flutter", "Capstan eccentricity", "The machine", phuzzbox::ParamKind::continuous, 0.0, 0.00002, 0.000003, 0.0, false, "µm", 1000000.0, 1},
   {"dry", "Dry", "The mix", phuzzbox::ParamKind::continuous, 0.0, 1.0, 1.0, 0.0, false, "%", 100.0, 0},
   {"wet", "Echo", "The mix", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.5, 0.0, false, "%", 100.0, 0},
-  {"level", "Level", "The mix", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "The mix", phuzzbox::ParamKind::continuous, -24.0, 12.0, -3.5, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.38}, {1, 0.0}, {2, 0.0}, {6, 0.0}, {7, 0.000003}, {8, 0.000005}, {9, 0.000003}, {10, 1.0}, {11, 0.6}};

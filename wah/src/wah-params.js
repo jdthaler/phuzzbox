@@ -27,7 +27,7 @@ const output = [
   { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
     showIf: (P) => !P.reversed,
     hint: 'A blend pot that mixes your dry signal back in, as bass wahs have: the wah thins out the low end, and this keeps the bottom under the sweep. It is not part of the circuit model, so plugged in backwards it is off.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 1.3, unit: 'dB', decimals: 1,
     hint: 'Gain after the wah, in decibels.' },
 ];
 

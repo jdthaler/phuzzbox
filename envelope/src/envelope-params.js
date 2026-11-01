@@ -34,7 +34,7 @@ const cell = [
 const output = [
   { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'Your dry signal mixed back in after the filter, so the bass\'s bottom stays under the sweep (most use for band-pass and high-pass).' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 6.1, unit: 'dB', decimals: 1,
     hint: 'Gain after the filter, in decibels.' },
 ];
 

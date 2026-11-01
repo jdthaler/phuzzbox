@@ -25,7 +25,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"dry", "Dry", "The hole", phuzzbox::ParamKind::continuous, 0.0, 1.0, 1.0, 0.0, false, "%", 100.0, 0},
   {"ratio", "Mass ratio", "The merger and output", phuzzbox::ParamKind::continuous, 1.0, 10.0, 1.2, 0.0, true, ":1", 1.0, 1},
   {"inclination", "Inclination", "The merger and output", phuzzbox::ParamKind::continuous, 0.0, 90.0, 30.0, 0.0, false, "°", 1.0, 0},
-  {"level", "Level", "The merger and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "The merger and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, -15.1, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{0, 200.0}, {1, 0.509}, {4, 1.2}, {5, 30.0}, {2, 0.5}, {3, 1.0}};

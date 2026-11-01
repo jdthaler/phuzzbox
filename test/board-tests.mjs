@@ -179,10 +179,10 @@ const N = 9600;
   const dz = db(pz(3) / pz(0.15));
   check(dz < -0.05 && dz > -3, 'Patch cables: from the Phuzz turned down, more takes off a little top', `5 kHz, 3 m against 0.15 m: ${dz.toFixed(2)} dB`);
   // Cable to the amp, Amp's input
-  const pa = (B) => play([slot('preamp')], B, 3000, 0.02);
+  const pa = (B) => play([slot('preamp', { master: 0.4 })], B, 3000, 0.02);
   const dc = db(pa({ ampCable: 30 }) / pa({ ampCable: 0.3 }));
   check(dc < -3, 'Cable to the amp: behind the Tube Preamp, 30 m darkens the top by several dB', `3 kHz: ${dc.toFixed(1)} dB`);
   const dl = db(pa({ ampLoad: 10e3 }) / pa({ ampLoad: 1e6 }));
-  check(dl < -13 && dl > -19, 'Amp\'s input: into 10 kΩ the Tube Preamp is about 16 dB quieter', `${dl.toFixed(1)} dB`);
+  check(dl < -13 && dl > -19, 'Amp\'s input: into 10 kΩ the Tube Preamp, its Master at 40 %, is about 16 dB quieter', `${dl.toFixed(1)} dB`);
 }
 done();

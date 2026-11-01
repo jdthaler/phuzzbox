@@ -12,7 +12,7 @@ const pedal = [
     hint: 'The tone stack\'s 25 kΩ pot to ground. The stack always scoops the middle, deepest near 700 Hz with the knobs at halfway; turning Middle down deepens the scoop, to about 22 dB down near 900 Hz, and turning it up fills it in, about 2.5 dB more at 500 Hz.' },
   { id: 'treble', label: 'Treble', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'The tone stack\'s 250 kΩ pot, fed through 250 pF. From halfway, full up passes about 4.5 dB more at 5 kHz, and all the way down takes about 7.5 dB off it.' },
-  { id: 'master', label: 'Master', min: 0, max: 1, def: 0.4, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'master', label: 'Master', min: 0, max: 1, def: 0.24, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'A 1 MΩ audio pot after the tone stack, which the amp doesn\'t have (its tone stack drives the power amp): it sets how loud the pedal is without changing how hard the tubes are driven. Halfway passes about a tenth of the voltage.' },
 ];
 
@@ -35,9 +35,9 @@ const supply = [
   { id: 'cable', label: 'Cable from the bass', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
     hint: 'The cable from your bass to the preamp. Into the tube\'s 1 MΩ grid leak its capacitance tunes the pickup\'s resonance, as it does into an amp: 10 m against 1 m moves the resonance down, and leaves 5 kHz about 9 dB darker.' },
   { id: 'outCable', label: 'Cable to the amp', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
-    hint: 'The cable from the preamp to what it drives. The tone stack and the Master pot drive it from tens of kilohms, so a long cable darkens the top: 30 m takes about 10 dB off 3 kHz.' },
+    hint: 'The cable from the preamp to what it drives. The tone stack and the Master pot drive it from tens of kilohms, so a long cable darkens the top: with the Master at 40 %, 30 m takes about 10 dB off 3 kHz; with it turned down, less.' },
   { id: 'load', label: 'Amp\'s input', min: 10e3, max: 10e6, def: 1e6, log: true, unit: 'kΩ', scale: 0.001, decimals: 0,
-    hint: 'The input impedance of what the preamp drives, usually 1 MΩ. It loads the Master pot and the tone stack behind it: into 100 kΩ the preamp is about 3 dB quieter, into 10 kΩ about 16 dB.' },
+    hint: 'The input impedance of what the preamp drives, usually 1 MΩ. It loads the Master pot and the tone stack behind it: with the Master at 40 %, into 100 kΩ the preamp is about 3 dB quieter and into 10 kΩ about 16 dB; with it turned down, less.' },
 ];
 
 export const GROUPS = [

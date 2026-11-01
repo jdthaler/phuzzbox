@@ -27,7 +27,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"listener", "Your speed", "The air and output", phuzzbox::ParamKind::continuous, -50.0, 50.0, 0.0, 0.0, false, "m/s", 1.0, 0},
   {"temp", "Air", "The air and output", phuzzbox::ParamKind::continuous, -20.0, 40.0, 20.0, 0.0, false, "°C", 1.0, 0},
   {"mix", "Fly-by", "The air and output", phuzzbox::ParamKind::continuous, 0.0, 1.0, 1.0, 0.0, false, "%", 100.0, 0},
-  {"level", "Level", "The air and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "The air and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 12.0, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{0, 25.0}, {1, 4.0}, {2, 4.0}, {4, 0.0}, {3, 0.0}, {6, 1.0}};

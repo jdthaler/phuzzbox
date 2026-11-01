@@ -13,7 +13,8 @@ import { string, strings, losses, modes as modesOf, drivingPoint, response, note
 const { PEDAL, Effect } = await loadPedal('sympathetic');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), level: 0 };
 const W = (over) => ({ ...D, ...over });
 const wet = (over) => W({ dry: 0, mix: 1, ...over });
 

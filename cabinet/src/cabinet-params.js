@@ -6,7 +6,7 @@
 const cabinet = [
   { id: 'drive', label: 'Power amp gain', min: 10, max: 46, def: 32, unit: 'dB', decimals: 1, perform: true,
     hint: 'The clean power amp\'s voltage gain, from your bass\'s volts to the cabinet\'s. It sets how hard the cones are pushed: up high, the low notes run the cones out of travel and the sound thickens and compresses, the lowest strings first.' },
-  { id: 'mic', label: 'Microphone sensitivity', min: 1e-3, max: 0.1, def: 15e-3, log: true, unit: 'mV/Pa', scale: 1e3, decimals: 1, perform: true,
+  { id: 'mic', label: 'Microphone sensitivity', min: 1e-3, max: 0.1, def: 18.6e-3, log: true, unit: 'mV/Pa', scale: 1e3, decimals: 1, perform: true,
     hint: 'The volts the microphone at 1 m gives per pascal of sound: a dynamic microphone gives about 2, a condenser about 20. It is the pedal\'s output level and changes nothing else.' },
   { id: 'layout', label: 'Drivers', type: 'select', def: '8x10', options: [['1x15', '1 × 15″'], ['2x10', '2 × 10″, in parallel'], ['4x10', '4 × 10″, 2 series × 2 parallel'], ['8x10', '8 × 10″, 2 series × 4 parallel'],
     ['1x12', '1 × 12″'], ['2x12', '2 × 12″, in parallel'], ['4x12', '4 × 12″, 2 series × 2 parallel']],

@@ -30,7 +30,7 @@ const where = [
 const model = [
   { id: 'top', label: 'Modes up to', min: 2000, max: 8000, def: 5000, log: true, unit: 'Hz', decimals: 0,
     hint: 'The highest of the plate\'s modes that is played. The plate has about 1.3 modes in every hertz, so 5 kHz is about 6400 of them; above this it is silent here. Higher is brighter and costs more of the computer.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: -3, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 

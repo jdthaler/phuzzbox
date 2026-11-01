@@ -37,7 +37,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"trapTime", "Trap release time", "The photocells", phuzzbox::ParamKind::continuous, 0.1, 5.0, 0.5, 0.0, true, "s", 1.0, 2},
   {"litR", "Cell resistance, lit", "The photocells", phuzzbox::ParamKind::continuous, 1000.0, 20000.0, 5000.0, 0.0, true, "kΩ", 0.001, 1},
   {"blend", "Clean blend", "Output", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.0, 0.0, false, "%", 100.0, 0},
-  {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 6.1, 0.0, false, "dB", 1.0, 1},
 };
 
 inline const phuzzbox::PresetValue kPreset0[] = {{0, 1.0}, {1, 5.0}, {2, 4.7e-8}, {3, 20.0}, {4, 0.0}, {5, 0.01}, {6, 0.15}, {10, 0.2}};

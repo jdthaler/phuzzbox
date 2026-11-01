@@ -19,7 +19,7 @@ const air = [
     hint: 'The air\'s temperature, which sets the speed of sound: 331 m/s at 0 °C, 343 m/s at 20 °C. From the next pass.' },
   { id: 'mix', label: 'Fly-by', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0,
     hint: 'How much of the passing source is heard.' },
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 12, unit: 'dB', decimals: 1,
     hint: 'Gain after the mix, in decibels.' },
 ];
 

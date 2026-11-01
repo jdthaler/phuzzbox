@@ -13,7 +13,8 @@ import { amplitudeAt, db, sine } from '../tools/audio-util.mjs';
 const { PEDAL, Effect } = await loadPedal('wah');
 const x = Effect.exports;
 const fs = 48000;
-const D = defaults(PEDAL.groups);
+// at the output knob's unity setting (its default is set for loudness: tools/loudness.mjs)
+const D = { ...defaults(PEDAL.groups), level: 0 };
 const with_ = (over) => ({ ...D, ...over });
 
 // ---- the circuit, as Holters and Zölzer give it (DAFx 2011, Table 1): [a, b, value], nodes 1–13,

@@ -44,7 +44,7 @@ const cabinet = [
 ];
 
 const output = [
-  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0.4, unit: 'dB', decimals: 1,
     hint: 'Gain after the microphones, in decibels.' },
 ];
 
