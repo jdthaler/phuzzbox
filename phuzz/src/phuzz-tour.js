@@ -17,7 +17,9 @@ In **The transistors**, each ring is a transistor's operating point on its load 
     views: ['Scope', 'Spectrum'],
     preset: 'Full fuzz',
     play: [riff({ times: 2 }), sweep('fuzz', 1, 0.4, { at: 1, dur: 8 })],
-    text: `**Fuzz** is a 1 kΩ pot in Q2's emitter, with a 20 µF capacitor on its wiper. Full up, the capacitor grounds the emitter for the signal and the pair has all its gain. Turning it down puts part of the pot back in the emitter: negative feedback, and by halfway the gain is 25 dB lower. The squared tops round off and the harmonics in the **Spectrum** fall.
+    text: `![The Phuzz: two PNP germanium transistors, the Fuzz pot in Q2's emitter and R4 feeding back to Q1's base](schematics/circuit.svg)
+
+**Fuzz** is a 1 kΩ pot in Q2's emitter, with a 20 µF capacitor on its wiper. Full up, the capacitor grounds the emitter for the signal and the pair has all its gain. Turning it down puts part of the pot back in the emitter: negative feedback, and by halfway the gain is 25 dB lower. The squared tops round off and the harmonics in the **Spectrum** fall.
 
 The feedback reaches the input too: its impedance falls from about 6 kΩ to a few hundred ohms, and it loads your pickup harder.`,
   },

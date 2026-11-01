@@ -14,7 +14,9 @@ export const TOUR = tour('wah', [
     preset: 'Bass wah (22 nF)',
     set: { position: 0 },
     play: [note('A1', { dur: 7, vel: 0.85 }), rock({ at: 0.5, dur: 6 })],
-    text: `A coil of half a henry and a capacitor make a resonance; two transistors make a loop that drives the capacitor's far end with a copy of its near end. From the coil, that capacitor looks (1 + A) times larger (the Miller effect), and the pot under your foot sets the loop's gain A:
+    text: `![The wah: the coil L1 and sweep capacitor C3, two transistors, and the rocker's pot](schematics/circuit.svg)
+
+A coil of half a henry and a capacitor make a resonance; two transistors make a loop that drives the capacitor's far end with a copy of its near end. From the coil, that capacitor looks (1 + A) times larger (the Miller effect), and the pot under your foot sets the loop's gain A:
 
   f ≈ 1 / (2π √(L C (1 + A)))
 
