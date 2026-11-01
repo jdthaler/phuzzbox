@@ -54,6 +54,11 @@ guitar six strings, so holding **Shift** moves the rows up two strings: the Z ro
 string and the numbers the high E. The fretboard on screen has all six. **Play a riff** plays
 the test bass's riff an octave up, where a guitar has it.
 
+Drag along a string on the fretboard, or hold a key and press another on the same row, and the
+note slides there, fret by fret (the test bass's [Sliding](../testbass/README.md#sliding) has the
+physics). **Slide bar** lays a bar across the strings instead of the finger on the frets: the note
+glides through every pitch between, and the fret it was played at plays where the bar is.
+
 The guided tours are written for the bass, about its notes: a tour plays the test bass, and the
 guitar comes back when it ends.
 
@@ -84,6 +89,8 @@ are the same for any instrument, so they keep one set of settings' defaults for 
 - The pickup hears every string alike: a real one's pole pieces are staggered to even out the
   strings' different pulls on its field.
 - One pickup, in one place; no selector, no humbucker.
+- A slide bar stops the string where the finger would, with the same simplifications as the test
+  bass's slides; a real bar touches every string at once and its weight damps them.
 - The pickup's circuit is discretised by the bilinear transform, matched at its resonance: it is
   within 0.2 dB of the circuit to 6 kHz, and a decibel low by 8 kHz.
 

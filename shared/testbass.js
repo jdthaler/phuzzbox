@@ -3,6 +3,7 @@
 // them as a signal source.
 //   await TestBass.ready(); const b = new TestBass(48000);           (the bass; 'guitar' for the guitar)
 //   b.note(40, 0.8); b.process(out, n); b.noteOff(40); b.use('guitar');
+//   b.pluck(0, 3); b.slide(0, 7, 0.2); b.set('fretless', 1);
 
 import { instantiate, instantiateAsync } from './wasm.js';
 import { RIFFS } from './instruments.js';
@@ -25,7 +26,7 @@ export class TestBass {
   static OPEN = [28, 33, 38, 43];
   static GUITAR_OPEN = [40, 45, 50, 55, 59, 64];
   static SETTINGS = { pluckAt: 0, pickupAt: 1, cable: 2, load: 3, active: 4, inductance: 5, resistance: 6, volts: 7,
-    scale: 8, strings: 9, capacitance: 10, pots: 11, pull: 12, width: 13, aperture: 14 };
+    scale: 8, strings: 9, capacitance: 10, pots: 11, pull: 12, width: 13, aperture: 14, fretless: 16 };
 
   constructor(fs, kind = 'bass') { this.fs = fs; this.h = x.tb_create(fs); this.kind = 'bass'; if (kind !== 'bass') this.use(kind); }
   // become the test bass or the test guitar, as built (what was ringing stops)
@@ -33,6 +34,9 @@ export class TestBass {
   get(name) { return x.tb_get(this.h, TestBass.SETTINGS[name]); }
   pluck(string, fret, velocity = 0.7) { x.tb_pluck(this.h, string, fret, velocity); }
   mute(string) { x.tb_mute(this.h, string); }
+  // the finger slides along a string to a fret (fractional is fine) over some seconds, and the last
+  // note plucked on it follows: fret by fret, or gliding when set fretless (a slide bar on a guitar)
+  slide(string, fret, seconds = 0.15) { x.tb_slide(this.h, string, fret, seconds); }
   note(key, velocity = 0.7) { return x.tb_note(this.h, key, velocity); }
   noteOff(key) { x.tb_note_off(this.h, key); }
   set(name, value) { x.tb_set(this.h, TestBass.SETTINGS[name], value); }

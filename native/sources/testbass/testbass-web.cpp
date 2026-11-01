@@ -21,13 +21,16 @@ PHUZZ_EXPORT void tb_destroy(Handle *h) { delete h; }
 PHUZZ_EXPORT void tb_use(Handle *h, int kind) { h->bass.use(kind == 1 ? testbass::Kind::guitar : testbass::Kind::bass); }
 PHUZZ_EXPORT void tb_pluck(Handle *h, int string, int fret, double velocity) { h->bass.pluck(string, fret, velocity); }
 PHUZZ_EXPORT void tb_mute(Handle *h, int string) { h->bass.mute(string); }
+// the finger slides along a string to a (fractional) fret over some seconds
+PHUZZ_EXPORT void tb_slide(Handle *h, int string, double fret, double seconds) { h->bass.slide(string, fret, seconds); }
 PHUZZ_EXPORT int tb_note(Handle *h, int key, double velocity) { return h->bass.note(key, velocity); }
 PHUZZ_EXPORT void tb_note_off(Handle *h, int key) { h->bass.noteOff(key); }
 PHUZZ_EXPORT float *tb_out(Handle *h) { return h->out; }
 PHUZZ_EXPORT void tb_process(Handle *h, int n) { phuzzbox::NoDenormals ftz; h->bass.process(h->out, n < 128 ? n : 128); }
 // settings, by index: 0 pluckAt, 1 pickupAt, 2 cable, 3 Rload, 4 active (0/1), 5 L, 6 R, 7 volts;
 // and to read: 8 scale, 9 strings, 10 the coil's capacitance, 11 the pots, 12 pull, 13 the
-// finger's or pick's width, 14 the pickup's aperture, 15 kind (0 bass, 1 guitar)
+// finger's or pick's width, 14 the pickup's aperture, 15 kind (0 bass, 1 guitar); and 16 fretless
+// (0/1: a slide glides rather than stepping fret by fret), to set and read
 PHUZZ_EXPORT void tb_set(Handle *h, int what, double v) {
   testbass::Settings &S = h->bass.settings;
   switch (what) {
@@ -44,6 +47,7 @@ PHUZZ_EXPORT void tb_set(Handle *h, int what, double v) {
     case 5: S.circuit.L = v; break;
     case 6: S.circuit.R = v; break;
     case 7: S.volts = v; break;
+    case 16: S.fretless = v > 0.5; break;
   }
   h->bass.applySettings();
 }
@@ -66,6 +70,7 @@ PHUZZ_EXPORT double tb_get(Handle *h, int what) {
     case 13: return S.finger;
     case 14: return S.aperture;
     case 15: return S.kind == testbass::Kind::guitar ? 1 : 0;
+    case 16: return S.fretless ? 1 : 0;
   }
   return 0;
 }

@@ -76,7 +76,9 @@ Then either:
 - **Play the test bass.** The rows of letter keys are its strings, as tablature has them: the
   `Z` row is the low E, then the `A` row, the `Q` row and the number row, each from the open
   string to the ninth fret; with the test guitar, Shift moves the rows up to the D, G, B and high E
-  strings. **Play a riff** loops a short line. The fretboard shows only while the test bass is the input, and the letter keys play it only then.
+  strings. Drag along a string on the fretboard, or hold a key and press another on the same row,
+  to slide between notes; **Fretless** (on the guitar, **Slide bar**) makes a slide glide rather
+  than step fret by fret. **Play a riff** loops a short line. The fretboard shows only while the test bass is the input, and the letter keys play it only then.
 
 `Space` is the footswitch. **Full scale** (in Controls, under Rig) says how many volts at the input jack make
 a full-scale signal in the browser. It doesn't matter to the Buffer, but it does to the Phuzz and

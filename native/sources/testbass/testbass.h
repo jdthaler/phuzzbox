@@ -53,6 +53,7 @@ struct Settings {
   double b1 = 1.0;         // 1/s: losses independent of frequency (air, the bridge)
   double b3 = 4.0e-6;      // s: losses growing as f² (the string's internal friction)
   double muted = 60;       // 1/s: σ of every mode under a muting hand
+  bool fretless = false;   // a slide glides (a fretless bass, a slide bar on a guitar); fretted, it steps fret by fret
   double volts = 0.3;      // V of EMF per m/s of string velocity at the pickup (a passive bass peaks at a few hundred mV)
   phuzzbox::PickupCircuit circuit; // the pickup, its cable and the interface
 };
@@ -63,9 +64,15 @@ Settings guitarSettings();
 
 // The string's inharmonicity coefficient, for a length ℓ (m)
 double inharmonicity(const StringSpec &s, double length);
-// The partials of a string at a fret: frequency (Hz) and decay rate (1/s), n = 1 …
+// The partials of a string at a fret: frequency (Hz) and decay rate (1/s), n = 1 …, and the
+// amplitude the pickup hears per metre of pull (amp = a ω heard)
 struct Partial { double f, sigma, amp; };
 std::vector<Partial> partials(const Settings &S, int string, int fret, double fs);
+// A string stopped at a fractional fret (a slide passing through): its length, and each mode's
+// frequency and decay, and what the pickup makes of its displacement (ω × the aperture's view)
+double stoppedLength(const Settings &S, double fret);
+struct Mode { double f, sigma, heard; };
+Mode mode(const Settings &S, int string, double length, int n);
 
 class Instrument {
  public:
@@ -78,6 +85,9 @@ class Instrument {
   // a note (MIDI key) on the string that plays it lowest on the neck; −1 if out of range
   int note(int key, double velocity);
   void noteOff(int key);
+  // the finger, still pressing, moves along the string to a fret (fractional is fine) over some
+  // seconds, at a steady speed along the neck: the last note plucked on that string follows it
+  void slide(int string, double fret, double seconds);
   void process(float *out, int n);
 
  private:
@@ -85,9 +95,17 @@ class Instrument {
     int n = 0;
     double sigmaMuted = 0;
     bool muted = false;
-    std::array<double, kMaxModes> re{}, im{}, cr{}, ci{}, cmr{}, cmi{}; // state; rotation e^(−σT+iωT); muted rotation
+    // state (each mode's displacement, as a phasor, in volts per unit gain); rotation e^(−σT+iωT);
+    // muted rotation; gain (what the pickup makes of the displacement: ω × its view of the mode)
+    std::array<double, kMaxModes> re{}, im{}, cr{}, ci{}, cmr{}, cmi{}, gain{};
     int key = -1;
+    // the finger: where it is (in frets), where a slide goes, and the stopped fret now sounding
+    int string = 0;
+    double at = 0, from = 0, to = 0, pitch = 0;
+    long t = 0, dur = 0;
+    bool sliding = false;
   };
+  void retune(Voice &V, double pitch); // the modes of the string stopped at a (fractional) fret
   double fs;
   std::array<Voice, kMaxStrings * 2> voices; // two per string: the last pluck rings out under the next
   std::array<int, kMaxStrings> next{};
