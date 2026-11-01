@@ -34,7 +34,11 @@ export const PEDALS = [
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
   },
-  { id: 'cabinet', name: 'Cabinet', ready: false, after: '8×10 and 1×15 bass cabinets', blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.' },
+  {
+    id: 'cabinet', name: 'Cabinet', version: '0.1.0', ready: true, plugin: { code: 'Cabn' },
+    after: '8×10 and 1×15 bass cabinets',
+    blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

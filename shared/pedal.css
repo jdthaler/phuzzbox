@@ -393,6 +393,7 @@ body.one-screen .rig .row > .inline { grid-area: input; font-size: 13px; color: 
 body.one-screen .rig .row > label.inline { grid-area: value; }
 body.one-screen .rig .row input[type="number"] { width: 70px; }
 .rig-note { margin: 6px 0 0; font-size: 12px; color: var(--ink-2); }
+.group-empty { margin: 6px 2px; font-size: 13px; color: var(--ink-2); }
 
 /* the dock: a tour's card, then the test bass */
 body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }

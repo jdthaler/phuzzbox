@@ -30,6 +30,11 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    free and trapped electrons (Rose 1951), tuned to the LA-2A's published timing (attack 10 ms,
    half the release in 0.06 s, all of it in 0.5–5 s) and tested against them and an independent
    model (`test/opto-circuit.mjs`).
+   The **Speaker Cabinet** landed 2026-11-01: drivers from their Thiele–Small parameters (coil,
+   cone, box air, port air as four coupled equations, by RK4), sealed or ported, 1 × 15 to 8 × 10,
+   with the force factor and suspension nonlinear in the cone's travel, heard at 1 m in half
+   space; tested against Small's closed box, the Helmholtz tuning, Small's reference efficiency
+   and an independent complex solve (`test/cabinet-circuit.mjs`).
    The Wah's **Auto** mode landed 2026-11-01, at Jesse's ask: an envelope follower (a capacitor
    charged through an attack resistor by an ideal-diode rectifier, discharged through a decay
    resistor) rocks the wah from where the Rocker rests, up or down; tested against the follower's
