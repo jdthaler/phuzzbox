@@ -9,6 +9,7 @@ import { params, defaults, fmt, toUnit, fromUnit, nativeValue } from '../../shar
 import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
 import { midiPanel } from '../../shared/midi-panel.js';
+import { createLayout } from '../../shared/layout.js';
 // every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
 import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
 import { PEDAL as PHUZZ } from '../../phuzz/src/phuzz-pedal.js';
@@ -60,7 +61,6 @@ async function main(info, carry = {}) {
   });
   const streamPill = h('span', { class: 'pill', title: 'The sample rate and buffer, and the round trip the buffers make' }, '–');
   const cpu = h('span', { class: 'pill', title: 'The share of the audio thread\'s time the pedal takes' }, 'CPU –');
-  app.append(h('header', { class: 'top' }, h('span', { class: 'home' }, 'PhuzzBox'), h('h1', {}, pedalSel), h('span', { class: 'spacer' }), streamPill, cpu, status));
 
   // ---- audio: the interface, its channel, the output, the buffer, Full scale
   const inSel = h('select', { 'aria-label': 'Input' }, ...info.inputs.map((d) => h('option', { value: d.name }, d.name)));
@@ -71,20 +71,26 @@ async function main(info, carry = {}) {
   const measured = h('span', { class: 'pill', hidden: true });
   const ifaceSel = h('select', { 'aria-label': 'Audio interface' }, h('option', { value: '' }, 'Other interface'), ...INTERFACES.map((i) => h('option', { value: i.id }, i.name)));
   const gainInput = h('input', { type: 'number', min: 0, max: 62, step: 1, 'aria-label': 'Interface gain in decibels' });
-  const gainLabel = h('label', { class: 'inline' }, 'gain ', gainInput, ' dB');
+  const gainLabel = h('label', { class: 'inline' }, 'Gain ', gainInput, ' dB');
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, 'aria-label': 'Volts at full scale' });
   const volInput = h('input', { type: 'range', class: 'fader', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
   const volOut = h('output', {});
-  const audioCard = h('section', { class: 'card audiocard', 'aria-label': 'Audio' },
-    h('div', { class: 'audio-row' }, h('b', {}, 'Audio'),
-      h('label', { class: 'inline' }, 'In ', inSel), chanSel,
-      h('label', { class: 'inline' }, 'Out ', outSel),
-      h('label', { class: 'inline', title: 'Smaller is quicker; if you hear clicks, take the next size up' }, 'Buffer ', frameSel),
-      measureBtn, measured),
-    h('div', { class: 'audio-row' },
-      h('span', { class: 'inline', title: 'Choose your interface and type its gain, and Full scale comes from the maker\'s specification' }, ifaceSel, gainLabel),
-      h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale sample' }, 'Full scale ', fsInput, ' V'),
-      h('label', { class: 'inline', title: 'The level after the pedal, as a volume pedal sets it (a MIDI expression pedal moves it)' }, 'Volume ', volInput, volOut)));
+  // the audio, in the Controls panel: where it comes from and goes, and the buffer
+  const audioGroup = h('fieldset', { class: 'group rig audio-group' }, h('legend', {}, 'Audio'),
+    h('div', { class: 'row' }, h('label', {}, 'Input'), inSel, chanSel),
+    h('div', { class: 'row' }, h('label', {}, 'Output'), outSel),
+    h('div', { class: 'row', title: 'Smaller is quicker; if you hear clicks, take the next size up' }, h('label', {}, 'Buffer'), frameSel),
+    h('div', { class: 'measure-row' }, measureBtn, measured));
+  // the rig: what turns the samples into volts at the input jack
+  const rigGroup = h('fieldset', { class: 'group rig' }, h('legend', {}, 'Rig'),
+    h('div', { class: 'row' }, h('label', {}, 'Audio interface'), ifaceSel, gainLabel),
+    h('div', { class: 'row', title: 'How many volts at the input jack make a full-scale sample' }, h('label', {}, 'Full scale'), h('span', { class: 'inline' }, fsInput, ' V')),
+    h('p', { class: 'rig-note' }, 'Choose your interface and its gain, and Full scale comes from the maker\'s specification.'));
+  // the header: PhuzzBox, the pedal (its menu), then the stream, the CPU and the volume
+  const header = h('header', { class: 'top' },
+    h('div', { class: 'brand' }, h('span', { class: 'home' }, 'PhuzzBox'), h('h1', { class: 'pedal-head' }, pedalSel)),
+    h('div', { class: 'audio' }, streamPill, cpu,
+      h('label', { class: 'volume', title: 'The level after the pedal, as a volume pedal sets it (a MIDI expression pedal moves it)' }, 'Volume', volInput, volOut), status));
   inSel.value = audio.input || info.inputs[0]?.name || '';
   outSel.value = audio.output || info.outputs[0]?.name || '';
   frameSel.value = audio.frames;
@@ -171,15 +177,15 @@ async function main(info, carry = {}) {
   a4Input.addEventListener('change', () => { tuning.a4 = Math.min(466, Math.max(415, +a4Input.value || 440)); a4Input.value = tuning.a4; ui.a4 = tuning.a4; call('store', 'ui', ui); });
   const scale = h('div', { class: 't-scale', 'aria-hidden': 'true' }, h('span', { class: 't-zone' }),
     ...[-50, -25, 0, 25, 50].map((c) => { const t = h('span', { class: 't-tick' }, h('i', {}, c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0')); t.style.left = `${50 + c}%`; return t; }), tNeedle);
-  const tunerCard = h('figure', { class: 'card tunercard idle', 'aria-label': 'Tuner' },
-    h('figcaption', {}, h('b', {}, 'Tuner'), h('span', {}, 'the fundamental, in cents from A4 =', a4Input, 'Hz'), muteBtn),
+  const tunerCard = h('figure', { class: 'card tunercard idle', 'aria-label': 'Tuner', 'data-view': 'Tuner', 'data-keep-text': '' },
+    h('figcaption', {}, h('b', {}, 'Tuner'), h('span', { class: 'a4' }, 'A4 =', a4Input, 'Hz'), muteBtn),
     h('div', { class: 't-body' }, h('div', { class: 't-name', role: 'status' }, tNote, tOct), scale, h('div', { class: 't-read' }, tCents, tHz, tString)));
 
   // ---- Controls
-  const presetSel = h('select', { 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
+  const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
     h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)), h('option', { value: '__defaults' }, 'Default settings'));
   const rows = [];
-  const groupsEl = h('div', { class: 'groups' });
+  const groupList = [];
   for (const g of PEDAL.groups) {
     const box = h('fieldset', { class: 'group' }, h('legend', {}, g.name));
     for (const p of g.params) {
@@ -188,15 +194,14 @@ async function main(info, carry = {}) {
       if (p.type === 'checkbox') { input = h('input', { type: 'checkbox', class: 'switch', id: `p-${p.id}` }); input.addEventListener('change', () => set(p.id, input.checked)); }
       else if (p.type === 'select') { input = h('select', { id: `p-${p.id}` }, ...p.options.map(([v, l]) => h('option', { value: v }, l))); input.addEventListener('change', () => set(p.id, input.value)); }
       else { input = h('input', { type: 'range', class: 'fader', min: 0, max: 1000, step: 1, id: `p-${p.id}` }); input.addEventListener('input', () => set(p.id, fromUnit(p, input.value / 1000))); }
-      const hint = h('p', { class: 'hint', hidden: true }, p.hint ?? '');
-      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, onclick: () => hint.toggleAttribute('hidden') }, 'i') : null;
-      const row = h('div', { class: 'row' }, h('label', { for: `p-${p.id}` }, p.label), infoBtn, input, val, hint);
+      const row = h('div', { class: 'row', 'data-param': p.id });
+      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, 'aria-expanded': 'false', onclick: () => infoBtn.setAttribute('aria-expanded', String(row.classList.toggle('hint-open'))) }, 'i') : null;
+      row.append(h('label', { for: `p-${p.id}` }, p.label), infoBtn, input, val, p.hint ? h('p', { class: 'hint' }, p.hint) : null);
       rows.push({ p, row, input, val });
       box.append(row);
     }
-    groupsEl.append(box);
+    groupList.push({ key: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: g.name, el: box });
   }
-  const controls = h('section', { class: 'controls' }, h('div', { class: 'controls-bar' }, h('b', {}, 'Controls'), presetSel), groupsEl);
 
   // MIDI foot controllers: the site's card, its mappings kept in the settings file for each pedal
   const midiSaved = { ...(S.midi ?? {}) };
@@ -213,8 +218,21 @@ async function main(info, carry = {}) {
   for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
   midiHelp.textContent = 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and set it to Control Change mode. The app listens to every MIDI input. Learn, then move a pedal, teaches a row that pedal.';
 
-  app.append(audioCard, h('div', { class: 'stage' }, face, h('section', { class: 'views' }, tunerCard)), controls, midi.el,
-    h('footer', {}, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples. Space is the footswitch.`));
+  midi.el.classList.add('group');
+  // on one screen, as the site's pages and Forte's: the pedal at the left, the tuner, the
+  // Controls panel (the audio, the rig, the pedal's groups, the MIDI pedals) sharing the height
+  // under their bars; what is shown is kept in the settings file
+  const layoutSaved = { ...(S.layout ?? {}) };
+  const layoutStore = {
+    get: (k, d) => (k in layoutSaved ? layoutSaved[k] : d),
+    set: (k, v) => { layoutSaved[k] = v; call('store', 'layout', layoutSaved); },
+  };
+  createLayout({ id: PEDAL.id, h, store: layoutStore, app, header, share: 0.36,
+    rack: h('aside', { class: 'rack', 'data-view': 'Pedal' }, face),
+    views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true }],
+    groups: [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
+    presets: presetSel,
+    dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
   for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
 
   // ---- state

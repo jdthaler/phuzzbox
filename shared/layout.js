@@ -17,9 +17,10 @@
 // share: there the page scrolls, the rack and the views above the controls, the dock stuck to the
 // bottom. What is turned on is remembered per pedal; the mode and the share for every pedal.
 //
-//   const layout = createLayout({ id, h, store, app, header, rack, views, groups, presets, dock })
+//   const layout = createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share })
 //   views  = [{ key, name, card, on }]   (on: shown at first)
 //   groups = [{ key, name, el }]
+//   share  = the views' share of the height at first (0.6); store = { get(k, d), set(k, v) }
 //   returns { showViews(names | null), viewNames(), tourSlot, arrange() }
 
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -27,7 +28,7 @@ const CHEVRON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 1
 const SHARE = 0.6; // the views' usual share of the room the views and the controls have
 const phoneQuery = matchMedia('(max-width: 600px), (max-width: 1050px) and (max-height: 500px)'); // as layout.css
 
-export function createLayout({ id, h, store, app, header, rack, views, groups, presets, dock }) {
+export function createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share: first = SHARE }) {
   const body = document.body;
   body.classList.add('one-screen');
   const KEY = `phuzzbox.${id}.layout`;
@@ -38,7 +39,7 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
   const split = (() => {
     const s = store.get('phuzzbox.split', {}) ?? {};
     const ok = (v, d, ends) => (Number.isFinite(v) && v >= 0 && v <= 1 && (ends || (v > 0 && v < 1)) ? v : d);
-    return { views: ok(s.views, SHARE, true), open: ok(s.open, SHARE, false) };
+    return { views: ok(s.views, first, true), open: ok(s.open, first, false) };
   })();
   const saveSplit = () => store.set('phuzzbox.split', split);
   let mode = store.get('phuzzbox.mode', 'discover') === 'perform' ? 'perform' : 'discover';
@@ -170,7 +171,7 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
         const { moved, onHandle } = drag;
         drag = null; body.classList.remove('sharing');
         if (moved) { setShare(split.views); return; }
-        if (onHandle && e.timeStamp - tapped < 400) { tapped = 0; setShare(SHARE); } else tapped = onHandle ? e.timeStamp : 0;
+        if (onHandle && e.timeStamp - tapped < 400) { tapped = 0; setShare(first); } else tapped = onHandle ? e.timeStamp : 0;
       });
     }
     handle.addEventListener('keydown', (e) => {
@@ -228,7 +229,8 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
     arrange();
   }
   new ResizeObserver(() => arrange()).observe(stage);
-  phoneQuery.addEventListener?.('change', apply);
+  const onPhone = () => { if (stage.isConnected) apply(); else phoneQuery.removeEventListener?.('change', onPhone); };
+  phoneQuery.addEventListener?.('change', onPhone);
   apply();
 
   // a tour (shared/tour.js) shows only the views it is about (by title, any case), for a while;
