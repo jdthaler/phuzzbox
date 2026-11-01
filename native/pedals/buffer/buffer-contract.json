@@ -1,0 +1,22 @@
+{"slug": "buffer",
+ "params": [
+  {"id":"active","kind":"toggle","def":false},
+  {"id":"pickupL","kind":"continuous","min":0.5,"max":12,"step":0,"log":true,"def":3.6},
+  {"id":"pickupR","kind":"continuous","min":2000,"max":30000,"step":0,"log":true,"def":10500},
+  {"id":"pickupC","kind":"continuous","min":2e-11,"max":5e-10,"step":0,"log":true,"def":1e-10},
+  {"id":"pots","kind":"continuous","min":50000,"max":1000000,"step":0,"log":true,"def":125000},
+  {"id":"activeR","kind":"continuous","min":100,"max":10000,"step":0,"log":true,"def":1000},
+  {"id":"recCable","kind":"continuous","min":0.3,"max":30,"step":0,"log":true,"def":3},
+  {"id":"recLoad","kind":"continuous","min":100000,"max":10000000,"step":0,"log":true,"def":1000000},
+  {"id":"cablePF","kind":"continuous","min":3e-11,"max":3e-10,"step":0,"log":true,"def":1e-10},
+  {"id":"cable","kind":"continuous","min":0.3,"max":60,"step":0,"log":true,"def":3},
+  {"id":"load","kind":"continuous","min":5000,"max":10000000,"step":0,"log":true,"def":1000000},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"As plugged in","values":{"cable":3,"load":1000000,"level":0}},
+  {"name":"Vintage fuzz input (10 kΩ)","values":{"cable":3,"load":10000,"level":0}},
+  {"name":"Thirty metres of cable","values":{"cable":30,"load":1000000,"level":0}},
+  {"name":"Pedal by the bass (30 cm)","values":{"cable":0.3,"load":1000000,"level":0}},
+  {"name":"Old tube amp input (68 kΩ)","values":{"cable":6,"load":68000,"level":0}}
+ ]}
