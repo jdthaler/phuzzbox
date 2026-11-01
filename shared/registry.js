@@ -49,6 +49,11 @@ export const PEDALS = [
     after: 'the analog octave dividers of the 1980s',
     blurb: 'A comparator and two flip-flops that flip your bass\'s polarity once a cycle: an octave below, and two.',
   },
+  {
+    id: 'spring', name: 'Spring Reverb', version: '0.1.0', ready: true, plugin: { code: 'Sprg' },
+    after: 'the reverb tanks of guitar and organ amplifiers',
+    blurb: 'Steel springs from measured tanks, whose waves travel slower the higher they are: every echo comes back as a chirp.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

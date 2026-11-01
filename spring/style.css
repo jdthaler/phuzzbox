@@ -1,0 +1,8 @@
+/* the Spring Reverb's enclosure: the grey of an amplifier's reverb pan */
+:root { --enclosure: #3a3f47; --enclosure-ink: #eef1f5; }
+/* the echoes: on a phone, where the views stack at their own heights, a fixed height */
+.card .canvas.echoes { height: 240px; }
+body.one-screen .card .canvas.echoes { flex: 1 1 0; height: auto; min-height: 140px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.echoes { flex: none; height: 260px; }
+}

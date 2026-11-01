@@ -19,7 +19,8 @@ import { PEDAL as OPTO } from '../../opto/src/opto-pedal.js';
 import { PEDAL as CABINET } from '../../cabinet/src/cabinet-pedal.js';
 import { PEDAL as ENVELOPE } from '../../envelope/src/envelope-pedal.js';
 import { PEDAL as OCTAVE } from '../../octave/src/octave-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE].map((d) => [d.id, d]));
+import { PEDAL as SPRING } from '../../spring/src/spring-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

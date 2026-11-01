@@ -19,6 +19,7 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | ✅ | [Speaker Cabinet](cabinet/) | 8 × 10, 4 × 10, 2 × 10 and 1 × 15 bass cabinets | drivers from their Thiele–Small parameters, in a sealed or ported box, with the cones running out of travel on loud low notes |
 | ✅ | [Envelope Filter](envelope/) | the envelope-controlled filters of the 1970s | a state-variable filter whose resistors are photocells, lit by an LED that an envelope follower drives; the cells' electrons set how it sweeps and remembers |
 | ✅ | [Octave Down](octave/) | the analog octave dividers of the 1980s | a tracking filter, a comparator with hysteresis and two flip-flops that flip the bass's polarity every cycle or every other: one and two octaves down, with the real thing's warble and dropouts |
+| ✅ | [Spring Reverb](spring/) | the reverb tanks of guitar and organ amplifiers | steel springs from measured tanks as waves on a coil of wire, 2300 modes from their dispersion: every echo a chirp up to the transition frequency |
 
 ✅ playable · 🛠 in the workshop. The plan and the rest of the lineup are in
 [docs/ROADMAP.md](docs/ROADMAP.md).
