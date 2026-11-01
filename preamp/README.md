@@ -181,7 +181,7 @@ the Phuzz's, so the harmonics clipping makes above 20 kHz are filtered rather th
   axis where the tube cuts off.
 - **The tone stack**: the preamp's small-signal gain from what your interface records to the
   output, and the stack and Master alone.
-- **Scope** and **Spectrum**: the input and the output.
+- **Scope** and **Spectrum**: the input and the output, as on every page (their own How it works tabs say how they are made).
 
 ## What to listen for
 

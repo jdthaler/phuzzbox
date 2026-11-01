@@ -12,9 +12,15 @@ Part of [PhuzzBox](../README.md).
 
 **Time** runs across ten divisions of 5 ms, 50 ms in all: two periods of a low E (24.3 ms each),
 five of an open G. **Voltage** runs up and down, two divisions either side of zero, at 1, 2 or
-5 × 10ⁿ volts a division, chosen so the larger of the two traces fits. It steps up at once when
-you dig in, and back down only after a second of playing softer, so it doesn't pump; it never
-goes below 2 mV a division, so the hiss between notes stays small.
+5 × 10ⁿ volts a division, chosen so each trace's peak fits. A scale steps up at once when you dig
+in, and back down only after a second of playing softer, so it doesn't pump; it never goes below
+2 mV a division, so the hiss between notes stays small.
+
+Both traces share one scale while the two want scales within 2.5 times of each other (one step of
+1, 2, 5), so a pedal that passes the signal unchanged shows two lines on each other, and one that
+doubles it shows the output twice as tall. When a pedal has more gain than that (the Tube Preamp's,
+turned up), each trace gets its own scale, as the two channels of a bench scope do, and the label
+says both: in so many volts a division, out so many.
 
 The input is the line's voltage (the page converts the interface's numbers with the Full scale
 setting). The output is the pedal's output in volts, before the Volume fader. The two come from
@@ -55,7 +61,8 @@ dashed input.
 t = (2πk − φ) / ω, and checks that it finds the last one before the window to a thousandth of a
 sample; that with noise on a slow sine, hysteresis of a tenth of the swing finds only the true
 crossing where none would trigger on the noise; that a signal that never crosses its level gives
-no trigger; and that the volts a division are 1, 2 or 5 × 10ⁿ and never less than the peak needs.
+no trigger; that the volts a division are 1, 2 or 5 × 10ⁿ and never less than the peak needs; and
+that the two traces share a scale within one step of each other and part beyond it.
 
 ## What is simplified
 
@@ -67,7 +74,7 @@ no trigger; and that the volts a division are 1, 2 or 5 × 10ⁿ and never less 
 ## Files
 
 ```
-shared/views.js            scopeView, trigger and niceRange
+shared/views.js            scopeView, trigger, niceRange and sharedScale
 shared/shell.js            the analysers, and a Scope on every page that doesn't bring its own
 test/views-tests.mjs       node test/views-tests.mjs
 ```

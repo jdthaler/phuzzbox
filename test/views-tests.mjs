@@ -4,7 +4,7 @@
 
 import { readFileSync } from 'node:fs';
 import { check, done } from './harness.mjs';
-import { BLACKMAN_A0, PEAK_DB, trigger, niceRange, scopeView, spectrumView } from '../shared/views.js';
+import { BLACKMAN_A0, PEAK_DB, trigger, niceRange, sharedScale, scopeView, spectrumView } from '../shared/views.js';
 import { PEDALS } from '../shared/registry.js';
 
 const root = new URL('../', import.meta.url);
@@ -90,6 +90,9 @@ check(trigger((i) => 0.5 + 0.1 * Math.sin(i / 50), 8000, 0, 0.1) === -1, 'Scope:
   }
   check(ok, 'Scope: never less than the peak needs, and never more than 2.5 times it');
 }
+
+check(sharedScale(0.05, 0.1).join() === '0.1,0.1' && sharedScale(0.2, 0.5).join() === '0.5,0.5' && sharedScale(0.05, 0.5).join() === '0.05,0.5' && sharedScale(1, 0.2).join() === '1,0.2',
+  'Scope: the traces share a scale within one step of 1, 2, 5 of each other, and part beyond it');
 
 // ---- every page has them: the shell adds both to a pedal that doesn't bring its own
 {

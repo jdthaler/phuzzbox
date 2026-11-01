@@ -46,6 +46,13 @@ export function niceRange(x) {
   return (m <= 1 + 1e-9 ? 1 : m <= 2 + 1e-9 ? 2 : m <= 5 + 1e-9 ? 5 : 10) * p;
 }
 
+// The two traces' volts a division: the larger for both when they are within 2.5 times of each
+// other (one step of 1, 2, 5), each its own otherwise.
+export function sharedScale(dIn, dOut) {
+  const big = Math.max(dIn, dOut);
+  return big <= 2.5 * Math.min(dIn, dOut) * (1 + 1e-9) ? [big, big] : [dIn, dOut];
+}
+
 const volts = (v) => (v >= 1 ? `${+v.toPrecision(3)} V` : `${+(v * 1000).toPrecision(3)} mV`);
 const waiting = (g, box) => { g.fillStyle = css('--ink-2'); g.textAlign = 'center'; g.fillText('Start audio, then play', (box.l + box.r) / 2, (box.t + box.b) / 2 - 8); };
 
@@ -60,7 +67,8 @@ export function scopeView({ caption, ms = 50 } = {}) {
     mount(holder, api) {
       const canvas = document.createElement('canvas');
       holder.append(canvas);
-      let a = null, b = null, div = 0, shrink = 0;
+      let a = null, b = null;
+      const chIn = { div: 0, shrink: 0 }, chOut = { div: 0, shrink: 0 };
       animate(canvas, () => {
         const { g, w, h } = fit(canvas);
         g.clearRect(0, 0, w, h);
@@ -88,23 +96,33 @@ export function scopeView({ caption, ms = 50 } = {}) {
         let start = trigger(inp, n - span - 1, (lo + hi) / 2, 0.1 * (hi - lo));
         if (start < 0) start = n - span - 1; // free-running, as a scope with nothing to trigger on
         const s0 = Math.floor(start), frac = start - s0;
-        let m = 0;
-        for (let i = 0; i <= span; i++) m = Math.max(m, Math.abs(out(s0 + i)), Math.abs(b[ob + s0 + i]));
-        // volts a division: 1, 2 or 5 × 10ⁿ, so the trace's peak fits in the two divisions above the
-        // middle; it steps up at once, and down only after a second of wanting a smaller one, and
-        // is 2 mV at the least, so the hiss between notes doesn't fill the screen
-        const want = niceRange(Math.max(m / 2, 2e-3));
-        if (want >= div) { div = want; shrink = 0; } else if (++shrink > 60) { div = want; shrink = 0; }
-        const X = (i) => box.l + ((box.r - box.l) * (i - frac)) / span, Y = (v) => mid - ((box.b - box.t) / 4) * (v / div);
-        g.fillStyle = css('--ink-2'); g.textAlign = 'left';
-        g.fillText(`${volts(div)}/div`, box.l + 4, box.t + 12);
-        const trace = (get, color, width, dash) => {
+        // volts a division for each trace: 1, 2 or 5 × 10ⁿ, so its peak fits in the two divisions
+        // above the middle; each steps up at once, and down only after a second of wanting a
+        // smaller one, and is 2 mV at the least, so the hiss between notes doesn't fill the screen
+        let mIn = 0, mOut = 0;
+        for (let i = 0; i <= span; i++) { mOut = Math.max(mOut, Math.abs(out(s0 + i))); mIn = Math.max(mIn, Math.abs(inp(s0 + i))); }
+        for (const [c, m] of [[chIn, mIn], [chOut, mOut]]) {
+          const want = niceRange(Math.max(m / 2, 2e-3));
+          if (want >= c.div) { c.div = want; c.shrink = 0; } else if (++c.shrink > 60) { c.div = want; c.shrink = 0; }
+        }
+        // one scale for both, as a pedal that passes the signal unchanged should show two lines on
+        // each other, unless one needs more than 2.5 times the other's (a preamp's gain): then each
+        // its own, as on a two-channel scope
+        const [dIn, dOut] = sharedScale(chIn.div, chOut.div);
+        const X = (i) => box.l + ((box.r - box.l) * (i - frac)) / span;
+        const Y = (v, d) => mid - ((box.b - box.t) / 4) * (v / d);
+        g.textAlign = 'left';
+        if (dIn === dOut) { g.fillStyle = css('--ink-2'); g.fillText(`${volts(dOut)}/div`, box.l + 4, box.t + 12); } else {
+          g.fillStyle = css('--ink-2'); g.fillText(`in ${volts(dIn)}/div`, box.l + 4, box.t + 12);
+          g.fillStyle = css('--accent'); g.fillText(`out ${volts(dOut)}/div`, box.l + 4, box.t + 26);
+        }
+        const trace = (get, d, color, width, dash) => {
           g.strokeStyle = color; g.lineWidth = width; g.setLineDash(dash); g.beginPath();
-          for (let i = 0; i <= span; i++) { const y = Math.max(box.t, Math.min(box.b, Y(get(s0 + i)))); i ? g.lineTo(X(i), y) : g.moveTo(X(i), y); }
+          for (let i = 0; i <= span; i++) { const y = Math.max(box.t, Math.min(box.b, Y(get(s0 + i), d))); i ? g.lineTo(X(i), y) : g.moveTo(X(i), y); }
           g.stroke(); g.setLineDash([]);
         };
-        trace(inp, css('--ink-2'), 1.2, [4, 3]);
-        trace(out, css('--accent'), 2, []);
+        trace(inp, dIn, css('--ink-2'), 1.2, [4, 3]);
+        trace(out, dOut, css('--accent'), 2, []);
       });
     },
   };
