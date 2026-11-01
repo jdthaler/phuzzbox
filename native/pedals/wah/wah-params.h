@@ -15,7 +15,20 @@ enum Param : int {
   vcc = 5,
   blend = 6,
   level = 7,
-  kParamCount = 8
+  reversed = 8,
+  cable = 9,
+  outCable = 10,
+  load = 11,
+  active = 12,
+  pickupL = 13,
+  pickupR = 14,
+  pickupC = 15,
+  pots = 16,
+  activeR = 17,
+  recCable = 18,
+  recLoad = 19,
+  cablePF = 20,
+  kParamCount = 21
 };
 
 inline const char *const taperChoices[] = {"Audio (log)", "Linear"};
@@ -29,21 +42,36 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"vcc", "Supply", "Circuit", phuzzbox::ParamKind::continuous, 5.0, 12.0, 8.15, 0.0, false, "V", 1.0, 2},
   {"blend", "Clean blend", "Output", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.0, 0.0, false, "%", 100.0, 0},
   {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"reversed", "Reversed (plugged in backwards)", "Plugged in backwards", phuzzbox::ParamKind::toggle, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2},
+  {"cable", "Cable from the bass", "Plugged in backwards", phuzzbox::ParamKind::continuous, 0.3, 30.0, 3.0, 0.0, true, "m", 1.0, 1},
+  {"outCable", "Cable to the amp", "Plugged in backwards", phuzzbox::ParamKind::continuous, 0.3, 30.0, 3.0, 0.0, true, "m", 1.0, 1},
+  {"load", "Amp's input", "Plugged in backwards", phuzzbox::ParamKind::continuous, 10000.0, 10000000.0, 1000000.0, 0.0, true, "kΩ", 0.001, 0},
+  {"active", "Active electronics", "Plugged in backwards", phuzzbox::ParamKind::toggle, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2},
+  {"pickupL", "Pickup inductance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 0.5, 12.0, 3.6, 0.0, true, "H", 1.0, 2},
+  {"pickupR", "Pickup resistance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 2000.0, 30000.0, 10500.0, 0.0, true, "kΩ", 0.001, 1},
+  {"pickupC", "Pickup capacitance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 2e-11, 5e-10, 1e-10, 0.0, true, "pF", 1000000000000.0, 0},
+  {"pots", "Volume and tone pots", "Plugged in backwards", phuzzbox::ParamKind::continuous, 50000.0, 1000000.0, 125000.0, 0.0, true, "kΩ", 0.001, 0},
+  {"activeR", "Preamp output resistance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 100.0, 10000.0, 1000.0, 0.0, true, "kΩ", 0.001, 2},
+  {"recCable", "Your cable", "Plugged in backwards", phuzzbox::ParamKind::continuous, 0.3, 30.0, 3.0, 0.0, true, "m", 1.0, 1},
+  {"recLoad", "Your interface's input", "Plugged in backwards", phuzzbox::ParamKind::continuous, 100000.0, 10000000.0, 1000000.0, 0.0, true, "MΩ", 0.000001, 2},
+  {"cablePF", "Cable capacitance", "Plugged in backwards", phuzzbox::ParamKind::continuous, 3e-11, 3e-10, 1e-10, 0.0, true, "pF/m", 1000000000000.0, 0},
 };
 
-inline const phuzzbox::PresetValue kPreset0[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}};
-inline const phuzzbox::PresetValue kPreset1[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.4}};
-inline const phuzzbox::PresetValue kPreset2[] = {{2, 1e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}};
-inline const phuzzbox::PresetValue kPreset3[] = {{2, 4.7e-8}, {3, 100000.0}, {4, 0.5}, {6, 0.2}};
-inline const phuzzbox::PresetValue kPreset4[] = {{2, 2.2e-8}, {3, 15000.0}, {4, 0.5}, {6, 0.2}};
+inline const phuzzbox::PresetValue kPreset0[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}, {8, 0.0}};
+inline const phuzzbox::PresetValue kPreset1[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.4}, {8, 0.0}};
+inline const phuzzbox::PresetValue kPreset2[] = {{2, 1e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}, {8, 0.0}};
+inline const phuzzbox::PresetValue kPreset3[] = {{2, 4.7e-8}, {3, 100000.0}, {4, 0.5}, {6, 0.2}, {8, 0.0}};
+inline const phuzzbox::PresetValue kPreset4[] = {{2, 2.2e-8}, {3, 15000.0}, {4, 0.5}, {6, 0.2}, {8, 0.0}};
+inline const phuzzbox::PresetValue kPreset5[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}, {8, 1.0}};
 inline const phuzzbox::Preset kPresets[] = {
-  {"Bass wah (22 nF)", kPreset0, 4},
-  {"Bass wah, bottom kept", kPreset1, 4},
-  {"Guitar wah as built (10 nF)", kPreset2, 4},
-  {"Deep and vocal (47 nF, 100 kΩ)", kPreset3, 4},
-  {"Gentle (15 kΩ)", kPreset4, 4},
+  {"Bass wah (22 nF)", kPreset0, 5},
+  {"Bass wah, bottom kept", kPreset1, 5},
+  {"Guitar wah as built (10 nF)", kPreset2, 5},
+  {"Deep and vocal (47 nF, 100 kΩ)", kPreset3, 5},
+  {"Gentle (15 kΩ)", kPreset4, 5},
+  {"Plugged in backwards", kPreset5, 5},
 };
-inline constexpr int kPresetCount = 5;
+inline constexpr int kPresetCount = 6;
 inline constexpr int kExpression = 0;
 
 } // namespace wah

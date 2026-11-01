@@ -61,4 +61,18 @@ The classic value is 33 kΩ. **Q** on the pedal's face is that resistor.`,
 
 Bass wahs add a **Clean blend** pot, which mixes the dry signal back in under the wah. Halfway it goes to 40 %: the bottom comes back, and the sweep rides on top of it.`,
   },
+  {
+    title: 'Plugged in backwards',
+    views: ['The sweep', 'Spectrum'],
+    preset: 'Plugged in backwards',
+    set: { position: 0 },
+    play: [
+      sweep('position', 0, 0.85, { at: 0.5, dur: 6, steps: 40 }),
+      sweep('position', 0.85, 0, { at: 7, dur: 3, steps: 20 }),
+      riff({ at: 10.5 }),
+    ],
+    text: `Your bass into the wah's output jack, its input jack to the amp. The signal runs the loop the other way, from the pot's wiper through Q2 and the coil to Q1's base, and out of the input jack. But Q1 still drives the output jack, where the pickup's coil now hangs, and the coil's inductance turns the loop's phase round: from a passive bass, the loop oscillates on its own.
+
+That is the seagull of a wah plugged in backwards. Heel down it squeals near 880 Hz; rocked forward it climbs to 1.16 kHz by 60 % and fades, and past about three quarters of the travel it stops. Then the riff, heel down: the notes shake the squeal rather than replacing it. Bypassed, the true-bypass switch joins the jacks, and it plays the same either way round. From an active bass it would not squeal at all.`,
+  },
 ]);

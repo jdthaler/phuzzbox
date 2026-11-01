@@ -180,6 +180,16 @@ the Phuzz's, so the harmonics clipping makes above 20 kHz are filtered rather th
   break up later than the high ones.
 - **Tired tubes, low rail**: less emission, less headroom, an earlier and softer break-up.
 
+## Plugged in backwards
+
+No **Reversed** switch here either (the [Wah](../wah/README.md) has one). Backwards, the bass would
+drive the Master pot and, through the tone stack, the cathode follower's cathode, which the follower
+holds at its 615 Ω. From there back to the input jack is three triodes the wrong way round. A
+triode passes its grid's voltage to its plate, and back only through the 2.4 pF between them, and
+this model has those capacitances: by them, what reaches the input jack is far below any
+interface's hiss. A real amp's wiring would let a little more through, but still almost nothing.
+The switch would only be a mute.
+
 ## What is simplified
 
 - The triodes are fitted to static measurements: no transit time, and their capacitances are

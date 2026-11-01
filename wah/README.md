@@ -96,6 +96,55 @@ The controls:
   circuit leaves 100 Hz about 11 dB down, wherever the rocker is.
 - **Level**: gain after it all. The peak is 18–27 dB above the input, as the real pedal's is; turn
   this down if engaging it jumps.
+- **Reversed**, in **Plugged in backwards**: your bass into the output jack and the input jack to
+  the amp (see [Plugged in backwards](#plugged-in-backwards)). It brings in the bass's pickup, the
+  cables and the amp's input, as the Phuzz has them.
+
+## Plugged in backwards
+
+Swap the cables on a wah, the bass into its output and its input to the amp, and it still makes a
+sound, though not a wah's. Guitarists have known this since the 1960s: JAM Pedals' Seagull is
+sold on the story that a roadie plugged David Gilmour's wah in backwards, and a player who did it
+by accident to a Cry Baby describes an ear-piercing noise that the rocker and the guitar's volume
+knob both played.
+
+The footswitch is a true bypass, a switch that joins the two jacks with a wire, so bypassed the
+pedal plays the same either way round. Engaged, the bass drives node 8, the top of the pot, where
+Q1's collector meets the output. The signal can only go one way from there: through the wiper and
+C5 to Q2, which drives the top of the coil through C3; the coil's current reaches Q1's base
+through R6; and the base reaches the input jack through C1 and R1, into the cable and the amp. The
+loop that makes the resonance has become the signal's path.
+
+But Q1 still amplifies its base back onto node 8, and node 8 now has the bass on it. Plugged in
+the right way round, node 8 drives the pot and the next input; backwards, the pickup's coil hangs
+on it too, 10.5 kΩ and 3.6 H, whose inductance turns the phase of what Q1 sends round the loop. From
+a passive bass, the loop comes back larger than it left at the frequency where its phase has come
+round, and the circuit oscillates on its own. The tests find it two ways: the circuit's linearised
+equations, written out independently and stepped by backward Euler, have a disturbance that grows
+(e-fold in about 3 ms heel down, 358 per second, at 401 Hz), and the engine, from silence, squeals
+within 40 ms, over exactly the same part of the rocker's travel.
+
+The transistors' exponentials limit how far it grows, and the rocker plays it: about 880 Hz and
+2 V heel down, rising to 1.16 kHz and quietening to 0.36 V at 60 %, and gone past about three
+quarters of the travel, where the wiper passes Q2 too little for the loop to sustain itself. That
+is the seagull: pitched by your foot, a few semitones of glide, buzzy with harmonics (the second
+only a few decibels below the first). **Range** moves it as it moves the sweep, heel down 1.25 kHz
+with the guitar wah's 10 nF and 553 Hz with 47 nF. A low note played into it does not make it
+louder: it shakes it, spreading it into sidebands spaced by the note's frequency, more the harder
+you play.
+
+From an **active** bass it does not squeal: its preamp holds the jack with about 1 kΩ, and Q1
+cannot swing it. What is left is a filter, the bass reaching the amp through the loop: heel down a
+peak at 931 Hz, 11.2 dB above the input; at halfway 1.39 kHz, 6.4 dB below it; toe down 1.52 kHz,
+42.5 dB below, where the wiper passes almost nothing.
+
+The bass is the Buffer's pickup, a Norton source as the Phuzz has it: the current that, into what
+your interface's recording saw (the coil, the cables' capacitance, the pots, the interface), makes
+the voltage it recorded, put into the wah's output jack instead. The input jack drives the cable to
+the amp through R1's 68 kΩ: 30 m of cable takes the squeal down by about 7 dB, and an input of
+10 kΩ by about 18 dB. The cable from the bass hardly matters, since the circuit loads its jack so
+heavily. **The sweep** shows the squeal's pitch while it squeals, since then there is no steady
+response to draw, and the filter's response from an active bass, far lower than the wah's.
 
 ## Playing it with your feet
 
@@ -127,6 +176,8 @@ Volume pedal and Bypass by the same defaults.
   fundamental.
 - **Bass wah, bottom kept**: the blend keeps the note's weight under the vowel.
 - **Q at 100 kΩ**: nasal and vocal; at 15 kΩ a gentle tone control.
+- **Plugged in backwards**: the seagull. Rock it slowly from the heel: the squeal climbs and fades,
+  and stops past three quarters. Dig into a low note and hear it shake the squeal.
 
 ## What is simplified
 
@@ -143,6 +194,14 @@ Volume pedal and Bypass by the same defaults.
 - Nothing is oversampled. The junctions bend gently, and their harmonics of a bass note sit far
   below Nyquist.
 - The rocker's glide is a first-order lag of 10 ms, not a model of a gear and a pedal's mass.
+- Plugged in backwards: a real pickup's losses (eddy currents in its pole pieces and cover) damp
+  it more than its wire's resistance alone does. The loop grows by hundreds per second, far past the
+  edge, so they would not stop the squeal, but they would move where it gives out near three
+  quarters of the travel. The squeal's harmonics are stronger than a note's and nothing is
+  oversampled, but by 20 kHz they are 60 dB down, and at four times the rate it comes out the same
+  within 2 dB harmonic by harmonic. The bass's volume pot is part of the one resistance to ground
+  here, so the volume knob guitarists play the squeal with is not modelled. The Clean blend is not
+  part of the circuit model, so backwards it is off.
 
 ## Files
 
@@ -178,6 +237,12 @@ test/wah-tests.mjs                       node test/wah-tests.mjs
   [link](https://music-electronics-forum.com/forum/effectification/guitar-effects/923600-a-%E2%80%9Evox-wah%E2%80%9C-project-some-circuit-analysis-and-measuring-results?p=923939).
   Measured peaks of real pedals (about 433 Hz heel down, 2.22 kHz toe down with 10 nF and a
   510 mH coil), the parts' roles, and their coils' inductance against frequency.
+* JAM Pedals, The Seagull, at [Perfect Circuit](https://www.perfectcircuit.com/jam-pedals-the-seagull.html):
+  a pedal that "recreates the classic reversed-wah effect", after the story that "a roadie plugged
+  in David Gilmour's wah pedal backwards".
+* "So I accidentally mixed up the instrument and amplifier cables on my Crybaby," Gibson forum
+  (thread). [link](https://forum.gibson.com/topic/38360-so-i-accidentally-mixed-up-the-instrument-amplifier-cables-on-my-crybaby).
+  "An ear-piercing noise", "controllable by both the wah pedal and volume knob on the guitar".
 * Roland FC-300 MIDI Foot Controller Owner's Manual, "Control Change mode," pp. 21–22.
   [link](https://www.manualsdir.com/manuals/202040/roland-fc-300.html?page=21). The factory CC
   numbers the MIDI defaults follow.

@@ -18,6 +18,15 @@
 // through R6. The more of Q1's swing the wiper passes back (heel down, α small), the larger the
 // sweep capacitor looks from the coil (Miller), and the lower and sharper the resonance. The DC
 // bias comes from Q1's collector through R4, the coil and R6 to its base.
+//
+// Plugged in backwards (the Reversed switch), the bass drives the output jack (node 8) and the input
+// jack (node 1) drives the cable to the amp. The bass is its pickup, as the Phuzz and the Tube
+// Preamp have it: a Norton current (what the recorded voltage drove into the recording's circuit)
+// into the coil's resistance and inductance (8 → 14 → ground), its own capacitance and the cable's,
+// and its pots; node 1 has the amp's cable and input to ground. The signal then runs the loop the
+// other way: the wiper passes the bass to Q2, which drives the coil through C3; the coil's current
+// reaches Q1's base through R6, and the base reaches the input jack through C1 and R1. Q1 still
+// amplifies its base onto node 8, against the pickup's impedance.
 #pragma once
 
 #include <cmath>
@@ -27,15 +36,17 @@
 namespace wah {
 
 // the nodes, numbered as the paper's
-enum Node : int { IN = 1, N2, BASE1, COLL1, EMIT1, N6, N7, OUT, WIPER, BASE2, COLL2, EMIT2, VCC };
+enum Node : int { IN = 1, N2, BASE1, COLL1, EMIT1, N6, N7, OUT, WIPER, BASE2, COLL2, EMIT2, VCC, COIL };
 
-// the parts that change: their indices in the netlist
-struct Parts { int potUpper, potLower, qR, sweepC, inductor; };
+// the parts that change: their indices in the netlist (the bass's and the amp's, plugged in
+// backwards only; −1 otherwise)
+struct Parts { int potUpper, potLower, qR, sweepC, inductor; int coilR = -1, coilL = -1, jackC = -1, pots = -1, ampC = -1, amp = -1; };
 
 constexpr double POT = 100e3;               // Ω: the rocker's pot
 constexpr double ALPHA_HEEL = 0.008, ALPHA_TOE = 0.999; // the wiper's travel in the enclosure (the paper's)
 // transistors (the paper's Ebers–Moll parameters)
 constexpr double IS = 20.3e-15, BETA_F = 1430, BETA_R = 4, VT = 0.026;
+constexpr double L_ACTIVE = 1e-6; // H: an active bass's output has no coil; a microhenry stands in (0.1 Ω at 20 kHz)
 
 // The wiper's position α from the top of the pot (heel down: near 0, the most feedback) for the
 // rocker's position x (0 heel, 1 toe). A linear pot's wiper follows x; an audio pot's lower part,
@@ -48,8 +59,16 @@ inline double alpha(double x, bool audio) {
 }
 double alpha(const double *P); // from the parameters
 
-phuzzbox::dk::Netlist netlist(const double *P, Parts &parts);
+// The circuit. Forward: voltage source 0 the input (u[0], volts), 1 the supply (u[1]); the output
+// is node 8. Backwards: voltage source 0 the supply (u[0]), current source 0 the bass's Norton
+// current into node 8 (u[1], amperes); the outputs are node 1 (what the amp gets) and node 8.
+phuzzbox::dk::Netlist netlist(const double *P, Parts &parts, bool backwards = false);
+bool backwards(const double *P); // the Reversed switch
 // set the parts the parameters change on a circuit made from netlist()
 void apply(phuzzbox::dk::Circuit &c, const Parts &parts, const double *P, double alpha);
+
+// what the recording saw of the bass: its coil, every capacitance and conductance across the jack
+struct Recording { double coilR, coilL, C, G; };
+Recording recording(const double *P);
 
 } // namespace wah
