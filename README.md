@@ -148,7 +148,7 @@ A MIDI foot controller works in the app as on the pages: the app listens to ever
 footswitch and the tuner's mute), each pedal keeping its own mappings.
 
 Download it, or the plugins, from the Plugins tab of How it works on any page (`plugins/README.md`
-says how to install them); CI builds it on every pull request too (the `native` workflow's
+says how to install them); CI builds it on every pull request that changes `native/` too (the `native` workflow's
 `PhuzzBox-app-macos-15` artifact).
 The app isn't notarised, so after unzipping it, clear the quarantine flag macOS puts on downloads
 (`xattr -dr com.apple.quarantine PhuzzBox.app`), then open it. macOS asks once for the
