@@ -10,6 +10,7 @@
 #include <string_view>
 #include <vector>
 
+#include "phuzzbox/dryline.h"
 #include "phuzzbox/pedal.h"
 
 namespace phuzzbox::app {
@@ -61,6 +62,7 @@ class Engine {
   std::atomic<bool> dirty{true};
   std::vector<float> v, L, R;
   double wet = 1, level = 1; // the footswitch's crossfade, and the volume as it glides to gain
+  DryLine dry;               // the dry signal, as late as the pedal (its latency)
 
   std::vector<float> keep;        // a ring of the input, in volts
   std::atomic<int> keepAt{0};     // where the next sample goes

@@ -255,6 +255,22 @@ if (!CI) {
     e.destroy();
     check(share < budget, `CPU: ${q} quality under ${(100 * budget).toFixed(0)} % of a core (WebAssembly)`, `${(100 * share).toFixed(1)} %`);
   }
+  // the silence after a note costs what silence from rest does: the oversampler's filters, ringing
+  // down, would otherwise sit among denormal numbers (which WebAssembly can't flush to zero)
+  const silence = (afterNote) => {
+    const e = new Effect(fs);
+    e.setParams(W({}));
+    const z = new Float32Array(fs), L = new Float32Array(fs), R = new Float32Array(fs);
+    if (afterNote) e.process(inp.subarray(0, fs), L, R);
+    e.process(z, L, R); e.process(z, L, R); // two seconds to ring down
+    const t0 = performance.now();
+    for (let s = 0; s < 3; s++) e.process(z, L, R);
+    const ms = (performance.now() - t0) / 3;
+    e.destroy();
+    return ms;
+  };
+  const rest = silence(false), late = silence(true);
+  check(late < 2 * rest + 5, 'CPU: the silence after a note costs what silence from rest does (no denormals)', `${late.toFixed(0)} ms a second after a note, ${rest.toFixed(0)} ms from rest`);
 }
 
 done();

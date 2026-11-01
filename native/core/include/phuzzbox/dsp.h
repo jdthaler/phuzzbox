@@ -23,6 +23,10 @@ struct Biquad {
     return y;
   }
   void reset() { z1 = z2 = 0; }
+  // A filter left to ring down in silence reaches denormal numbers, which on x86 cost a hundred
+  // times a normal one; WebAssembly can't flush them to zero (denormals.h does it natively), and a
+  // recursive filter can sit among them for good. A state under 1e-30 is inaudible: zero it.
+  void flush() { if (std::abs(z1) < 1e-30) z1 = 0; if (std::abs(z2) < 1e-30) z2 = 0; }
 };
 
 // The bilinear transform of an analog section, s = c (1 − z⁻¹)/(1 + z⁻¹), with c = ω₀ / tan(ω₀ T/2)
