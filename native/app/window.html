@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Phuzzbox</title>
+  <title>PhuzzBox</title>
   <style>
 /* ---- shared/pedal.css */
 /* pedal.css — every page: a dark stage, as Forte's, and the hardware drawn as hardware: the pedal's
@@ -293,7 +293,7 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
 body.one-screen { height: 100vh; height: 100dvh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
 body.one-screen #app { max-width: none; height: 100%; padding: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 
-/* the header: Phuzzbox, the pedal (its menu), How it works; then the audio */
+/* the header: PhuzzBox, the pedal (its menu), How it works; then the audio */
 body.one-screen header.top { padding: max(8px, env(safe-area-inset-top)) 14px 8px; gap: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); position: relative; z-index: 5; }
 body.one-screen header.top .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
 body.one-screen header.top .home {
@@ -475,17 +475,34 @@ body.perform .controls-bar { cursor: default; }
 /* the Wah's enclosure: a black rocker on a dark chrome case */
 :root[data-pedal="wah"] { --enclosure: #2b2b2e; --enclosure-ink: #f2efe8; }
 
+/* ---- preamp/style.css */
+/* the Tube Preamp's enclosure: the tweed of the amp it comes from, a lacquered tan */
+:root[data-pedal="preamp"] { --enclosure: #b08a55; --enclosure-ink: #2a1d10; }
+/* the tubes' view: one plot of all three triodes; on a phone, where the views stack at their
+   own heights, a fixed height */
+.card .canvas.tubes { height: 260px; }
+body.one-screen .card .canvas.tubes { flex: 1 1 0; height: auto; min-height: 90px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.tubes { flex: none; height: 300px; }
+}
+
 /* ---- native/app/app.css */
-/* app.css — the app window's own styles, after the site's shared/pedal.css. */
-.audiocard { margin: 0 0 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; }
-.audio-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-.audio-row .inline { font-size: 13px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
-.audio-row select { max-width: 260px; }
-.audio-row input[type="number"] { width: 70px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+/* app.css — the app window's own styles, after the site's shared/pedal.css (whose one-screen
+   layout, from shared/layout.js, the window uses as the pages do). */
+/* the pedal's name is the menu that picks it, drawn as the pages' pedal menu */
 header.top .home { cursor: default; }
-/* the pedal's name is the menu that picks it */
-header.top h1 .pedal-pick { font: inherit; color: inherit; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0 4px; margin: 0 -4px; cursor: pointer; }
-header.top h1 .pedal-pick:hover, header.top h1 .pedal-pick:focus-visible { border-color: var(--line); }
+header.top h1.pedal-head { margin: 0; }
+header.top h1 .pedal-pick {
+  font: 700 19px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; color: inherit; padding: 3px 28px 3px 10px; border-radius: 8px;
+  border: 1px solid var(--line); background: linear-gradient(90deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0)); cursor: pointer;
+}
+header.top h1 .pedal-pick:hover, header.top h1 .pedal-pick:focus-visible { border-color: var(--accent); }
+/* the audio group: the input and its channel side by side */
+body.one-screen .audio-group .row > select + select { grid-area: value; min-width: 84px; }
+body.one-screen .audio-group .row > select { max-width: 100%; }
+.measure-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 8px; }
+/* the foot of the window: a line, where the pages have the test bass */
+body.one-screen .dock.app-foot { padding: 6px 14px; font-size: 12px; color: var(--ink-2); }
 
   </style>
 </head>
@@ -941,8 +958,261 @@ function midiPanel({ PEDAL, h, store, key, ui }) {
 return { midiPanel };
 })();
 
+// ---- shared/layout.js
+const __m6 = (() => {
+
+// layout.js — the layout of every pedal page, after Forte's (github.com/jdthaler/forte,
+// shared/layout.js): the page fills the screen, with nothing to scroll but the panels themselves.
+//
+//   header    PhuzzBox, the pedal's name (the menu of pedals), How it works; audio on the right
+//   rack      the pedal itself, on the left, the height of the page (a toggle in the views' bar)
+//   views     a bar, then the views turned on, sharing the room in rows. The bar has a toggle for
+//             each (the pedal, the tuner and the page's views), then Discover | Perform and a
+//             button that folds the views away
+//   controls  a bar, then the Controls panel: the pedal's groups of parameters, the rig (the
+//             interface and Full scale) and the MIDI pedals, side by side. The bar has a toggle
+//             for each group, the presets and a fold button; its top edge is a handle that shares
+//             the height between the views and the controls
+//   dock      the test bass, pinned to the bottom, shown while it is the input
+//
+// Perform is for playing: the views turned on fill the room with no captions and no text drawn
+// on their canvases, the Controls panel folded away until More controls. A phone has no room to
+// share: there the page scrolls, the rack and the views above the controls, the dock stuck to the
+// bottom. What is turned on is remembered per pedal; the mode and the share for every pedal.
+//
+//   const layout = createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share })
+//   views  = [{ key, name, card, on }]   (on: shown at first)
+//   groups = [{ key, name, el }]
+//   share  = the views' share of the height at first (0.6); store = { get(k, d), set(k, v) }
+//   returns { showViews(names | null), viewNames(), tourSlot, arrange() }
+
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const CHEVRON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6"/></svg>';
+const SHARE = 0.6; // the views' usual share of the room the views and the controls have
+const phoneQuery = matchMedia('(max-width: 600px), (max-width: 1050px) and (max-height: 500px)'); // as layout.css
+
+function createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share: first = SHARE }) {
+  const body = document.body;
+  body.classList.add('one-screen');
+  const KEY = `phuzzbox.${id}.layout`;
+  const saved = store.get(KEY, {}) ?? {};
+  const flags = (o) => Object.fromEntries(Object.entries(o && typeof o === 'object' ? o : {}).filter(([, v]) => typeof v === 'boolean'));
+  const prefs = { views: flags(saved.views), groups: flags(saved.groups), moreControls: saved.moreControls === true };
+  const save = () => store.set(KEY, prefs);
+  const split = (() => {
+    const s = store.get('phuzzbox.split', {}) ?? {};
+    const ok = (v, d, ends) => (Number.isFinite(v) && v >= 0 && v <= 1 && (ends || (v > 0 && v < 1)) ? v : d);
+    return { views: ok(s.views, first, true), open: ok(s.open, first, false) };
+  })();
+  const saveSplit = () => store.set('phuzzbox.split', split);
+  let mode = store.get('phuzzbox.mode', 'discover') === 'perform' ? 'perform' : 'discover';
+  const performing = () => mode === 'perform';
+  let touring = null; // a tour's views, shown for a while without changing the player's choice
+
+  // ---- the bars
+  function bar(kind, label, panel) {
+    const row = h('div', { class: 'toggles', role: 'group', 'aria-label': `${label} to show` }, h('span', { class: 'toggles-label' }, label));
+    const tools = h('div', { class: 'bar-tools' });
+    const fold = h('button', { type: 'button', class: 'fold', 'aria-controls': panel.id });
+    fold.innerHTML = CHEVRON;
+    const el = h('div', { class: `bar ${kind}-bar` }, row, tools, fold);
+    return { el, row, tools, fold };
+  }
+  const toggle = (name, title, on, click) => {
+    const b = h('button', { type: 'button', 'aria-pressed': String(on), title }, name);
+    b.addEventListener('click', () => { click(); b.blur(); });
+    return b;
+  };
+
+  // ---- the views: the rack (the pedal) first, then the cards in a stage
+  const viewsEl = h('section', { class: 'views', id: 'views', 'aria-label': 'Views' });
+  const stage = h('div', { class: 'view-grid' });
+  const noView = h('p', { class: 'no-view', hidden: true }, 'Every view is off: turn one on above.');
+  stage.append(...views.map((v) => v.card), noView);
+  viewsEl.append(stage);
+  const pedalView = { key: 'pedal', name: 'Pedal', card: rack, on: true };
+  const all = [pedalView, ...views];
+  for (const v of all) v.shown = () => (touring && v !== pedalView ? touring.has(v.name.toLowerCase()) : prefs.views[v.key] ?? v.on);
+  const vbar = bar('views', 'Views', viewsEl);
+  for (const v of all) {
+    v.toggle = toggle(v.name, 'Show or hide this view', v.shown(), () => {
+      if (touring && v !== pedalView) { const n = v.name.toLowerCase(); if (!touring.delete(n)) touring.add(n); } else { prefs.views[v.key] = !v.shown(); save(); }
+      apply();
+    });
+    vbar.row.append(v.toggle);
+  }
+  // Discover | Perform
+  const modeBtns = ['discover', 'perform'].map((m) => toggle(m === 'discover' ? 'Discover' : 'Perform',
+    m === 'discover' ? 'Every view with its explanations, and the Controls panel' : 'The views fill the room, with no text in them; the controls wait behind More controls',
+    mode === m, () => { mode = m; store.set('phuzzbox.mode', m); apply(); }));
+  vbar.tools.append(h('div', { class: 'mode', role: 'group', 'aria-label': 'Mode' }, ...modeBtns));
+
+  // ---- the controls
+  const controlsEl = h('section', { class: 'controls', id: 'controls', 'aria-label': 'Controls' });
+  const noGroup = h('p', { class: 'no-view', hidden: true }, 'Every group of controls is off: turn one on above.');
+  const groupsEl = h('div', { class: 'groups' }, ...groups.map((g) => g.el));
+  controlsEl.append(noGroup, groupsEl);
+  const cbar = bar('controls', 'Controls', controlsEl);
+  for (const g of groups) {
+    g.shown = () => prefs.groups[g.key] ?? true;
+    g.toggle = toggle(g.name, 'Show or hide these controls', g.shown(), () => { prefs.groups[g.key] = !g.shown(); save(); apply(); });
+    cbar.row.append(g.toggle);
+  }
+  if (presets) cbar.tools.append(presets);
+
+  // the page: the header, the work (the rack beside the views and the controls), the dock
+  const work = h('div', { class: 'work' }, rack, vbar.el, viewsEl, cbar.el, controlsEl);
+  app.replaceChildren(header, work, dock);
+
+  // ---- the views share the stage in rows, as even as they go: as many abreast (up to four) as
+  // gives each the most room, so a short stage puts them side by side and a tall one stacks them
+  const GAP = 12, ASPECT = 1.6, NARROWEST = 240;
+  let cols = 1;
+  function columns(n) {
+    if (phoneQuery.matches) return matchMedia('(orientation: portrait)').matches ? 1 : Math.min(n, 2);
+    const W = stage.clientWidth, H = stage.clientHeight;
+    if (!W || !H) return null;
+    let best = 1, room = 0;
+    for (let c = 1; c <= Math.min(n, 4); c++) {
+      const r = Math.ceil(n / c), w = (W - GAP * (c - 1)) / c, hh = (H - GAP * (r - 1)) / r;
+      if (c > 1 && w < NARROWEST) break;
+      const fit = Math.min(w / ASPECT, hh);
+      if (fit > room + 1) { room = fit; best = c; }
+    }
+    return best;
+  }
+  function arrange() {
+    const on = views.filter((v) => v.shown()), n = on.length;
+    cols = columns(n) ?? cols;
+    const rows = Math.ceil(n / Math.max(1, Math.min(cols, n)));
+    let i = 0;
+    for (let r = 0; r < rows; r++) {
+      const k = Math.ceil((n - i) / (rows - r));
+      for (let j = 0; j < k; j++, i++) on[i].card.style.gridColumn = `span ${12 / k}`;
+    }
+    stage.style.setProperty('--rows', Math.max(1, rows));
+    noView.hidden = n > 0;
+  }
+
+  // ---- sharing the height: the views' share (0 folds them away, 1 the controls)
+  function share() {
+    if (performing()) return prefs.moreControls ? (phoneQuery.matches ? 0 : split.views > 0 && split.views < 1 ? split.views : split.open) : 1;
+    return touring && split.views === 0 ? split.open : split.views;
+  }
+  function setShare(v, keep = true) {
+    split.views = clamp(v, 0, 1);
+    if (keep) { if (split.views > 0 && split.views < 1) split.open = split.views; saveSplit(); }
+    apply();
+  }
+  const handle = h('div', { class: 'split', tabindex: 0, role: 'separator', 'aria-orientation': 'horizontal', 'aria-controls': 'views controls',
+    'aria-label': 'Share the height between the views and the controls', 'aria-valuemin': 0, 'aria-valuemax': 100,
+    title: 'Drag to share the height between the views and the controls (double-click: as it was)' });
+  cbar.el.prepend(handle);
+  {
+    const SNAP = 56;
+    let drag = null, tapped = 0;
+    cbar.el.addEventListener('pointerdown', (e) => {
+      if (performing() || phoneQuery.matches || e.button > 0) return;
+      if (e.target !== handle && e.target.closest('button, select, input, a, label')) return;
+      e.preventDefault();
+      try { cbar.el.setPointerCapture(e.pointerId); } catch { /* gone */ }
+      const v = viewsEl.getBoundingClientRect().height, c = controlsEl.getBoundingClientRect().height;
+      drag = { id: e.pointerId, y: e.clientY, v: viewsEl.hidden ? 0 : v, total: (viewsEl.hidden ? 0 : v) + (controlsEl.hidden ? 0 : c), moved: false, onHandle: e.target === handle };
+      body.classList.add('sharing');
+    });
+    cbar.el.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id || !drag.total) return;
+      if (Math.abs(e.clientY - drag.y) > 3) drag.moved = true;
+      if (!drag.moved) return;
+      let v = clamp(drag.v + e.clientY - drag.y, 0, drag.total);
+      if (v < SNAP) v = 0; else if (drag.total - v < SNAP) v = drag.total;
+      setShare(v / drag.total, false);
+    });
+    for (const ev of ['pointerup', 'pointercancel']) {
+      cbar.el.addEventListener(ev, (e) => {
+        if (!drag || e.pointerId !== drag.id) return;
+        const { moved, onHandle } = drag;
+        drag = null; body.classList.remove('sharing');
+        if (moved) { setShare(split.views); return; }
+        if (onHandle && e.timeStamp - tapped < 400) { tapped = 0; setShare(first); } else tapped = onHandle ? e.timeStamp : 0;
+      });
+    }
+    handle.addEventListener('keydown', (e) => {
+      const to = { ArrowUp: split.views - 0.05, ArrowDown: split.views + 0.05, Home: 0, End: 1 }[e.key];
+      if (to === undefined || performing()) return;
+      e.preventDefault();
+      setShare(Math.round(to * 20) / 20);
+    });
+  }
+  // each bar's chevron folds its panel away and brings it back at the share it had; in Perform
+  // the controls' one is More controls
+  vbar.fold.addEventListener('click', () => { setShare(split.views === 0 ? split.open : 0); vbar.fold.blur(); });
+  cbar.fold.addEventListener('click', () => {
+    if (performing()) { prefs.moreControls = !prefs.moreControls; save(); apply(); }
+    else if (phoneQuery.matches && split.views === 1) { setShare(split.open); controlsEl.scrollIntoView({ behavior: 'smooth' }); }
+    else setShare(split.views === 1 ? split.open : 1);
+    cbar.fold.blur();
+  });
+
+  // ---- in Perform the views carry no text, including what their canvases draw (a card marked
+  // data-keep-text, the tuner, keeps its own)
+  const proto = window.CanvasRenderingContext2D?.prototype;
+  for (const name of ['fillText', 'strokeText']) {
+    const draw = proto?.[name];
+    if (draw && !draw.phuzzQuiet) {
+      proto[name] = function (...args) { if (!(document.body.classList.contains('perform') && this.canvas?.closest?.('.views') && !this.canvas.closest('[data-keep-text]'))) draw.apply(this, args); };
+      proto[name].phuzzQuiet = true;
+    }
+  }
+
+  // ---- everything as chosen
+  function apply() {
+    body.classList.toggle('perform', performing());
+    body.classList.toggle('touring', !!touring);
+    for (const b of modeBtns) b.setAttribute('aria-pressed', String(b.textContent.toLowerCase() === mode));
+    for (const v of all) { v.card.hidden = !v.shown(); v.toggle.setAttribute('aria-pressed', String(v.shown())); }
+    body.classList.toggle('no-rack', !pedalView.shown());
+    for (const g of groups) { g.el.hidden = !g.shown(); g.toggle.setAttribute('aria-pressed', String(g.shown())); }
+    noGroup.hidden = groups.some((g) => g.shown());
+    const v = share();
+    viewsEl.hidden = v === 0;
+    controlsEl.hidden = v === 1;
+    body.classList.toggle('views-folded', v === 0);
+    body.classList.toggle('controls-folded', v === 1);
+    const track = (x) => (x === 0 ? '0px' : `minmax(0, ${+x.toFixed(3)}fr)`);
+    work.style.setProperty('--work-rows', `auto ${track(v)} auto ${track(1 - v)}`);
+    handle.setAttribute('aria-valuenow', String(Math.round(v * 100)));
+    // the chevrons: which way they point, and what they say
+    vbar.fold.setAttribute('aria-expanded', String(v !== 0));
+    vbar.fold.title = v === 0 ? 'Show the views' : 'Hide the views: the controls take their room';
+    cbar.fold.setAttribute('aria-expanded', String(v !== 1));
+    cbar.fold.title = performing() ? (v === 1 ? 'More controls' : 'Fewer controls: the views take the room')
+      : v === 1 ? 'Show the controls' : 'Hide the controls: the views take their room';
+    for (const b of [vbar.fold, cbar.fold]) b.setAttribute('aria-label', b.title);
+    arrange();
+  }
+  new ResizeObserver(() => arrange()).observe(stage);
+  const onPhone = () => { if (stage.isConnected) apply(); else phoneQuery.removeEventListener?.('change', onPhone); };
+  phoneQuery.addEventListener?.('change', onPhone);
+  apply();
+
+  // a tour (shared/tour.js) shows only the views it is about (by title, any case), for a while;
+  // the pedal stays
+  const tourSlot = h('div', { class: 'tour-slot' });
+  dock.prepend(tourSlot);
+  return {
+    tourSlot,
+    arrange,
+    viewNames: () => all.map((v) => v.name),
+    showViews(names) { touring = names ? new Set(names.map((n) => n.toLowerCase())) : null; apply(); },
+  };
+}
+
+return { createLayout };
+})();
+
 // ---- buffer/src/buffer-params.js
-const __m7 = (() => {
+const __m8 = (() => {
 
 // buffer-params.js — the Buffer's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -1008,8 +1278,8 @@ return { bass, recorded, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- buffer/src/buffer-pedal.js
-const __m6 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m7;
+const __m7 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m8;
 // buffer-pedal.js — the Buffer's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1026,8 +1296,8 @@ return { PEDAL };
 })();
 
 // ---- phuzz/src/phuzz-params.js
-const __m9 = (() => {
-const { bass, recorded } = __m7;
+const __m10 = (() => {
+const { bass, recorded } = __m8;
 // phuzz-params.js — the Phuzz's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
 
@@ -1092,8 +1362,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- phuzz/src/phuzz-pedal.js
-const __m8 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m9;
+const __m9 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m10;
 // phuzz-pedal.js — the Phuzz's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1110,7 +1380,7 @@ return { PEDAL };
 })();
 
 // ---- wah/src/wah-params.js
-const __m11 = (() => {
+const __m12 = (() => {
 
 // wah-params.js — the Wah's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The parts are the inductor wah's as Holters and Zölzer (DAFx 2011) list them; the sweep
@@ -1160,8 +1430,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- wah/src/wah-pedal.js
-const __m10 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m11;
+const __m11 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m12;
 // wah-pedal.js — the Wah's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1179,16 +1449,104 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- preamp/src/preamp-params.js
+const __m14 = (() => {
+const { bass, recorded } = __m8;
+// preamp-params.js — the Tube Preamp's controls. Values in SI units; `scale` shows them in friendlier
+// ones. The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
+
+
+const pedal = [
+  { id: 'gain', label: 'Gain', min: 0, max: 1, def: 0.3, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'The amp\'s Volume: a 1 MΩ audio pot between the two gain stages, so it sets how hard the second triode is driven. Low, both stages stay on the straight part of their curves and a firm note comes through clean and warm. From about 40 %, the second triode\'s grid is pushed past its cathode on the peaks and the notes thicken, the second harmonic first; further up it cuts off in the troughs too, and the third harmonic takes over.' },
+  { id: 'bass', label: 'Bass', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'The tone stack\'s 1 MΩ audio pot. From halfway, full up lifts 60 Hz by about 4 dB, and all the way down takes about 8 dB off it. The stack is passive: turning a knob up only takes away less.' },
+  { id: 'middle', label: 'Middle', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'The tone stack\'s 25 kΩ pot to ground. The stack always scoops the middle, deepest near 700 Hz with the knobs at halfway; turning Middle down deepens the scoop, to about 22 dB down near 900 Hz, and turning it up fills it in, about 2.5 dB more at 500 Hz.' },
+  { id: 'treble', label: 'Treble', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'The tone stack\'s 250 kΩ pot, fed through 250 pF. From halfway, full up passes about 4.5 dB more at 5 kHz, and all the way down takes about 7.5 dB off it.' },
+  { id: 'master', label: 'Master', min: 0, max: 1, def: 0.4, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'A 1 MΩ audio pot after the tone stack, which the amp doesn\'t have (its tone stack drives the power amp): it sets how loud the pedal is without changing how hard the tubes are driven. Halfway passes about a tenth of the voltage.' },
+];
+
+const tubes = [
+  { id: 'tube', label: 'Tubes', type: 'select', def: 'rsd1', options: [['rsd1', '12AX7, RSD sample 1'], ['rsd2', '12AX7, RSD sample 2'], ['ehx1', '12AX7, Electro-Harmonix']],
+    hint: 'The three 12AX7s Dempwolf and Zölzer measured and fitted. The two RSD samples are near twins, with amplification factors near 100; the Electro-Harmonix has less (87), and the preamp about 2.5 dB less gain with it.' },
+  { id: 'emission', label: 'Emission', min: 0.4, max: 1, def: 1, unit: '%', scale: 100, decimals: 0,
+    hint: 'How much current the cathodes still give, against a new tube\'s: an old tube\'s cathode is tired. Less emission, less current at every voltage: the gain stages\' plates sit higher, and the gain falls, by about 5 dB at 60 %.' },
+  { id: 'cathodeC', label: 'First stage cathode capacitor', min: 0.1e-6, max: 250e-6, def: 25e-6, log: true, unit: 'µF', scale: 1e6, decimals: 1,
+    hint: 'The capacitor across the first triode\'s 1.5 kΩ cathode resistor: 25 µF bypasses it for everything a bass plays, and the stage has all its gain. A small one (1 µF and under) bypasses only the highs: below 100 Hz the stage loses about 5 dB of its gain, so the low notes drive the next stage less hard and stay tighter.' },
+];
+
+const supply = [
+  { id: 'bplus', label: 'B+ (the 385 V rail)', min: 250, max: 450, def: 385, unit: 'V', decimals: 0,
+    hint: 'The rail the preamp\'s dropper hangs from: 385 V in the Bassman. Lower it and every stage sits lower, with less room to swing: at 300 V the preamp\'s own rail is about 250 V, and the output clips lower.' },
+  { id: 'supplyR', label: 'Dropper resistance', min: 1e3, max: 47e3, def: 14e3, log: true, unit: 'kΩ', scale: 0.001, decimals: 1,
+    hint: 'The resistor that drops the 385 V rail to the preamp\'s, chosen here to leave 325 V. With the 8 µF filter it makes the preamp\'s supply sag a little under hard playing: more resistance, a lower rail and more sag.' },
+  { id: 'filterC', label: 'Filter capacitor', min: 1e-6, max: 100e-6, def: 8e-6, log: true, unit: 'µF', scale: 1e6, decimals: 0,
+    hint: 'The capacitor holding the preamp\'s rail steady: 8 µF in the Bassman. Smaller, the rail follows the playing more (a slower, spongier attack when you dig in).' },
+  { id: 'cable', label: 'Cable from the bass', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
+    hint: 'The cable from your bass to the preamp. Into the tube\'s 1 MΩ grid leak its capacitance tunes the pickup\'s resonance, as it does into an amp: 10 m against 1 m moves the resonance down, and leaves 5 kHz about 9 dB darker.' },
+  { id: 'outCable', label: 'Cable to the amp', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
+    hint: 'The cable from the preamp to what it drives. The tone stack and the Master pot drive it from tens of kilohms, so a long cable darkens the top: 30 m takes about 10 dB off 3 kHz.' },
+  { id: 'load', label: 'Amp\'s input', min: 10e3, max: 10e6, def: 1e6, log: true, unit: 'kΩ', scale: 0.001, decimals: 0,
+    hint: 'The input impedance of what the preamp drives, usually 1 MΩ. It loads the Master pot and the tone stack behind it: into 100 kΩ the preamp is about 3 dB quieter, into 10 kΩ about 16 dB.' },
+];
+
+const GROUPS = [
+  { name: 'The preamp', params: pedal },
+  { name: 'Tubes', params: tubes },
+  { name: 'Supply and cables', params: supply },
+  { name: 'Your bass', params: bass },
+  { name: 'How you are plugged in', params: recorded },
+];
+
+// Each preset shows one idea; the bass and how it is plugged in are kept (KEEP).
+const stock = { gain: 0.3, bass: 0.5, middle: 0.5, treble: 0.5, master: 0.4, tube: 'rsd1', emission: 1, cathodeC: 25e-6, bplus: 385, supplyR: 14e3, filterC: 8e-6 };
+const PRESETS = {
+  'Clean and warm': { ...stock, gain: 0.15, master: 0.55 },
+  'Edge of break-up': { ...stock },
+  'Cranked': { ...stock, gain: 0.8, master: 0.18 },
+  'Scooped': { ...stock, bass: 0.75, middle: 0.1, treble: 0.7 },
+  'Mids forward': { ...stock, gain: 0.45, bass: 0.35, middle: 1, treble: 0.35, master: 0.3 },
+  'Tight (small cathode capacitor)': { ...stock, gain: 0.5, cathodeC: 0.68e-6, master: 0.3 },
+  'Tired tubes, low rail': { ...stock, gain: 0.45, emission: 0.6, bplus: 300, master: 0.35 },
+};
+const KEEP = ['active', 'pickupL', 'pickupR', 'pickupC', 'pots', 'activeR', 'recCable', 'recLoad', 'cablePF', 'cable', 'outCable', 'load'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- preamp/src/preamp-pedal.js
+const __m13 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m14;
+// preamp-pedal.js — the Tube Preamp's descriptor: everything a host needs to run it without its page.
+// Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
+
+const PEDAL = {
+  id: 'preamp',
+  name: 'Tube Preamp',
+  description: 'A 1959 Bassman\'s preamp: three 12AX7 triodes that conduct at the grid, and its passive tone stack',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/preamp.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue } = __m1;
 const { Tuner, OPEN_STRINGS } = __m2;
 const { INTERFACES, byInterface, fullScaleVolts } = __m3;
 const { midiPanel } = __m4;
-const { PEDAL: BUFFER } = __m6;
-const { PEDAL: PHUZZ } = __m8;
-const { PEDAL: WAH } = __m10;
-// app.js — the Phuzzbox app's window: the pedal's face, the tuner, the audio settings and the
+const { createLayout } = __m6;
+const { PEDAL: BUFFER } = __m7;
+const { PEDAL: PHUZZ } = __m9;
+const { PEDAL: WAH } = __m11;
+const { PEDAL: PREAMP } = __m13;
+// app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
 // program's web view as one page, bundled by tools/bundle-app.mjs. The menu in the header picks
@@ -1199,11 +1557,13 @@ const { PEDAL: WAH } = __m10;
 
 
 
+
 // every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
@@ -1249,7 +1609,6 @@ async function main(info, carry = {}) {
   });
   const streamPill = h('span', { class: 'pill', title: 'The sample rate and buffer, and the round trip the buffers make' }, '–');
   const cpu = h('span', { class: 'pill', title: 'The share of the audio thread\'s time the pedal takes' }, 'CPU –');
-  app.append(h('header', { class: 'top' }, h('span', { class: 'home' }, 'Phuzzbox'), h('h1', {}, pedalSel), h('span', { class: 'spacer' }), streamPill, cpu, status));
 
   // ---- audio: the interface, its channel, the output, the buffer, Full scale
   const inSel = h('select', { 'aria-label': 'Input' }, ...info.inputs.map((d) => h('option', { value: d.name }, d.name)));
@@ -1260,20 +1619,26 @@ async function main(info, carry = {}) {
   const measured = h('span', { class: 'pill', hidden: true });
   const ifaceSel = h('select', { 'aria-label': 'Audio interface' }, h('option', { value: '' }, 'Other interface'), ...INTERFACES.map((i) => h('option', { value: i.id }, i.name)));
   const gainInput = h('input', { type: 'number', min: 0, max: 62, step: 1, 'aria-label': 'Interface gain in decibels' });
-  const gainLabel = h('label', { class: 'inline' }, 'gain ', gainInput, ' dB');
+  const gainLabel = h('label', { class: 'inline' }, 'Gain ', gainInput, ' dB');
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, 'aria-label': 'Volts at full scale' });
   const volInput = h('input', { type: 'range', class: 'fader', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
   const volOut = h('output', {});
-  const audioCard = h('section', { class: 'card audiocard', 'aria-label': 'Audio' },
-    h('div', { class: 'audio-row' }, h('b', {}, 'Audio'),
-      h('label', { class: 'inline' }, 'In ', inSel), chanSel,
-      h('label', { class: 'inline' }, 'Out ', outSel),
-      h('label', { class: 'inline', title: 'Smaller is quicker; if you hear clicks, take the next size up' }, 'Buffer ', frameSel),
-      measureBtn, measured),
-    h('div', { class: 'audio-row' },
-      h('span', { class: 'inline', title: 'Choose your interface and type its gain, and Full scale comes from the maker\'s specification' }, ifaceSel, gainLabel),
-      h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale sample' }, 'Full scale ', fsInput, ' V'),
-      h('label', { class: 'inline', title: 'The level after the pedal, as a volume pedal sets it (a MIDI expression pedal moves it)' }, 'Volume ', volInput, volOut)));
+  // the audio, in the Controls panel: where it comes from and goes, and the buffer
+  const audioGroup = h('fieldset', { class: 'group rig audio-group' }, h('legend', {}, 'Audio'),
+    h('div', { class: 'row' }, h('label', {}, 'Input'), inSel, chanSel),
+    h('div', { class: 'row' }, h('label', {}, 'Output'), outSel),
+    h('div', { class: 'row', title: 'Smaller is quicker; if you hear clicks, take the next size up' }, h('label', {}, 'Buffer'), frameSel),
+    h('div', { class: 'measure-row' }, measureBtn, measured));
+  // the rig: what turns the samples into volts at the input jack
+  const rigGroup = h('fieldset', { class: 'group rig' }, h('legend', {}, 'Rig'),
+    h('div', { class: 'row' }, h('label', {}, 'Audio interface'), ifaceSel, gainLabel),
+    h('div', { class: 'row', title: 'How many volts at the input jack make a full-scale sample' }, h('label', {}, 'Full scale'), h('span', { class: 'inline' }, fsInput, ' V')),
+    h('p', { class: 'rig-note' }, 'Choose your interface and its gain, and Full scale comes from the maker\'s specification.'));
+  // the header: PhuzzBox, the pedal (its menu), then the stream, the CPU and the volume
+  const header = h('header', { class: 'top' },
+    h('div', { class: 'brand' }, h('span', { class: 'home' }, 'PhuzzBox'), h('h1', { class: 'pedal-head' }, pedalSel)),
+    h('div', { class: 'audio' }, streamPill, cpu,
+      h('label', { class: 'volume', title: 'The level after the pedal, as a volume pedal sets it (a MIDI expression pedal moves it)' }, 'Volume', volInput, volOut), status));
   inSel.value = audio.input || info.inputs[0]?.name || '';
   outSel.value = audio.output || info.outputs[0]?.name || '';
   frameSel.value = audio.frames;
@@ -1360,15 +1725,15 @@ async function main(info, carry = {}) {
   a4Input.addEventListener('change', () => { tuning.a4 = Math.min(466, Math.max(415, +a4Input.value || 440)); a4Input.value = tuning.a4; ui.a4 = tuning.a4; call('store', 'ui', ui); });
   const scale = h('div', { class: 't-scale', 'aria-hidden': 'true' }, h('span', { class: 't-zone' }),
     ...[-50, -25, 0, 25, 50].map((c) => { const t = h('span', { class: 't-tick' }, h('i', {}, c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0')); t.style.left = `${50 + c}%`; return t; }), tNeedle);
-  const tunerCard = h('figure', { class: 'card tunercard idle', 'aria-label': 'Tuner' },
-    h('figcaption', {}, h('b', {}, 'Tuner'), h('span', {}, 'the fundamental, in cents from A4 =', a4Input, 'Hz'), muteBtn),
+  const tunerCard = h('figure', { class: 'card tunercard idle', 'aria-label': 'Tuner', 'data-view': 'Tuner', 'data-keep-text': '' },
+    h('figcaption', {}, h('b', {}, 'Tuner'), h('span', { class: 'a4' }, 'A4 =', a4Input, 'Hz'), muteBtn),
     h('div', { class: 't-body' }, h('div', { class: 't-name', role: 'status' }, tNote, tOct), scale, h('div', { class: 't-read' }, tCents, tHz, tString)));
 
   // ---- Controls
-  const presetSel = h('select', { 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
+  const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
     h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)), h('option', { value: '__defaults' }, 'Default settings'));
   const rows = [];
-  const groupsEl = h('div', { class: 'groups' });
+  const groupList = [];
   for (const g of PEDAL.groups) {
     const box = h('fieldset', { class: 'group' }, h('legend', {}, g.name));
     for (const p of g.params) {
@@ -1377,15 +1742,14 @@ async function main(info, carry = {}) {
       if (p.type === 'checkbox') { input = h('input', { type: 'checkbox', class: 'switch', id: `p-${p.id}` }); input.addEventListener('change', () => set(p.id, input.checked)); }
       else if (p.type === 'select') { input = h('select', { id: `p-${p.id}` }, ...p.options.map(([v, l]) => h('option', { value: v }, l))); input.addEventListener('change', () => set(p.id, input.value)); }
       else { input = h('input', { type: 'range', class: 'fader', min: 0, max: 1000, step: 1, id: `p-${p.id}` }); input.addEventListener('input', () => set(p.id, fromUnit(p, input.value / 1000))); }
-      const hint = h('p', { class: 'hint', hidden: true }, p.hint ?? '');
-      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, onclick: () => hint.toggleAttribute('hidden') }, 'i') : null;
-      const row = h('div', { class: 'row' }, h('label', { for: `p-${p.id}` }, p.label), infoBtn, input, val, hint);
+      const row = h('div', { class: 'row', 'data-param': p.id });
+      const infoBtn = p.hint ? h('button', { type: 'button', class: 'info', 'aria-label': `About ${p.label}`, 'aria-expanded': 'false', onclick: () => infoBtn.setAttribute('aria-expanded', String(row.classList.toggle('hint-open'))) }, 'i') : null;
+      row.append(h('label', { for: `p-${p.id}` }, p.label), infoBtn, input, val, p.hint ? h('p', { class: 'hint' }, p.hint) : null);
       rows.push({ p, row, input, val });
       box.append(row);
     }
-    groupsEl.append(box);
+    groupList.push({ key: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: g.name, el: box });
   }
-  const controls = h('section', { class: 'controls' }, h('div', { class: 'controls-bar' }, h('b', {}, 'Controls'), presetSel), groupsEl);
 
   // MIDI foot controllers: the site's card, its mappings kept in the settings file for each pedal
   const midiSaved = { ...(S.midi ?? {}) };
@@ -1402,8 +1766,21 @@ async function main(info, carry = {}) {
   for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
   midiHelp.textContent = 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and set it to Control Change mode. The app listens to every MIDI input. Learn, then move a pedal, teaches a row that pedal.';
 
-  app.append(audioCard, h('div', { class: 'stage' }, face, h('section', { class: 'views' }, tunerCard)), controls, midi.el,
-    h('footer', {}, `${PEDAL.name} ${info.version} · Phuzzbox · physics, not samples. Space is the footswitch.`));
+  midi.el.classList.add('group');
+  // on one screen, as the site's pages and Forte's: the pedal at the left, the tuner, the
+  // Controls panel (the audio, the rig, the pedal's groups, the MIDI pedals) sharing the height
+  // under their bars; what is shown is kept in the settings file
+  const layoutSaved = { ...(S.layout ?? {}) };
+  const layoutStore = {
+    get: (k, d) => (k in layoutSaved ? layoutSaved[k] : d),
+    set: (k, v) => { layoutSaved[k] = v; call('store', 'layout', layoutSaved); },
+  };
+  createLayout({ id: PEDAL.id, h, store: layoutStore, app, header, share: 0.36,
+    rack: h('aside', { class: 'rack', 'data-view': 'Pedal' }, face),
+    views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true }],
+    groups: [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
+    presets: presetSel,
+    dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
   for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
 
   // ---- state

@@ -1,4 +1,4 @@
-# Building a Phuzzbox pedal
+# Building a PhuzzBox pedal
 
 Every pedal has the same anatomy, so a new one is mostly physics. Copy the Buffer, which is the
 template: the smallest pedal with a model, an engine, a page, views, tests and plugins.

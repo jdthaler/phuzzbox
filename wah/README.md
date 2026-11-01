@@ -12,7 +12,7 @@ original's 10 nF moves the whole range down from a guitar's 430 Hz–2.2 kHz to 
 Rock it with the **Rocker** knob, or with an expression pedal: an FC-300's second expression pedal
 (MIDI CC 1) moves it from the start (see [Playing it with your feet](#playing-it-with-your-feet)).
 
-Part of [Phuzzbox](../README.md).
+Part of [PhuzzBox](../README.md).
 
 | Input | |
 |---|---|

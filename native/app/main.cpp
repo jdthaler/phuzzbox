@@ -1,4 +1,4 @@
-// main.cpp — the Phuzzbox app: a pedal at a time (any of pedals.cpp's, chosen in the window) in a
+// main.cpp — the PhuzzBox app: a pedal at a time (any of pedals.cpp's, chosen in the window) in a
 // window of its own, played through the audio interface at the smallest buffer it takes, with no
 // DAW and no browser.
 //
@@ -46,10 +46,10 @@ using choc::value::ValueView;
 fs::path settingsFile() {
 #if defined(__APPLE__)
   const char *home = std::getenv("HOME");
-  fs::path dir = fs::path(home ? home : ".") / "Library" / "Application Support" / "Phuzzbox";
+  fs::path dir = fs::path(home ? home : ".") / "Library" / "Application Support" / "Phuzzbox"; // the folder keeps its first spelling, so saved settings stay
 #elif defined(_WIN32)
   const char *appdata = std::getenv("APPDATA");
-  fs::path dir = fs::path(appdata ? appdata : ".") / "Phuzzbox";
+  fs::path dir = fs::path(appdata ? appdata : ".") / "Phuzzbox"; // as on the Mac
 #else
   const char *xdg = std::getenv("XDG_CONFIG_HOME"), *home = std::getenv("HOME");
   fs::path dir = xdg ? fs::path(xdg) / "phuzzbox" : fs::path(home ? home : ".") / ".config" / "phuzzbox";
@@ -187,7 +187,7 @@ struct Program {
     frames = (unsigned int)audioNumber("frames", 64);
     RtAudio::StreamOptions options;
     options.flags = RTAUDIO_SCHEDULE_REALTIME | RTAUDIO_MINIMIZE_LATENCY;
-    options.streamName = "Phuzzbox";
+    options.streamName = "PhuzzBox";
     if (audio->openStream(&op, in ? &ip : nullptr, RTAUDIO_FLOAT32, (unsigned int)rate, &frames, &callback, this, &options) != RTAUDIO_NO_ERROR) {
       if (streamError.empty()) streamError = "The audio device could not be opened.";
       return;
@@ -222,7 +222,7 @@ struct Program {
   void scanMidi() {
     std::vector<std::string> names;
     try {
-      if (!midiProbe) midiProbe = std::make_unique<RtMidiIn>(RtMidi::UNSPECIFIED, "Phuzzbox");
+      if (!midiProbe) midiProbe = std::make_unique<RtMidiIn>(RtMidi::UNSPECIFIED, "PhuzzBox");
       for (unsigned int k = 0; k < midiProbe->getPortCount(); k++) names.push_back(midiProbe->getPortName(k));
     } catch (...) { return; }
     if (names == midiNames) return;
@@ -230,10 +230,10 @@ struct Program {
     midiNames = names;
     for (unsigned int k = 0; k < names.size(); k++) {
       try {
-        auto in = std::make_unique<RtMidiIn>(RtMidi::UNSPECIFIED, "Phuzzbox");
+        auto in = std::make_unique<RtMidiIn>(RtMidi::UNSPECIFIED, "PhuzzBox");
         in->ignoreTypes(true, true, true); // no sysex, timing or active sensing
         in->setCallback(&onMidi, this);
-        in->openPort(k, "Phuzzbox in");
+        in->openPort(k, "PhuzzBox in");
         midiIns.push_back(std::move(in));
       } catch (...) {}
     }
@@ -361,7 +361,7 @@ struct Program {
 };
 
 #if defined(__APPLE__)
-// The menu bar's Phuzzbox menu, which a window alone doesn't bring: Hide (⌘H) and Quit (⌘Q).
+// The menu bar's PhuzzBox menu, which a window alone doesn't bring: Hide (⌘H) and Quit (⌘Q).
 void addMacMenu() {
   using namespace choc::objc;
   auto make = [](const char *cls) { return call<id>(callClass<id>(cls, "alloc"), "init"); };
@@ -371,8 +371,8 @@ void addMacMenu() {
     id item = call<id>(callClass<id>("NSMenuItem", "alloc"), "initWithTitle:action:keyEquivalent:", getNSString(title), sel_registerName(action), getNSString(key));
     call<void>(menu, "addItem:", item);
   };
-  add("Hide Phuzzbox", "hide:", "h");
-  add("Quit Phuzzbox", "terminate:", "q");
+  add("Hide PhuzzBox", "hide:", "h");
+  add("Quit PhuzzBox", "terminate:", "q");
   call<void>(appItem, "setSubmenu:", menu);
   call<void>(getSharedNSApplication(), "setMainMenu:", bar);
 }
@@ -386,8 +386,8 @@ int main() {
   auto program = std::make_unique<Program>();
 
   choc::ui::DesktopWindow window({100, 100, 1040, 760});
-  window.setWindowTitle(std::string("Phuzzbox · ") + program->pedal->name);
-  program->onPedal = [&window](const phuzzbox::PedalInfo &p) { window.setWindowTitle(std::string("Phuzzbox · ") + p.name); };
+  window.setWindowTitle(std::string("PhuzzBox · ") + program->pedal->name);
+  program->onPedal = [&window](const phuzzbox::PedalInfo &p) { window.setWindowTitle(std::string("PhuzzBox · ") + p.name); };
   window.setResizable(true);
   window.setMinimumSize(380, 480);
   window.windowClosed = [] { choc::messageloop::stop(); };

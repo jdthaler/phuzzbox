@@ -1,5 +1,5 @@
 // shell.js — everything a pedal page shares: the audio graph (the interface's input or the test
-// bass → the pedal's AudioWorklet → volume → a safety limiter → the speakers), the pedal's face
+// bass → the pedal's AudioWorklet → volume → a safety curve → the speakers), the pedal's face
 // (knobs for its `perform` controls, the footswitch and its LED), meters, a tuner, the latency,
 // the Controls panel with every parameter, the rig and the presets, the MIDI pedals, the test
 // bass's fretboard, and How it works (the READMEs: shared/notes.js). shared/layout.js lays them out on one
@@ -25,6 +25,7 @@ import { byId, PEDALS, PHUZZBOX_VERSION } from './registry.js';
 import { createLayout } from './layout.js';
 import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
+import { safetyCurve, SAFE_SPAN } from './safety.js';
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -69,7 +70,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
 
   // ---- the page (shared/layout.js arranges it: the header, the pedal beside the views and the
   // controls, the test bass pinned below while it is the input)
-  document.title = `${PEDAL.name} · Phuzzbox`;
+  document.title = `${PEDAL.name} · PhuzzBox`;
   const app = document.getElementById('app');
   const status = h('span', { class: 'status' });
   const startBtn = h('button', { class: 'primary start', type: 'button', onclick: () => start() }, 'Start audio');
@@ -85,7 +86,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const notesBtn = notes.button();
   // How the tuner works, how the test bass works: their tabs in the notes
   const about = (k, what) => h('button', { type: 'button', class: 'info', 'aria-label': `How the ${what} works`, title: `How the ${what} works`, onclick: () => notes.open(k) }, 'i');
-  const installBtn = h('button', { type: 'button', class: 'ghost', title: 'Install Phuzzbox as an app with its own window, which opens without the browser\'s tabs and works without the server' }, 'Install app');
+  const installBtn = h('button', { type: 'button', class: 'ghost', title: 'Install PhuzzBox as an app with its own window, which opens without the browser\'s tabs and works without the server' }, 'Install app');
   registerApp();
   offerInstall(installBtn);
   // the volume after the pedal, beside the audio: a fader, as on a mixer
@@ -96,10 +97,11 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     h('summary', { title: 'Choose a pedal' }, h('h1', {}, PEDAL.name), h('span', { class: 'caret', 'aria-hidden': 'true' }, '▾')),
     h('div', { class: 'menu-list' },
       ...PEDALS.filter((p) => p.ready).map((p) => h('a', { href: `../${p.id}/`, 'aria-current': p.id === PEDAL.id ? 'page' : false }, h('b', {}, p.name), h('small', {}, p.after))),
-      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, `Phuzzbox ${PHUZZBOX_VERSION} · physics, not samples`))));
+      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, `PhuzzBox ${PHUZZBOX_VERSION} · physics, not samples`))));
   addEventListener('pointerdown', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
   const header = h('header', { class: 'top' },
-    h('div', { class: 'brand' }, h('a', { class: 'home', href: '../', title: 'Every pedal' }, 'Phuzzbox'), menu, notesBtn, installBtn),
+    h('div', { class: 'brand' }, h('a', { class: 'home', href: '../', title: 'Every pedal' }, 'PhuzzBox'), menu, notesBtn, installBtn),
     h('div', { class: 'audio' }, startBtn, cpu, sourceSel, chanSel, sinkSel, latency, measureBtn,
       h('label', { class: 'volume', title: 'The level after the pedal, before the speakers (a MIDI volume pedal moves it too)' }, 'Volume', volInput), status));
 
@@ -363,10 +365,12 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       node = new AudioWorkletNode(ctx, 'phuzzbox', { numberOfInputs: 1, numberOfOutputs: 2, outputChannelCount: [2, 1], processorOptions: { pedal, bass } });
       node.port.onmessage = (e) => onMessage(e.data);
       volume = new GainNode(ctx, { gain: state.volume });
-      // a safety limiter before the speakers: a distortion pedal at full tilt shouldn't hurt anyone
-      const limiter = new DynamicsCompressorNode(ctx, { threshold: -3, knee: 3, ratio: 12, attack: 0.002, release: 0.15 });
+      // a safety curve before the speakers, so a distortion pedal at full tilt can't hurt anyone:
+      // static, so it adds no delay, where a compressor would look 6 ms ahead (shared/safety.js)
+      const span = new GainNode(ctx, { gain: 1 / SAFE_SPAN });
+      const safety = new WaveShaperNode(ctx, { curve: safetyCurve(), oversample: 'none' });
       const analyser = new AnalyserNode(ctx, { fftSize: 8192, smoothingTimeConstant: 0.6 });
-      node.connect(volume).connect(limiter).connect(ctx.destination);
+      node.connect(volume).connect(span).connect(safety).connect(ctx.destination);
       node.connect(analyser);
       tunerAnalyser = new AnalyserNode(ctx, { fftSize: 16384 });
       node.connect(tunerAnalyser, 1);
@@ -533,7 +537,8 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     const beat = 60 / RIFF_BPM;
     const next = () => {
       const [k, b] = RIFF[i % RIFF.length];
-      if (k) { play(k, 0.6 + 0.2 * ((i % 4) === 0)); setTimeout(() => stop(k), 1000 * b * beat * 0.85); }
+      // each note lights its fret while it sounds, so the riff can be followed on the board
+      if (k) { fretOfKey.get(k)?.classList.add('down'); play(k, 0.6 + 0.2 * ((i % 4) === 0)); setTimeout(() => { fretOfKey.get(k)?.classList.remove('down'); stop(k); }, 1000 * b * beat * 0.85); }
       i++;
       riff = setTimeout(next, 1000 * b * beat);
     };

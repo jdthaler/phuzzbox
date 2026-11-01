@@ -90,7 +90,7 @@ export function howItWorks({ pedal = null } = {}) {
         .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
         .then((md) => {
           // the README's line for GitHub readers says nothing on the page itself
-          md = md.replace(/^Part of \[Phuzzbox\]\([^)]*\)\.?[ \t]*\n/m, '');
+          md = md.replace(/^Part of \[Phuzz[Bb]ox\]\([^)]*\)\.?[ \t]*\n/m, '');
           const { html, sections } = renderMarkdown(md, { base: REPO + d.dir, skip: ['Files'], idPrefix: 'about-' });
           const toc = sections.length > 2
             ? `<nav class="pz-notes-toc" aria-label="Contents">${sections.map((s) => `<a href="#${s.id}">${esc(s.text)}</a>`).join('')}</nav>`

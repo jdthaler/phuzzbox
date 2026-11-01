@@ -11,6 +11,7 @@
 import { params, nativeValue } from './params.js';
 
 export const QUALITY_LEVELS = ['high', 'medium', 'low'];
+const NONE = Object.freeze([]);
 
 const isNode = typeof process !== 'undefined' && !!process.versions?.node && typeof window === 'undefined';
 
@@ -79,21 +80,38 @@ export function wasmEffect(PEDAL) {
     setQuality(q) { x.px_set_quality(this.h, typeof q === 'number' ? q : Math.max(0, QUALITY_LEVELS.indexOf(q))); }
     // input: n samples (Float32Array); L, R: where the output goes. Returns false if a block went
     // unstable (it came out as silence, and the effect was reset).
+    // The views into the module's memory are made once (and again only if the memory grew, which
+    // detaches the old ones): an AudioWorklet calls this every 128 samples, and what it allocates
+    // there the garbage collector must sweep on the audio thread.
+    views() {
+      if (this.mem !== x.memory.buffer) {
+        this.mem = x.memory.buffer;
+        this.vin = new Float32Array(this.mem, x.px_input(this.h), 128);
+        this.vL = new Float32Array(this.mem, x.px_left(this.h), 128);
+        this.vR = new Float32Array(this.mem, x.px_right(this.h), 128);
+      }
+    }
     process(input, L, R, n = input.length) {
       let ok = true;
       for (let at = 0; at < n; at += 128) {
         const m = Math.min(128, n - at);
-        new Float32Array(x.memory.buffer, x.px_input(this.h), m).set(input.subarray(at, at + m));
+        this.views();
+        if (m === 128 && input.length === 128) this.vin.set(input);
+        else for (let i = 0; i < m; i++) this.vin[i] = input[at + i];
         if (!x.px_process(this.h, m)) { ok = false; this.failed++; }
-        L.set(new Float32Array(x.memory.buffer, x.px_left(this.h), m), at);
-        R.set(new Float32Array(x.memory.buffer, x.px_right(this.h), m), at);
+        this.views(); // in case processing grew the memory
+        if (m === 128) { L.set(this.vL, at); R.set(this.vR, at); }
+        else for (let i = 0; i < m; i++) { L[at + i] = this.vL[i]; R[at + i] = this.vR[i]; }
       }
       return ok;
     }
-    // what the effect posted since the last call (phuzzbox::Message): [{ type, values }]
+    // what the effect posted since the last call (phuzzbox::Message): [{ type, values }] (the same
+    // empty array, allocating nothing, when it posted nothing)
     messages() {
+      let p = x.px_message(this.h);
+      if (!p) return NONE;
       const out = [];
-      for (let p; (p = x.px_message(this.h));) {
+      for (; p; p = x.px_message(this.h)) {
         const head = new Uint16Array(x.memory.buffer, p, 2);
         out.push({ type: head[0], values: Float32Array.from(new Float32Array(x.memory.buffer, p + 4, head[1])) });
       }

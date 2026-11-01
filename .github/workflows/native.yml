@@ -15,6 +15,13 @@ jobs:
         run: |
           cd native && cmake --preset wasm && cmake --build --preset wasm && ctest --preset wasm
           cd .. && git diff --exit-code -- '*.wasm'
+      # what it built, so a change made where Emscripten isn't installed can take CI's build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wasm
+          path: '*/wasm/*.wasm'
+          retention-days: 7
   plugins:
     strategy:
       fail-fast: false
@@ -44,14 +51,14 @@ jobs:
       # the app, zipped by the system's own tool so the Mac bundle keeps its permissions and signature
       - name: Package the app (macOS)
         if: runner.os == 'macOS'
-        run: ditto -c -k --keepParent native/build/macos/app/Phuzzbox.app Phuzzbox-macos.zip
+        run: ditto -c -k --keepParent native/build/macos/app/PhuzzBox.app PhuzzBox-macos.zip
       - name: Package the app (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path native/build/windows/app/Release/Phuzzbox.exe -DestinationPath Phuzzbox-windows.zip
+        run: Compress-Archive -Path native/build/windows/app/Release/PhuzzBox.exe -DestinationPath PhuzzBox-windows.zip
       - uses: actions/upload-artifact@v4
         if: runner.os != 'Linux'
         with:
-          name: Phuzzbox-app-${{ matrix.os }}
-          path: Phuzzbox-*.zip
+          name: PhuzzBox-app-${{ matrix.os }}
+          path: PhuzzBox-*.zip
           retention-days: 30

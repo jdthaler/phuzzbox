@@ -1,4 +1,4 @@
-// app.js — Phuzzbox as an app of its own: registers the service worker (../sw.js, which keeps a
+// app.js — PhuzzBox as an app of its own: registers the service worker (../sw.js, which keeps a
 // copy of every file so the app opens without the server) and shows an Install button where the
 // browser offers installing (Chrome and Edge; on a Mac, the app gets its own window and Dock icon).
 

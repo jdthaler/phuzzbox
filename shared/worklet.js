@@ -88,7 +88,9 @@ export function registerPedal(PEDAL) {
     process(inputs, outputs) {
       const out = outputs[0];
       if (!out?.length) return true;
-      const n = out[0].length, v = this.v.subarray(0, n), L = this.L.subarray(0, n), R = this.R.subarray(0, n);
+      const n = out[0].length;
+      // the render quantum is 128 samples: whole buffers then, and nothing allocated per block
+      const v = n === 128 ? this.v : this.v.subarray(0, n), L = n === 128 ? this.L : this.L.subarray(0, n), R = n === 128 ? this.R : this.R.subarray(0, n);
       if (this.measure) { this.loopback(inputs[0]?.[0], out, n); return true; }
       const t0 = now();
       if (this.source === 'bass') this.bass.process(v, n);

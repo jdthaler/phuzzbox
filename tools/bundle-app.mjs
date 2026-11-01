@@ -1,4 +1,4 @@
-// bundle-app.mjs — the Phuzzbox app's window as one HTML file: native/app/app.js and the site's
+// bundle-app.mjs — the PhuzzBox app's window as one HTML file: native/app/app.js and the site's
 // modules it imports (every pedal's descriptor, shared/params.js, tuner.js, interfaces.js) as one
 // classic script, with shared/pedal.css, each ready pedal's style.css (its :root scoped to
 // :root[data-pedal="<slug>"], which app.js sets) and native/app/app.css, in native/app/app.html's
