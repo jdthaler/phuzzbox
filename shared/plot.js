@@ -68,3 +68,37 @@ export function markNote(g, x, box, note) {
   g.fillStyle = c; g.textAlign = 'left'; g.fillText(label, lx + 5, box.t + 23);
   g.restore();
 }
+
+// The note's harmonics riding on a response curve: a dot on the curve at each harmonic n·f₁ of the
+// note being played, as large as that harmonic is loud at the input now (api.input's spectrum,
+// the strongest within two bins of it), so a filter's peak can be seen lifting the harmonics it
+// passes over. `gainAt(f)` is the curve's level in the plot's dB at f. Dimmed, as the note's line
+// is, once the string has gone quiet.
+let partialBuf = null;
+export function markPartials(g, x, y, box, api, gainAt) {
+  const note = api.note, an = api.input;
+  if (!note?.f || !an) return;
+  if (!partialBuf || partialBuf.length !== an.frequencyBinCount) partialBuf = new Float32Array(an.frequencyBinCount);
+  an.getFloatFrequencyData(partialBuf);
+  const bin = api.ctx.sampleRate / an.fftSize;
+  const level = (f) => { const k = Math.round(f / bin); let m = -Infinity; for (let j = Math.max(1, k - 2); j <= Math.min(partialBuf.length - 1, k + 2); j++) m = Math.max(m, partialBuf[j]); return m; };
+  const levels = [];
+  for (let n = 1; n <= 24; n++) { const f = n * note.f; if (x(f) > box.r) break; levels.push([f, level(f)]); }
+  const top = Math.max(...levels.map(([, l]) => l));
+  g.save();
+  for (const [f, l] of levels) {
+    const r = 2 + 5 * Math.max(0, 1 + (l - top) / 40); // 7 px for the loudest, 2 px for 40 dB under it
+    const X = x(f), Y = Math.max(box.t, Math.min(box.b, y(gainAt(f))));
+    g.beginPath(); g.arc(X, Y, r, 0, 2 * Math.PI);
+    g.fillStyle = css('--good'); g.globalAlpha = note.live ? 0.85 : 0.35; g.fill();
+  }
+  g.restore();
+}
+
+// A curve given at ascending frequencies, at f: linear between the two points around it.
+export function atFreq(freqs, vals, f) {
+  let i = 1;
+  while (i < freqs.length - 1 && freqs[i] < f) i++;
+  const t = Math.max(0, Math.min(1, (f - freqs[i - 1]) / (freqs[i] - freqs[i - 1])));
+  return vals[i - 1] + (vals[i] - vals[i - 1]) * t;
+}

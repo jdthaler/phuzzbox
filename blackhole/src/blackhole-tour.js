@@ -4,14 +4,14 @@ import { tour, note, run, riff } from '../../shared/tour.js';
 export const TOUR = tour('blackhole', [
   {
     title: 'A hole that rings',
-    views: ['The modes', 'The ringing'],
+    views: ['The test masses', 'The modes'],
     preset: 'Bass hole',
     play: [note('E1', { dur: 1.5, vel: 0.9 }), riff({ at: 2 })],
     text: `![Your bass drives four quasinormal modes, each heard through its spin-weighted harmonic, h₊ on the left and h× on the right](schematics/modes.svg)
 
 A black hole, struck, rings in its quasinormal modes, each at one frequency and dying at one rate, set by its mass and spin alone. Your bass strikes this one: 200 suns spinning at a = 0.69, whose loudest mode rings at 85.4 Hz for about 12 ms.
 
-**The modes** shows its four modes; **The ringing**, what one click does to it: h₊ on the left, h× on the right.`,
+**The test masses** shows its wave passing a ring of free-falling masses, slowed thirty times: h₊ (the left channel) stretches the ring one way and squeezes it the other, h× (the right) the same along the diagonals. **The modes** shows its four modes.`,
   },
   {
     title: 'A thud',

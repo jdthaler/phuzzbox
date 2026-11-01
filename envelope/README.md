@@ -99,7 +99,9 @@ on the test bass is within 0.07 %. It takes under 0.2 % of a core, with no laten
 ## The views
 
 * **The filter**: the response where the cells have the cutoff now, from the engine's messages,
-  and at rest and at the far end of the sweep (`envelope_static`, the cells' steady state).
+  and at rest and at the far end of the sweep (`envelope_static`, the cells' steady state). The
+  note being played is marked, and its harmonics ride the curve as dots, each as large as it is
+  loud at the input: the quack is the peak lifting them one after another.
 * **The sweep**: the last four seconds of the cutoff, the LED's current and the traps' fill.
 * **Scope** and **Spectrum**: the input and output as they play.
 

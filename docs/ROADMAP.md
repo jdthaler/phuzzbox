@@ -134,6 +134,26 @@ Decided 2026-11-01 (Jesse): every pedal has a Scope and a Spectrum, each with a 
 solid, in volts. The app's window has the tuner only; giving it the scope and the spectrum would
 need the native host to send it the audio.
 
+Decided 2026-11-01 (Jesse): the views show the physics in action, as Forte's do, sometimes in slow
+motion, not only in How it works. `shared/motion.js` catches each note played at the input (until
+one is, a test bass note rendered on the page) and replays the pedal's own model on it at 1/10 to
+1/1000 of real time: The springs (Spring Reverb), The plate (Plate Reverb), The test masses (Black
+Hole) and The box (Speaker Cabinet). The Tape Echo's tape loop runs live from the engine's
+messages; the Buffer, Wah and Envelope Filter curves carry the note's harmonics as dots
+(`markPartials`, `shared/plot.js`). Already live before: the Phuzz's and Tube Preamp's load-line
+trails, the Opto and Envelope sweeps, the Rotary's rotors, the Doppler's road and the Sympathetic
+Strings.
+
+Decided 2026-11-01 (Jesse): physical choices a builder makes are controls, not constants. Moved out
+of the C++ that day: the Plate Reverb's driver and two pickups (dragged on The plate), the Spring
+Reverb's bead magnets (along the springs or across them) and the Tape Echo's three playback heads
+(1 to 20 cm, dragged on The tape loop). Looked at and left as constants: the Speaker Cabinet's
+microphone distance (1 m; in the far field it only scales the level, which Microphone sensitivity
+already does), the Doppler listener's ear spacing (a human head's), the plate's size and thickness
+(the EMT 140's; they set how many modes the computer must play) and the Sympathetic Strings' bridge
+(where every string is both driven and heard). Candidates for later: the plate's thickness with a
+cap on its modes, and the tape's coating thickness.
+
 Decided 2026-11-01: a pedal gets a **Reversed** switch (plugged in backwards: the bass into its
 output jack, its input jack to the amp) only where its circuit model can honestly drive it from the
 output. The Wah has one: its loop becomes the signal path, and from a passive bass it squeals (the

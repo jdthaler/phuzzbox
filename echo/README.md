@@ -14,8 +14,11 @@ them sound like tape is the physics of the tape and the heads, not a filter draw
 
 ![The Tape Echo: a loop of tape past an erase head, a record head and three playback heads](schematics/circuit.svg)
 
-The playback heads sit 4, 8 and 12 cm after the record head. A head a distance d behind reads tape
-that passed the record head d/v ago, so at 19 cm/s the three echo after 211, 421 and 632 ms. The
+The playback heads sit 4, 8 and 12 cm after the record head unless you move them (each anywhere
+from 1 to 20 cm, with **Head 1** to **Head 3**, or by dragging it on the page's picture of the
+loop). A head a distance d behind reads tape that passed the record head d/v ago, so at 19 cm/s
+the three echo after 211, 421 and 632 ms, and a head 20 cm along at 5 cm/s after 4 s. A head moved
+while the tape runs reads from its new place at once: what it plays is what is on the tape there. The
 erase head wipes the loop just before the record head, so each pass records on clean tape.
 
 The engine keeps the tape as it was written: each sample, and the tape position X at which it
@@ -113,12 +116,19 @@ tape can't be heard coming up to speed.
 
 * **Tape speed** (5 to 40 cm/s): the echo times, their brightness, and the pitch bend as it moves.
 * **Playback heads**: any of the three, alone or together.
+* **Head 1**, **Head 2** and **Head 3** (1 to 20 cm): where each playback head sits after the record
+  head. Its echo is that distance over the speed.
 * **Repeats**: what is recorded again.
 * **Record level**, **Head spacing**, **Head gap** and **Capstan eccentricity**: the machine.
 * **Dry**, **Echo** and **Level**: the mix.
 
 ## The views
 
+* **The tape loop**: the tape running past the record head and the playback heads at its own speed,
+  drawn to scale, with the magnetisation the record head left on it: the engine posts it every
+  20 ms, 24 values each the mean of 0.83 ms of tape at 48 kHz, and the page lays them along the
+  tape where they were written. A wavelength on the tape is a cycle of the bass (4.6 mm for the
+  open E at 19 cm/s). The heads can be dragged along it.
 * **The heads**: what one pass through the tape keeps of each frequency at the knob's speed (the
   FIR, from `echo_response`), and what the second to fourth repeats keep.
 * **The tape**: the anhysteretic curve (`echo_curve`), and how far along it the record head has been
@@ -140,8 +150,8 @@ tape can't be heard coming up to speed.
   bias-dependent losses. Chowdhury's model integrates the Jiles–Atherton loop with the bias
   itself; this one takes the limit a well-biased machine approaches.
 * **Ideal record head.** No record-side losses, and no self-erasure of short wavelengths.
-* **Losses as written.** The coating's 8 µm, the capstan's 5 mm and the heads' places are chosen
-  for a typical machine, not measured from one.
+* **Losses as written.** The coating's 8 µm, the capstan's 5 mm and the heads' default places are
+  chosen for a typical machine, not measured from one.
 * **No hiss, no dropouts, no tape stretch.** The motor is a first-order lag, and the only flutter
   is the capstan's.
 
