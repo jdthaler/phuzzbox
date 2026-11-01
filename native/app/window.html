@@ -578,6 +578,10 @@ body.one-screen .card .canvas.echoes { flex: 1 1 0; height: auto; min-height: 14
 /* the Rotary Speaker's enclosure: the walnut of an organ speaker's cabinet */
 :root[data-pedal="rotary"] { --enclosure: #6b3a1e; --enclosure-ink: #f4e7d6; }
 
+/* ---- plate/style.css */
+/* the Plate Reverb's enclosure: the grey of a plate's steel frame */
+:root[data-pedal="plate"] { --enclosure: #c9c6bd; --enclosure-ink: #1d1f22; }
+
 /* ---- native/app/app.css */
 /* app.css — the app window's own styles, after the site's shared/pedal.css (whose one-screen
    layout, from shared/layout.js, the window uses as the pages do). */
@@ -2216,6 +2220,63 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- plate/src/plate-params.js
+const __m30 = (() => {
+
+// plate-params.js — the Plate Reverb's controls. Values in SI units. A steel plate, 2 m by 1 m and
+// half a millimetre thick, hung in a frame: a driver shakes it, two contact pickups listen.
+
+const plate = [
+  { id: 'decay', label: 'Decay', min: 0.6, max: 10, def: 3, log: true, unit: 's', decimals: 1, perform: true,
+    hint: 'The damper: a porous mat brought nearer the plate or moved away, as a plate\'s lever sets it. It is the time a low note (100 Hz) takes to die by 60 dB. The steel\'s own losses shorten the highs further: alone, the steel lets a note above 1 kHz ring only 2.1 to 2.4 s, so long settings ring darker at the top than at the bottom.' },
+  { id: 'reverb', label: 'Reverb', min: 0, max: 1, def: 0.35, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of the pickups is mixed in.' },
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in.' },
+];
+
+const model = [
+  { id: 'top', label: 'Modes up to', min: 2000, max: 8000, def: 5000, log: true, unit: 'Hz', decimals: 0,
+    hint: 'The highest of the plate\'s modes that is played. The plate has about 1.3 modes in every hertz, so 5 kHz is about 6400 of them; above this it is silent here. Higher is brighter and costs more of the computer.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The plate', params: plate },
+  { name: 'Model and output', params: model },
+];
+
+const PRESETS = {
+  'Studio plate': { decay: 2.5, reverb: 0.35, dry: 1 },
+  'Short and tight': { decay: 0.8, reverb: 0.4, dry: 1 },
+  'Long and dark': { decay: 8, reverb: 0.3, dry: 1 },
+  'All plate': { decay: 3, reverb: 1, dry: 0 },
+  'Light on the computer': { top: 2500 },
+};
+const KEEP = ['level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- plate/src/plate-pedal.js
+const __m29 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m30;
+// plate-pedal.js — the Plate Reverb's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'plate',
+  name: 'Plate Reverb',
+  description: 'A steel plate in a frame, its bending modes from thin-plate theory, its losses the steel\'s and a damper\'s, heard by two pickups',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/plate.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue } = __m1;
@@ -2234,6 +2295,7 @@ const { PEDAL: OCTAVE } = __m21;
 const { PEDAL: SPRING } = __m23;
 const { PEDAL: ECHO } = __m25;
 const { PEDAL: ROTARY } = __m27;
+const { PEDAL: PLATE } = __m29;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -2258,7 +2320,8 @@ const { PEDAL: ROTARY } = __m27;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

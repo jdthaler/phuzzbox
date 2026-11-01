@@ -22,6 +22,7 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | ✅ | [Spring Reverb](spring/) | the reverb tanks of guitar and organ amplifiers | steel springs from measured tanks as waves on a coil of wire, 2300 modes from their dispersion: every echo a chirp up to the transition frequency |
 | ✅ | [Tape Echo](echo/) | the multi-head tape echoes of the 1970s | a tape loop past a record head and three playback heads: the tape's anhysteretic magnetisation, the heads' spacing, coating and gap losses, the motor's pitch bend and the capstan's flutter |
 | ✅ | [Rotary Speaker](rotary/) | the rotating-horn organ speakers of the 1960s | a horn and a drum turning past two microphones: each sound heard at its retarded time (the Doppler shift, exactly), a piston's directivity as its impulse response, motors with inertia |
+| ✅ | [Plate Reverb](plate/) | the steel plate reverbs of 1960s studios | a steel plate 2 m by 1 m as Kirchhoff's thin plate: 6432 bending modes to 5 kHz, the highs arriving first, the steel's thermoelastic and radiation losses and a damper |
 | ✅ | [Pedalboard](board/) | every pedal here, in a chain | the pedals in series in one worklet; the ones whose circuits include their jacks feel the pickup or a buffered output, and drive the next input through a patch cable; true bypass rewires them |
 
 ✅ playable · 🛠 in the workshop. The plan and the rest of the lineup are in

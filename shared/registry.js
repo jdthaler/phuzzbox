@@ -64,6 +64,11 @@ export const PEDALS = [
     after: 'the rotating-horn organ speakers of the 1960s',
     blurb: 'A horn and a drum spinning past two microphones: the pitch rises as each comes toward you and falls as it goes, heard at the retarded time.',
   },
+  {
+    id: 'plate', name: 'Plate Reverb', version: '0.1.0', ready: true, plugin: { code: 'Plat' },
+    after: 'the steel plate reverbs of 1960s studios',
+    blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);
