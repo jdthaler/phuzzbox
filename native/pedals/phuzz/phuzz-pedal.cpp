@@ -16,6 +16,7 @@ const phuzzbox::PedalInfo &phuzz::pedalInfo() {
     "phuzz", "Phuzz", PHUZZ_PEDAL_VERSION, "A two-transistor germanium fuzz, from Ebers-Moll transistors that drift with temperature", "Phuz",
     phuzz::kParams, phuzz::kParamCount, phuzz::kPresets, phuzz::kPresetCount,
     [](double fs) -> phuzzbox::Effect * { return new phuzz::Engine(fs); },
+    phuzz::kExpression,
   };
   return info;
 }

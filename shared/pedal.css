@@ -148,3 +148,21 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.45); }
 .notes-body table { border-collapse: collapse; display: block; overflow-x: auto; }
 .notes-body td, .notes-body th { border: 1px solid var(--line); padding: 4px 8px; }
 .notes-body pre { overflow-x: auto; background: var(--grid); padding: 8px; border-radius: 8px; }
+
+/* MIDI pedals */
+.midi { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.midi-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.midi-status { font-size: 13px; color: var(--ink-2); }
+.midi-bar .midi-last { margin-left: auto; font-variant-numeric: tabular-nums; }
+.midi-help { font-size: 13px; color: var(--ink-2); margin: 6px 0 8px; max-width: 80ch; }
+.midi-maps { display: grid; gap: 6px; }
+.mrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 8px; border: 1px solid var(--grid); border-radius: 8px; transition: background 0.4s; }
+.mrow.hit { animation: midi-hit 0.5s; }
+@keyframes midi-hit { from { background: color-mix(in srgb, var(--accent) 22%, transparent); } to { background: transparent; } }
+.mrow .inline { font-size: 13px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 5px; }
+.mrow input[type="number"] { width: 62px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+.mrow input[type="checkbox"] { accent-color: var(--accent); }
+.mrow select { min-width: 0; max-width: 100%; }
+.mrow .arrow { color: var(--ink-2); }
+.mrow .learn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.midi-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
