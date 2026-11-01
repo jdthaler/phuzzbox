@@ -88,4 +88,9 @@ Only when the owner asks for a release. Merging into `main` publishes nothing; t
    notes are left in `changes/`. Whatever fails is fixed on `main` first.
 3. Merge it with a merge commit when the owner asks. GitHub Pages publishes `live` at once, and
    installed copies pick it up on their next load (`sw.js` asks the server first).
+   The `native` run on `live` packs the plugins and the app (`tools/package-plugins.sh`), and the
+   `release-plugins` workflow then publishes them as a GitHub release when anything native or any
+   version changed (`tools/plugin-release.mjs --manifest`). The site's Plugins tab
+   (`shared/plugins.js`) downloads its files directly: the only links to GitHub besides the
+   credits, and never to a page there (Jesse, 2026-11-01).
 4. `live` only ever takes `main`, so it never needs merging back.
