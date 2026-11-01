@@ -14,6 +14,8 @@ template: the smallest pedal with a model, an engine, a page, views, tests and p
 <slug>/wasm/<slug>.wasm                 built from native/, committed
 <slug>/src/<slug>-tour.js               its guided tour of the physics (shared/tour.js)
 <slug>/README.md                        the page's How it works
+<slug>/src/<slug>-schematics.js         its circuit diagrams (shared/schematic.js), written to
+<slug>/schematics/*.svg                 by tools/gen-schematics.mjs, shown as figures
 native/pedals/<slug>/                   model, engine, PedalInfo, web bindings, CMakeLists.txt
 native/pedals/<slug>/<slug>-params.h    generated from the descriptor (tools/gen-native-params.mjs)
 test/<slug>-tests.mjs
@@ -108,6 +110,15 @@ starts engaged unless `bypass: true`, and keeps the player's own bass (the descr
 `{ at, bypass }` for the footswitch. When it ends, the settings, the footswitch, the tuner's mute
 and the player's source come back. The tour reaches the page only through `api.page`
 (`shared/shell.js`), so a new layout keeps those members and the tours follow it.
+
+**Circuit diagrams.** Draw them in `<slug>/src/<slug>-schematics.js`, exporting
+`SCHEMATICS = { name: () => s.svg() }` built with `schematic()` from `shared/schematic.js` (wires,
+resistors, capacitors, inductors, pots, photocells, diodes, triodes, transistors, amplifiers and
+blocks on a 20 px grid, each diagram on its own dark panel). `node tools/gen-schematics.mjs`
+writes them to `<slug>/schematics/<name>.svg`. A README or a tour's text shows one as a figure,
+an image alone in its paragraph: `![What it shows](schematics/name.svg)`, its alt text the
+caption. Figures load from the site (the renderer's `assets` URL), never from GitHub.
+`test/schematics-tests.mjs` fails when a diagram is stale or a figure is missing.
 
 `test/tour-tests.mjs` checks every ready pedal's tour against its page and descriptor, and that
 every quantity in its text (a number and its unit) is one of the READMEs' or a setting the step
