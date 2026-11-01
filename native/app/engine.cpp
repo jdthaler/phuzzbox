@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "phuzzbox/denormals.h"
+#include "phuzzbox/guard.h"
 
 namespace phuzzbox::app {
 namespace {
@@ -32,6 +33,7 @@ void Engine::prepare(double rate, int maxFrames) {
   dirty = true;
   wet = bypass ? 0 : 1;
   level = gain;
+  dry.reset();
   busy = span = 0;
 }
 
@@ -103,6 +105,7 @@ void Engine::process(const float *in, int inChannels, float *out, int outChannel
   float peakIn = 0, peakOut = 0;
   for (int i = 0; i < n; i++) {
     v[i] = in && inChannels > 0 ? in[i * inChannels + ch] * k : 0.0f;
+    if (!std::isfinite(v[i])) v[i] = 0; // a driver's garbage never reaches the pedal or the dry path
     peakIn = std::max(peakIn, std::abs(v[i]));
     keep[at] = v[i];
     at = (at + 1) % kKeep;
@@ -119,14 +122,18 @@ void Engine::process(const float *in, int inChannels, float *out, int outChannel
   }
 
   effect->process(v.data(), L.data(), R.data(), n);
+  // a block gone non-finite comes out as silence, and the pedal starts again once (guard.h), as in
+  // the plugins and the page
+  if (!guardBlock(L.data(), R.data(), n)) effect->reset();
   const double target = bypass ? 0 : 1, step = 1 / (kFade * fs);
   const bool silent = mute;
   const double g = std::clamp(gain.load(), 0.0, 1.0), glide = 1 - std::exp(-1 / (kGlide * fs));
+  dry.setDelay(effect->latency());
   for (int i = 0; i < n; i++) {
     if (wet != target) wet = target > wet ? std::min(target, wet + step) : std::max(target, wet - step);
     level += glide * (g - level);
-    float l = (float)(wet * L[i] + (1 - wet) * v[i]), r = (float)(wet * R[i] + (1 - wet) * v[i]);
-    if (!std::isfinite(l) || !std::isfinite(r)) { effect->reset(); l = r = 0; }
+    const float d = dry.run(v[i]);
+    const float l = (float)(wet * L[i] + (1 - wet) * d), r = (float)(wet * R[i] + (1 - wet) * d);
     peakOut = std::max({peakOut, std::abs(l), std::abs(r)});
     const float ol = silent ? 0.0f : (float)(level * l / k), orr = silent ? 0.0f : (float)(level * r / k);
     for (int c = 0; c < outChannels; c++) out[i * outChannels + c] = c % 2 ? orr : ol;

@@ -43,7 +43,7 @@
         <a href="https://forte.jthaler.net">Forte</a>.</p>
     </section>
     <section class="grid" id="pedals"></section>
-    <p class="also" id="also">Every page plays the test bass, a bass made of physics, and has a tuner that reads a stiff string's first partial.</p>
+    <p class="also" id="also">Every page plays the test bass, a bass made of physics, and has a tuner that reads a stiff string's first partial, a scope and a spectrum.</p>
     <footer>PhuzzBox <span id="ver"></span> · vibe coded by Jesse Thaler · MIT licence</footer>
   </main>
   <script type="module">
@@ -70,7 +70,7 @@
     }
     // the test bass's and the tuner's notes, in the pedals' dialog
     const notes = howItWorks();
-    for (const [key, label] of [['testbass', 'The test bass'], ['tuner', 'The tuner']]) document.getElementById('also').append(notes.button(key, label));
+    for (const [key, label] of [['testbass', 'The test bass'], ['tuner', 'The tuner'], ['scope', 'The scope'], ['spectrum', 'The spectrum']]) document.getElementById('also').append(notes.button(key, label));
   </script>
 </body>
 </html>

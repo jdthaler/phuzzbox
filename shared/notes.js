@@ -1,13 +1,14 @@
 // notes.js — How it works: a README rendered in a dialog, as Forte's pages have it, so the physics
-// is one tap from the pedal. On a pedal's page the dialog has three tabs: the pedal's own README,
-// the test bass's (testbass/README.md) and the tuner's (tuner/README.md), since every page plays
-// the one and shows the other. The landing page opens the test bass's and the tuner's.
+// is one tap from the pedal. On a pedal's page the dialog has a tab for the pedal's own README and
+// one for each thing every page has: the test bass (testbass/README.md), the tuner
+// (tuner/README.md), the scope (scope/README.md) and the spectrum (spectrum/README.md). The landing
+// page opens all but the pedal's.
 // A README's "Files" section (for developers) is left out, and its links point at the repository.
-// Hashes open it straight away: …/#about (the pedal), #testbass, #tuner.
+// Hashes open it straight away: …/#about (the pedal), #testbass, #tuner, #scope, #spectrum.
 //
 //   const notes = howItWorks({ pedal: { id, name, version } });   // on a pedal's page
 //   notes.button(key?, label?)        a "How it works" button (for the header, or for one of them)
-//   notes.open('pedal' | 'testbass' | 'tuner')
+//   notes.open('pedal' | 'testbass' | 'tuner' | 'scope' | 'spectrum')
 
 import { renderMarkdown } from './markdown.js';
 
@@ -31,8 +32,10 @@ export function howItWorks({ pedal = null } = {}) {
     ...(pedal ? [{ key: 'pedal', hash: '#about', name: pedal.name, dir: `${pedal.id}/`, version: pedal.version }] : []),
     { key: 'testbass', hash: '#testbass', name: 'Test bass', dir: 'testbass/' },
     { key: 'tuner', hash: '#tuner', name: 'Tuner', dir: 'tuner/' },
+    { key: 'scope', hash: '#scope', name: 'Scope', dir: 'scope/' },
+    { key: 'spectrum', hash: '#spectrum', name: 'Spectrum', dir: 'spectrum/' },
   ];
-  const what = { pedal: 'pedal', testbass: 'bass made of physics', tuner: 'tuner' };
+  const what = { pedal: 'pedal', testbass: 'bass made of physics', tuner: 'tuner', scope: 'scope', spectrum: 'spectrum analyser' };
   let dialog = null, body = null, heading = null, ver = null, tabs = [], at = null;
   const loaded = new Map();
 
@@ -129,7 +132,7 @@ export function howItWorks({ pedal = null } = {}) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'pz-about';
-    b.title = d.key === 'pedal' ? `The physics of the ${pedal.name}, the test bass and the tuner` : `How the ${d.name.toLowerCase()} works`;
+    b.title = d.key === 'pedal' ? `The physics of the ${pedal.name}, the test bass, the tuner, the scope and the spectrum` : `How the ${d.name.toLowerCase()} works`;
     b.setAttribute('aria-label', label === 'How it works' ? label : `How it works: ${label}`);
     b.innerHTML = '<span class="pz-about-i" aria-hidden="true">i</span><span class="pz-about-label"></span>';
     b.querySelector('.pz-about-label').textContent = label;

@@ -64,7 +64,12 @@ and hide each view and group of controls, Discover and Perform, and a handle sha
 (`shared/layout.js`); a dark theme with skeuomorphic hardware (powder-coated enclosure, knurled
 knobs on a scale, a chrome footswitch, LED-ladder meters, a lit tuner display, faders, a rosewood
 fretboard); the test bass on screen only while it is the input; the spectra mark the note being
-played. The app's window takes the dark theme; giving it the one-screen layout is still to do.
+played. The app's window takes the dark theme and the one-screen layout.
+
+Decided 2026-11-01 (Jesse): every pedal has a Scope and a Spectrum, each with a How it works page
+(`shared/views.js`, `scope/README.md`, `spectrum/README.md`), the input dashed against the output
+solid, in volts. The app's window has the tuner only; giving it the scope and the spectrum would
+need the native host to send it the audio.
 
 ## Open
 

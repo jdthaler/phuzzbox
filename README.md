@@ -74,9 +74,17 @@ name the note, then the peak of the fundamental's own spectral line, to a hundre
 ([tuner/README.md](tuner/README.md), tested in `test/tuner-tests.mjs`). **Mute while tuning**
 silences the output, as a tuner pedal does.
 
+Every pedal also has a **Scope** and a **Spectrum**, each showing what goes in (dashed) against
+what comes out (solid), in volts. The scope draws the two waves over 50 ms, held still by a
+trigger on the input's rising edges with hysteresis, as a bench oscilloscope's
+([scope/README.md](scope/README.md)). The spectrum draws them against frequency, calibrated so a
+partial reads its peak amplitude in dBV (0 dBV is a sine of 1 V peak), with the note being played
+marked in green ([spectrum/README.md](spectrum/README.md)); both are tested in
+`test/views-tests.mjs`.
+
 **How it works and Tour.** By each page's title, **How it works** opens the pedal's notes (its
 README: the equations, the numbers, what is simplified and the sources), with tabs for the test
-bass's and the tuner's. **Tour** is a guided tour of the pedal's physics, as Forte's instruments
+bass's, the tuner's, the scope's and the spectrum's. **Tour** is a guided tour of the pedal's physics, as Forte's instruments
 have: a few steps, each setting the pedal up and playing the test bass through it while a card
 says what to listen for and which view to watch. Your own settings come back when it ends.
 

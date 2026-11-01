@@ -1,7 +1,8 @@
 // preamp-main.js — the Tube Preamp's page: the shell (shared/shell.js) and its views.
 
 import { createPedal } from '../../shared/shell.js';
-import { fit, css, freqAxes, animate, markNote } from '../../shared/plot.js';
+import { fit, css, freqAxes, animate } from '../../shared/plot.js';
+import { scopeView, spectrumView } from '../../shared/views.js';
 import { scratch, wasmEffect } from '../../shared/wasm.js';
 import { PEDAL } from './preamp-pedal.js';
 
@@ -157,77 +158,8 @@ const toneView = {
   },
 };
 
-// A scope: the input and the output, in volts, lined up on the output's rising edges.
-const scopeView = {
-  title: 'Scope',
-  caption: 'the voltage at the input (dashed) and the output (solid) as you play, each scaled to fit. Turn up Gain and the tops round off first: the second triode\'s grid starts to conduct on one side and it cuts off on the other.',
-  mount(holder, api) {
-    const canvas = document.createElement('canvas');
-    holder.append(canvas);
-    let a = null, b = null;
-    animate(canvas, () => {
-      const { g, w, h } = fit(canvas);
-      g.clearRect(0, 0, w, h);
-      const box = { l: 40, r: w - 10, t: 10, b: h - 20 };
-      g.strokeStyle = css('--grid'); g.fillStyle = css('--ink-2'); g.lineWidth = 1; g.font = '11px system-ui, sans-serif';
-      g.beginPath(); g.moveTo(box.l, (box.t + box.b) / 2); g.lineTo(box.r, (box.t + box.b) / 2); g.stroke();
-      if (!api.analyser || !api.input) { g.textAlign = 'center'; g.fillText('Start audio, then play', (box.l + box.r) / 2, (box.t + box.b) / 2 - 8); return; }
-      a ??= new Float32Array(api.analyser.fftSize); b ??= new Float32Array(api.input.fftSize);
-      api.analyser.getFloatTimeDomainData(a);
-      api.input.getFloatTimeDomainData(b);
-      const k = api.fullScale(), fs = api.ctx.sampleRate, span = Math.round(0.05 * fs); // 50 ms
-      const off = b.length - a.length;
-      let start = a.length - span - 1;
-      for (let i = a.length - span - 1; i > 1; i--) if (a[i - 1] < 0 && a[i] >= 0) { start = i; break; }
-      let ma = 1e-4, mb = 1e-4;
-      for (let i = 0; i < span; i++) { ma = Math.max(ma, Math.abs(k * a[start + i])); mb = Math.max(mb, Math.abs(b[off + start + i])); }
-      const X = (i) => box.l + ((box.r - box.l) * i) / span, Y = (v, m) => (box.t + box.b) / 2 - ((box.b - box.t) / 2) * (v / m) * 0.95;
-      g.textAlign = 'left';
-      g.fillText(`±${(ma * 1000).toFixed(0)} mV`, box.l + 4, box.t + 8);
-      g.textAlign = 'center'; g.fillText(`50 ms; input ${(mb * 1000).toFixed(0)} mV at full height`, (box.l + box.r) / 2, h - 5);
-      g.strokeStyle = css('--ink-2'); g.lineWidth = 1.2; g.setLineDash([4, 3]); g.beginPath();
-      for (let i = 0; i < span; i++) { const yy = Y(b[off + start + i], mb); i ? g.lineTo(X(i), yy) : g.moveTo(X(i), yy); }
-      g.stroke(); g.setLineDash([]);
-      g.strokeStyle = css('--accent'); g.lineWidth = 2; g.beginPath();
-      for (let i = 0; i < span; i++) { const yy = Y(k * a[start + i], ma); i ? g.lineTo(X(i), yy) : g.moveTo(X(i), yy); }
-      g.stroke();
-    });
-  },
-};
+// the Scope and the Spectrum (shared/views.js), with what the triodes do to them
+const PREAMP_SCOPE = 'the voltage at the input (dashed) and the output (solid) as you play; with the preamp\'s gain the two get scales of their own, as on a two-channel scope. Turn up Gain and the tops round off first: the second triode\'s grid starts to conduct on one side and it cuts off on the other.';
+const PREAMP_SPECTRUM = 'what goes in (dashed) and what comes out (solid), in dB of volts (0 dBV is a sine of 1 V peak): clean, the harmonics are the bass\'s own, shaped by the tone stack; turned up, the triodes add their own, the even ones first, since each clips more on one side than the other. The green line is the note you are playing, as the tuner hears it at the input, and the ticks along the top its harmonics.';
 
-// The spectra of the input and the output: the harmonics the triodes add.
-const spectrumView = {
-  title: 'Spectrum',
-  caption: 'what goes in (dashed) and what comes out (solid), in dB of volts: clean, the harmonics are the bass\'s own, shaped by the tone stack; turned up, the triodes add their own, the even ones first, since each clips more on one side than the other. The green line is the note you are playing, as the tuner hears it at the input, and the ticks along the top its harmonics.',
-  mount(holder, api) {
-    const canvas = document.createElement('canvas');
-    holder.append(canvas);
-    let dOut = null, dIn = null;
-    animate(canvas, () => {
-      const { g, w, h } = fit(canvas);
-      g.clearRect(0, 0, w, h);
-      const { x, y, box } = freqAxes(g, w, h, { fmin: 30, dbMin: -120, dbMax: 0, step: h < 260 ? 24 : 12 });
-      if (!api.analyser || !api.input) { g.fillStyle = css('--ink-2'); g.textAlign = 'center'; g.fillText('Start audio, then play', (box.l + box.r) / 2, (box.t + box.b) / 2); return; }
-      markNote(g, x, box, api.note);
-      dOut ??= new Float32Array(api.analyser.frequencyBinCount); dIn ??= new Float32Array(api.input.frequencyBinCount);
-      api.analyser.getFloatFrequencyData(dOut);
-      api.input.getFloatFrequencyData(dIn);
-      const fs = api.ctx.sampleRate, kdb = 20 * Math.log10(api.fullScale());
-      const line = (d, n, color, width, offset, dash) => {
-        g.beginPath(); g.strokeStyle = color; g.lineWidth = width; g.setLineDash(dash);
-        let started = false;
-        for (let i = 1; i < d.length; i++) {
-          const f = (i * fs) / n;
-          if (f < 30 || f > 20000) continue;
-          const Y = Math.max(box.t, Math.min(box.b, y(d[i] + offset)));
-          if (!started) { g.moveTo(x(f), Y); started = true; } else g.lineTo(x(f), Y);
-        }
-        g.stroke(); g.setLineDash([]);
-      };
-      line(dIn, api.input.fftSize, css('--ink-2'), 1, 0, [4, 3]);
-      line(dOut, api.analyser.fftSize, css('--accent'), 1.5, kdb, []);
-    });
-  },
-};
-
-createPedal({ PEDAL, worklet: new URL('./preamp-worklet.js', import.meta.url), views: [tubeView, toneView, scopeView, spectrumView] });
+createPedal({ PEDAL, worklet: new URL('./preamp-worklet.js', import.meta.url), views: [tubeView, toneView, scopeView({ caption: PREAMP_SCOPE }), spectrumView({ caption: PREAMP_SPECTRUM })] });
