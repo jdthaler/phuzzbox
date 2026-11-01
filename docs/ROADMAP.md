@@ -90,6 +90,14 @@ Decided 2026-11-01 (Jesse): every pedal has a Scope and a Spectrum, each with a 
 solid, in volts. The app's window has the tuner only; giving it the scope and the spectrum would
 need the native host to send it the audio.
 
+Decided 2026-11-01: a pedal gets a **Reversed** switch (plugged in backwards: the bass into its
+output jack, its input jack to the amp) only where its circuit model can honestly drive it from the
+output. The Wah has one: its loop becomes the signal path, and from a passive bass it squeals (the
+"seagull"), which the tests find both in the engine and in an independent linearised analysis. The
+Phuzz (no junction capacitances), the Tube Preamp (its tubes pass nothing back but through a few
+picofarads: a switch would be a mute) and the Buffer (no circuit of its own) say in their READMEs why
+they have none. A new pedal decides the same way (`docs/PEDAL_GUIDE.md`).
+
 ## Open
 
 - The site is up at `phuzzbox.jthaler.net` (GitHub Pages from `live`, 2026-10-31).

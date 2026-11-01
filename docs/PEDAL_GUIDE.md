@@ -134,6 +134,18 @@ caption. Figures load from the site (the renderer's `assets` URL), never from Gi
 every quantity in its text (a number and its unit) is one of the READMEs' or a setting the step
 makes: the tour says nothing the README, and so the tests, don't back.
 
+## Plugged in backwards
+
+A pedal may have a **Reversed** checkbox (id `reversed`): the bass into its output jack and its input
+jack to the amp. Give it one only where the model can honestly be driven from its output: the
+bass as its pickup (a Norton source, as the Phuzz, the Tube Preamp and the Wah backwards have it)
+at the output node, the amp's cable and input at the input node, and every path the signal could
+take back present in the model. Where the real leak back is through parts the model leaves out
+(a transistor's junction capacitances, say), it has none, and its README says why under
+`## Plugged in backwards`. A backwards circuit can be unstable (the Wah squeals): test where it
+oscillates against an independent analysis, not only its response. The Wah is the example
+(`native/pedals/wah/wah-model.cpp`, its `wah_squeal` for the page).
+
 ## Tests
 
 A plain Node script printing `ok`/`FAIL` lines (`test/harness.mjs`). Load the effect with
