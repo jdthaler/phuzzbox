@@ -8,5 +8,6 @@ export const PEDAL = {
   name: 'Plate Reverb',
   description: 'A steel plate in a frame, its bending modes from thin-plate theory, its losses the steel\'s and a damper\'s, heard by two pickups',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/plate.wasm', import.meta.url).href },
 };

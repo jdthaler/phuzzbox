@@ -8,5 +8,6 @@ export const PEDAL = {
   name: 'Opto Compressor',
   description: 'An electro-optical leveler: a glowing panel and a photocell with memory turn the bass down',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/opto.wasm', import.meta.url).href },
 };

@@ -179,7 +179,8 @@ button.info::after { content: ""; position: absolute; inset: -5px; border-radius
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
 .legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
 
-/* ---- the test bass: a rosewood board, nickel frets, a bone nut, pearl dots, four strings ------- */
+/* ---- the test bass: a rosewood board, nickel frets, a bone nut, pearl dots, four strings (the
+   test guitar's six) ---- */
 .fretboard { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .fret-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
 .fret-head b { color: var(--ink); }
@@ -207,6 +208,11 @@ button.info::after { content: ""; position: absolute; inset: -5px; border-radius
   content: ""; position: absolute; left: 50%; bottom: 0; width: 10px; height: 10px; margin-left: -5px; transform: translateY(50%); z-index: 1; border-radius: 50%;
   background: radial-gradient(circle at 40% 35%, #fffaf0, #d8d2c4 60%, #b7b0a0);
 }
+/* the test guitar: six lighter strings, the bottom three wound, on a narrower board */
+.string.guitar.s0 button { --gauge: 2.6px; } .string.guitar.s1 button { --gauge: 2.2px; } .string.guitar.s2 button { --gauge: 1.9px; }
+.string.guitar.s3 button { --gauge: 1.6px; } .string.guitar.s4 button { --gauge: 1.3px; } .string.guitar.s5 button { --gauge: 1.1px; }
+.string.guitar.s2 button::after { background: repeating-linear-gradient(90deg, #e6e6e6 0 1px, #a5a5a5 1px 2px); }
+.frets[data-strings="6"] .string button { height: 21px; }
 .string button:active, .string button.down { background: radial-gradient(circle, var(--accent) 0 5px, rgb(251 146 60 / 0.35) 6px, transparent 13px); }
 
 /* ---- controls: faders, toggle switches -------------------------------------------------------- */
@@ -424,6 +430,7 @@ body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: v
 /* a short screen: a smaller fretboard and a more compact pedal */
 @media (max-height: 820px) {
   .string button { height: 22px; }
+  .frets[data-strings="6"] .string button { height: 16px; }
   body.one-screen .pedal { padding: 16px 16px 18px; gap: 10px; }
   body.one-screen .dial { width: 50px; height: 50px; }
   body.one-screen .dial .mark { height: 18px; }
@@ -470,7 +477,7 @@ body.perform .controls-bar { cursor: default; }
   .bass-bar .toggles-label { margin-right: 0; }
   .string button { height: 24px; }
 }
-@media (max-width: 1050px) and (max-height: 500px) { .string button { height: 17px; } .bass .frets { margin-bottom: 6px; } }
+@media (max-width: 1050px) and (max-height: 500px) { .string button { height: 17px; } .frets[data-strings="6"] .string button { height: 13px; } .bass .frets { margin-bottom: 6px; } }
 @media (max-width: 600px) {
   body.one-screen .groups { grid-template-columns: minmax(0, 1fr); }
   .bar-tools .presets { width: 150px; }
@@ -699,7 +706,7 @@ const __m2 = (() => {
 // tuner.js — the pitch of the input, for the page's tuner. Two steps:
 //
 // 1. detectPitch: the period, by normalised autocorrelation with parabolic interpolation over a
-//    bass's range (30–500 Hz; the method the tests use, tools/audio-util.mjs). It finds the
+//    bass's range (30–500 Hz) or a guitar's (60–1400 Hz; the method the tests use, tools/audio-util.mjs). It finds the
 //    period of the whole waveform, so it is right about the note even when the fundamental is weak.
 // 2. refine: the fundamental's own frequency, the peak of a Hann-windowed Fourier transform near
 //    that estimate. A real string is stiff: its partials run sharp, f_n = n f₁ √(1 + Bn²), and
@@ -770,13 +777,15 @@ function refine(x, fs, f, span = 0.03) {
 
 // The fundamental of a block: the period for the note, then the fundamental's own peak. The
 // period needs only to land within the peak search's ±3 %, so it is found on the newest `coarse`
-// samples averaged down to about 12 kHz (a bass's fundamentals are below 500 Hz), sixteen times
+// samples averaged down to about 12 kHz (a bass's fundamentals are below 500 Hz, a guitar's 1400), sixteen times
 // less work than at full rate; the peak search uses every sample.
-function tune(x, fs, { coarse = 8192 } = {}) {
+// fmin and fmax bound the note (a bass's 30–500 Hz by default; a guitar's 60–1400 Hz:
+// shared/instruments.js).
+function tune(x, fs, { coarse = 8192, fmin = 30, fmax = 500 } = {}) {
   const D = Math.max(1, Math.floor(fs / 12000)), src = x.length > coarse ? x.subarray(x.length - coarse) : x;
   const y = new Float32Array(Math.floor(src.length / D));
   for (let i = 0; i < y.length; i++) { let s = 0; for (let j = 0; j < D; j++) s += src[i * D + j]; y[i] = s / D; }
-  const f = detectPitch(y, fs / D), part = f ? sounding(x, fs) : null;
+  const f = detectPitch(y, fs / D, fmin, fmax), part = f ? sounding(x, fs) : null;
   return part ? refine(part, fs, f) : 0;
 }
 // The part of a block since the note began: a block that starts in the silence before a pluck
@@ -1407,11 +1416,64 @@ const KEEP = ['active', 'pickupL', 'pickupR', 'pickupC', 'pots', 'activeR', 'rec
 return { bass, recorded, GROUPS, PRESETS, KEEP };
 })();
 
+// ---- shared/instruments.js
+const __m9 = (() => {
+
+// instruments.js — the two instruments a page can be set up for, bass and guitar: their open
+// strings, the tuner's range for each, the test instrument's riff, and the pickup each pedal that
+// models one starts from (the test bass's and the test guitar's own: native/sources/testbass).
+// The player chooses one in the Rig (shared/shell.js); each pedal keeps its settings for each.
+// A descriptor's `guitar` holds the values its parameters take for a guitar where they differ from
+// the defaults (which are the bass's): the pickup, and the ranges a circuit was built for.
+
+const INSTRUMENTS = {
+  bass: {
+    id: 'bass', name: 'Bass', test: 'Test bass',
+    open: [28, 33, 38, 43], strings: ['E', 'A', 'D', 'G'],
+    // the open strings of four-, five- and six-string basses: B0 E1 A1 D2 G2 C3
+    tunerOpen: [23, 28, 33, 38, 43, 48],
+    tuner: { fmin: 30, fmax: 500 },
+  },
+  guitar: {
+    id: 'guitar', name: 'Guitar', test: 'Test guitar',
+    open: [40, 45, 50, 55, 59, 64], strings: ['E', 'A', 'D', 'G', 'B', 'e'],
+    // the open strings of six- and seven-string guitars: B1 E2 A2 D3 G3 B3 E4
+    tunerOpen: [35, 40, 45, 50, 55, 59, 64],
+    // drop C's low C (65 Hz) to the high E's 24th fret (1319 Hz)
+    tuner: { fmin: 60, fmax: 1400 },
+  },
+};
+const instrument = (id) => INSTRUMENTS[id] ?? INSTRUMENTS.bass;
+
+// A guitar's pickup, as the test guitar's: a single coil of 2.5 H and 6 kΩ, its own 100 pF, a
+// 250 kΩ volume pot and a 250 kΩ tone pot to ground (125 kΩ). The bass's are the descriptors'
+// defaults (a P pickup, 3.6 H and 10.5 kΩ, the same pots).
+const GUITAR_PICKUP = { pickupL: 2.5, pickupR: 6000, pickupC: 100e-12, pots: 125e3 };
+
+// An original two-bar line to hear a pedal with when nothing is plugged in, at 96 beats a minute:
+// [key, beats], key 0 a rest. The guitar plays the bass's line an octave up, where a guitar has it.
+const RIFFS = {
+  bass: [[28, 0.5], [28, 0.5], [40, 0.5], [28, 0.5], [31, 0.5], [33, 0.5], [0, 0.5], [35, 0.5],
+    [28, 0.5], [28, 0.5], [38, 0.5], [40, 0.25], [38, 0.25], [35, 0.5], [33, 0.5], [31, 1]],
+};
+RIFFS.guitar = RIFFS.bass.map(([k, b]) => [k ? k + 12 : 0, b]);
+
+// Where a page keeps a pedal's settings for each instrument (the bass's where they always were),
+// and a pedal's defaults for one: the descriptor's, with its `guitar` values for a guitar.
+const INSTRUMENT_KEY = 'phuzzbox.instrument';
+const paramsKey = (id, inst) => (inst === 'guitar' ? `phuzzbox.${id}.guitar.params` : `phuzzbox.${id}.params`);
+const instrumentDefaults = (PEDAL, defaults, inst) => ({ ...defaults, ...(inst === 'guitar' ? PEDAL.guitar ?? {} : {}) });
+
+return { INSTRUMENTS, instrument, GUITAR_PICKUP, RIFFS, INSTRUMENT_KEY, paramsKey, instrumentDefaults };
+})();
+
 // ---- buffer/src/buffer-pedal.js
 const __m7 = (() => {
 const { GROUPS, PRESETS, KEEP } = __m8;
+const { GUITAR_PICKUP } = __m9;
 // buffer-pedal.js — the Buffer's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
 
 
 const PEDAL = {
@@ -1419,6 +1481,8 @@ const PEDAL = {
   name: 'Buffer',
   description: 'A passive pickup into a cable and an input, as a circuit',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: its pickup (shared/instruments.js)
+  guitar: GUITAR_PICKUP,
   wasm: { binary: () => new URL('../wasm/buffer.wasm', location.href).href },
 };
 
@@ -1426,7 +1490,7 @@ return { PEDAL };
 })();
 
 // ---- phuzz/src/phuzz-params.js
-const __m10 = (() => {
+const __m11 = (() => {
 const { bass, recorded } = __m8;
 // phuzz-params.js — the Phuzz's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
@@ -1492,10 +1556,12 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- phuzz/src/phuzz-pedal.js
-const __m9 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m10;
+const __m10 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m11;
+const { GUITAR_PICKUP } = __m9;
 // phuzz-pedal.js — the Phuzz's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
 
 
 const PEDAL = {
@@ -1503,6 +1569,8 @@ const PEDAL = {
   name: 'Phuzz',
   description: 'A two-transistor germanium fuzz, from Ebers–Moll transistors that drift with temperature',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: its pickup, which the Phuzz loads (shared/instruments.js)
+  guitar: GUITAR_PICKUP,
   wasm: { binary: () => new URL('../wasm/phuzz.wasm', location.href).href },
 };
 
@@ -1510,7 +1578,7 @@ return { PEDAL };
 })();
 
 // ---- wah/src/wah-params.js
-const __m12 = (() => {
+const __m13 = (() => {
 const { bass, recorded } = __m8;
 // wah-params.js — the Wah's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The parts are the inductor wah's as Holters and Zölzer (DAFx 2011) list them; the sweep
@@ -1603,10 +1671,12 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- wah/src/wah-pedal.js
-const __m11 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m12;
+const __m12 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m13;
+const { GUITAR_PICKUP } = __m9;
 // wah-pedal.js — the Wah's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
 
 
 const PEDAL = {
@@ -1614,6 +1684,8 @@ const PEDAL = {
   name: 'Wah',
   description: 'An inductor wah: two transistors and a resonant coil, swept by a rocker',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: its pickup (for the Wah backwards), and the 10 nF sweep capacitor it was built with
+  guitar: { ...GUITAR_PICKUP, sweepC: 10e-9 },
   // the parameter an expression pedal moves (shared/midi.js maps MIDI CC 1 to it unless taught)
   expression: 'position',
   wasm: { binary: () => new URL('../wasm/wah.wasm', location.href).href },
@@ -1623,7 +1695,7 @@ return { PEDAL };
 })();
 
 // ---- preamp/src/preamp-params.js
-const __m14 = (() => {
+const __m15 = (() => {
 const { bass, recorded } = __m8;
 // preamp-params.js — the Tube Preamp's controls. Values in SI units; `scale` shows them in friendlier
 // ones. The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
@@ -1691,10 +1763,12 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- preamp/src/preamp-pedal.js
-const __m13 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m14;
+const __m14 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m15;
+const { GUITAR_PICKUP } = __m9;
 // preamp-pedal.js — the Tube Preamp's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
 
 
 const PEDAL = {
@@ -1702,6 +1776,8 @@ const PEDAL = {
   name: 'Tube Preamp',
   description: 'A 1959 Bassman\'s preamp: three 12AX7 triodes that conduct at the grid, and its passive tone stack',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: its pickup, which the preamp's grid sees through the cable (shared/instruments.js)
+  guitar: GUITAR_PICKUP,
   wasm: { binary: () => new URL('../wasm/preamp.wasm', location.href).href },
 };
 
@@ -1709,7 +1785,7 @@ return { PEDAL };
 })();
 
 // ---- opto/src/opto-params.js
-const __m16 = (() => {
+const __m17 = (() => {
 
 // opto-params.js — the Opto Compressor's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The fixed parts (the 47 kΩ series resistor, the driver's gain, the cell's
@@ -1769,8 +1845,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- opto/src/opto-pedal.js
-const __m15 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m16;
+const __m16 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m17;
 // opto-pedal.js — the Opto Compressor's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1780,6 +1856,7 @@ const PEDAL = {
   name: 'Opto Compressor',
   description: 'An electro-optical leveler: a glowing panel and a photocell with memory turn the bass down',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/opto.wasm', location.href).href },
 };
 
@@ -1787,18 +1864,20 @@ return { PEDAL };
 })();
 
 // ---- cabinet/src/cabinet-params.js
-const __m18 = (() => {
+const __m19 = (() => {
 
 // cabinet-params.js — the Speaker Cabinet's controls. Values in SI units; `scale` shows them in
-// friendlier ones. The drivers are Thiele–Small parameters typical of a 10-inch or a 15-inch bass
-// driver, not any one maker's; the presets set whole cabinets.
+// friendlier ones. The bass drivers are Thiele–Small parameters typical of a 10-inch or a 15-inch
+// bass driver, not any one maker's; the guitar's are a 12-inch guitar driver's as its maker lists
+// them (Eminence's Legend 1258); the presets set whole cabinets.
 
 const cabinet = [
   { id: 'drive', label: 'Power amp gain', min: 10, max: 46, def: 32, unit: 'dB', decimals: 1, perform: true,
     hint: 'The clean power amp\'s voltage gain, from your bass\'s volts to the cabinet\'s. It sets how hard the cones are pushed: up high, the low notes run the cones out of travel and the sound thickens and compresses, the lowest strings first.' },
   { id: 'mic', label: 'Microphone sensitivity', min: 1e-3, max: 0.1, def: 15e-3, log: true, unit: 'mV/Pa', scale: 1e3, decimals: 1, perform: true,
     hint: 'The volts the microphone at 1 m gives per pascal of sound: a dynamic microphone gives about 2, a condenser about 20. It is the pedal\'s output level and changes nothing else.' },
-  { id: 'layout', label: 'Drivers', type: 'select', def: '8x10', options: [['1x15', '1 × 15″'], ['2x10', '2 × 10″, in parallel'], ['4x10', '4 × 10″, 2 series × 2 parallel'], ['8x10', '8 × 10″, 2 series × 4 parallel']],
+  { id: 'layout', label: 'Drivers', type: 'select', def: '8x10', options: [['1x15', '1 × 15″'], ['2x10', '2 × 10″, in parallel'], ['4x10', '4 × 10″, 2 series × 2 parallel'], ['8x10', '8 × 10″, 2 series × 4 parallel'],
+    ['1x12', '1 × 12″'], ['2x12', '2 × 12″, in parallel'], ['4x12', '4 × 12″, 2 series × 2 parallel']],
     hint: 'How many drivers share the box and how they are wired. More drivers move more air together: 8 against 1 is 18 dB more sound for the same voltage on each. Two in series share the amp\'s voltage, each getting half of it.' },
   { id: 'box', label: 'Box', type: 'select', def: 'sealed', options: [['sealed', 'Sealed'], ['ported', 'Ported']],
     hint: 'Sealed, the air in the box is a spring behind the cones: the bass rolls off gently (12 dB an octave) below the box\'s resonance, and the cones stay in control however low you play. Ported, the air in the port resonates with the box\'s and takes over from the cones near its tuning: deeper bass, a steeper roll-off (24 dB an octave), and below the tuning the cones flap with nothing holding them.' },
@@ -1830,7 +1909,7 @@ const driver = [
     hint: 'The voice coil\'s inductance. Above Re/(2πLe), about 1.1 kHz at the defaults, it chokes the current and the top rolls off: more inductance, a darker cabinet.' },
   { id: 'sd', label: 'Cone area (Sd)', min: 0.005, max: 0.1, def: 0.035, log: true, unit: 'cm²', scale: 1e4, decimals: 0,
     hint: 'The cone\'s area, about 350 cm² for a 10-inch and 855 cm² for a 15-inch. With Fs, Qes and Vas held, a bigger cone makes the same sound with less travel, since it moves more air per millimetre: it runs out of travel later on low notes.' },
-  { id: 'xmax', label: 'Linear travel (Xmax)', min: 1e-3, max: 20e-3, def: 4e-3, log: true, unit: 'mm', scale: 1e3, decimals: 1,
+  { id: 'xmax', label: 'Linear travel (Xmax)', min: 0.3e-3, max: 20e-3, def: 4e-3, log: true, unit: 'mm', scale: 1e3, decimals: 1,
     hint: 'How far the cone travels each way before the coil starts to leave the magnet\'s gap (the force factor falls to 82 %) and the suspension stiffens. Less travel, and loud low notes distort sooner.' },
 ];
 
@@ -1848,6 +1927,11 @@ const GROUPS = [
 
 const ten = { fs: 45, qes: 0.375, qms: 5, vas: 0.054, re: 5.6, le: 0.8e-3, sd: 0.035, xmax: 4e-3 };
 const fifteen = { fs: 38, qes: 0.4, qms: 6, vas: 0.18, re: 5.4, le: 1.5e-3, sd: 0.0855, xmax: 6e-3 };
+// a 12-inch guitar driver, Eminence's Legend 1258 as its maker lists it: a light cone on a stiff
+// suspension, weakly damped (Qes 1.18), with half a millimetre of linear travel
+const twelve = { fs: 94, qes: 1.18, qms: 6.15, vas: 0.0325, re: 7.44, le: 0.7e-3, sd: 0.05067, xmax: 0.48e-3 };
+// a closed-back 4 × 12 of about 120 L on a tube amp, for a guitar (shared/instruments.js)
+const GUITAR = { ...twelve, layout: '4x12', box: 'sealed', volume: 0.12, ampR: 4, drive: 32, mic: 15e-3 };
 const PRESETS = {
   '8 × 10 sealed': { ...ten, layout: '8x10', box: 'sealed', volume: 0.2, ampR: 0.05, drive: 32, mic: 15e-3 },
   '4 × 10 ported': { ...ten, layout: '4x10', box: 'ported', volume: 0.14, ports: 2, portD: 0.1, portL: 0.09, ampR: 0.05, drive: 32, mic: 25e-3 },
@@ -1856,15 +1940,16 @@ const PRESETS = {
   '1 × 15 sealed': { ...fifteen, layout: '1x15', box: 'sealed', volume: 0.12, ampR: 0.05, drive: 32, mic: 40e-3 },
   '8 × 10 on a tube amp': { ...ten, layout: '8x10', box: 'sealed', volume: 0.2, ampR: 4, drive: 32, mic: 15e-3 },
   '8 × 10, pushed hard': { ...ten, layout: '8x10', box: 'sealed', volume: 0.2, ampR: 0.05, drive: 44, mic: 4e-3 },
+  'Guitar 4 × 12 closed back': GUITAR,
 };
 const KEEP = [];
 
-return { GROUPS, PRESETS, KEEP };
+return { GROUPS, GUITAR, PRESETS, KEEP };
 })();
 
 // ---- cabinet/src/cabinet-pedal.js
-const __m17 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m18;
+const __m18 = (() => {
+const { GROUPS, PRESETS, KEEP, GUITAR } = __m19;
 // cabinet-pedal.js — the Speaker Cabinet's descriptor: everything a host needs to run it without
 // its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -1872,8 +1957,10 @@ const { GROUPS, PRESETS, KEEP } = __m18;
 const PEDAL = {
   id: 'cabinet',
   name: 'Cabinet',
-  description: 'Bass speaker cabinets from their Thiele–Small parameters: cones on their suspensions, the air in a sealed or ported box, heard by a microphone',
+  description: 'Speaker cabinets from their Thiele–Small parameters: cones on their suspensions, the air in a sealed or ported box, heard by a microphone',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: a closed-back 4 × 12 of guitar drivers on a tube amp
+  guitar: GUITAR,
   wasm: { binary: () => new URL('../wasm/cabinet.wasm', location.href).href },
 };
 
@@ -1881,7 +1968,7 @@ return { PEDAL };
 })();
 
 // ---- envelope/src/envelope-params.js
-const __m20 = (() => {
+const __m21 = (() => {
 
 // envelope-params.js — the Envelope Filter's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The filter is a state-variable filter whose two integrators' resistors are
@@ -1944,8 +2031,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- envelope/src/envelope-pedal.js
-const __m19 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m20;
+const __m20 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m21;
 // envelope-pedal.js — the Envelope Filter's descriptor: everything a host needs to run it without
 // its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -1955,6 +2042,8 @@ const PEDAL = {
   name: 'Envelope Filter',
   description: 'A resonant state-variable filter swept by how hard you play: an envelope follower lights an LED, and the photocells it lights set the cutoff',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: 15 nF sweeps a guitar's range, 317 Hz to 4.8 kHz (README)
+  guitar: { rangeC: 15e-9 },
   wasm: { binary: () => new URL('../wasm/envelope.wasm', location.href).href },
 };
 
@@ -1962,7 +2051,7 @@ return { PEDAL };
 })();
 
 // ---- octave/src/octave-params.js
-const __m22 = (() => {
+const __m23 = (() => {
 
 // octave-params.js — the Octave Down's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The circuit is the analog octave divider: a tracking filter, a comparator with
@@ -2006,8 +2095,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- octave/src/octave-pedal.js
-const __m21 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m22;
+const __m22 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m23;
 // octave-pedal.js — the Octave Down's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2017,6 +2106,8 @@ const PEDAL = {
   name: 'Octave Down',
   description: 'The analog octave divider: a comparator and flip-flops that flip the bass\'s polarity once a cycle, an octave below, and every other cycle, two',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: the tracking filter an octave higher, as the low E is (README, ## Tracking)
+  guitar: { track: 150 },
   wasm: { binary: () => new URL('../wasm/octave.wasm', location.href).href },
 };
 
@@ -2024,7 +2115,7 @@ return { PEDAL };
 })();
 
 // ---- spring/src/spring-params.js
-const __m24 = (() => {
+const __m25 = (() => {
 
 // spring-params.js — the Spring Reverb's controls. Values in SI units; `scale` shows them in
 // friendlier ones. A reverb tank: helical steel springs hung between magnetic beads, one bead
@@ -2075,8 +2166,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- spring/src/spring-pedal.js
-const __m23 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m24;
+const __m24 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m25;
 // spring-pedal.js — the Spring Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2086,6 +2177,7 @@ const PEDAL = {
   name: 'Spring Reverb',
   description: 'A reverb tank\'s helical springs from their measured coils and wire: every echo a chirp, from waves that travel slower the higher they are',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/spring.wasm', location.href).href },
 };
 
@@ -2093,7 +2185,7 @@ return { PEDAL };
 })();
 
 // ---- echo/src/echo-params.js
-const __m26 = (() => {
+const __m27 = (() => {
 
 // echo-params.js — the Tape Echo's controls. Values in SI units; `scale` shows them in friendlier
 // ones. A loop of tape passes a record head and three playback heads; the echoes are the distances
@@ -2160,8 +2252,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- echo/src/echo-pedal.js
-const __m25 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m26;
+const __m26 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m27;
 // echo-pedal.js — the Tape Echo's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2171,6 +2263,7 @@ const PEDAL = {
   name: 'Tape Echo',
   description: 'A tape loop past a record head and three playback heads: echoes from distance over speed, coloured by the tape\'s magnetisation and the heads\' losses',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/echo.wasm', location.href).href },
 };
 
@@ -2178,7 +2271,7 @@ return { PEDAL };
 })();
 
 // ---- rotary/src/rotary-params.js
-const __m28 = (() => {
+const __m29 = (() => {
 
 // rotary-params.js — the Rotary Speaker's controls. Values in SI units (rotation rates in hertz,
 // shown in rpm; angles in radians, shown in degrees). A horn and a drum spin in a cabinet past two
@@ -2251,8 +2344,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- rotary/src/rotary-pedal.js
-const __m27 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m28;
+const __m28 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m29;
 // rotary-pedal.js — the Rotary Speaker's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2262,6 +2355,7 @@ const PEDAL = {
   name: 'Rotary Speaker',
   description: 'A horn and a drum spinning past two microphones: the Doppler shift of a moving source, its directivity, and motors with inertia',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/rotary.wasm', location.href).href },
 };
 
@@ -2269,7 +2363,7 @@ return { PEDAL };
 })();
 
 // ---- plate/src/plate-params.js
-const __m30 = (() => {
+const __m31 = (() => {
 
 // plate-params.js — the Plate Reverb's controls. Values in SI units. A steel plate, 2 m by 1 m and
 // half a millimetre thick, hung in a frame: a driver shakes it, two contact pickups listen.
@@ -2326,8 +2420,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- plate/src/plate-pedal.js
-const __m29 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m30;
+const __m30 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m31;
 // plate-pedal.js — the Plate Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2337,6 +2431,7 @@ const PEDAL = {
   name: 'Plate Reverb',
   description: 'A steel plate in a frame, its bending modes from thin-plate theory, its losses the steel\'s and a damper\'s, heard by two pickups',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/plate.wasm', location.href).href },
 };
 
@@ -2344,7 +2439,7 @@ return { PEDAL };
 })();
 
 // ---- sympathetic/src/sympathetic-params.js
-const __m32 = (() => {
+const __m33 = (() => {
 
 // sympathetic-params.js — the Sympathetic Strings' controls. Values in SI units. A frame of steel
 // strings tuned to a scale, all across one bridge; a driver moves the bridge with your bass, and a
@@ -2407,8 +2502,8 @@ return { KEYS, SCALES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- sympathetic/src/sympathetic-pedal.js
-const __m31 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m32;
+const __m32 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m33;
 // sympathetic-pedal.js — the Sympathetic Strings' descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2418,6 +2513,7 @@ const PEDAL = {
   name: 'Sympathetic Strings',
   description: 'A frame of stiff steel strings tuned to a key, all on one bridge your bass shakes: they ring along with the notes whose harmonics they share',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/sympathetic.wasm', location.href).href },
 };
 
@@ -2425,7 +2521,7 @@ return { PEDAL };
 })();
 
 // ---- blackhole/src/blackhole-params.js
-const __m34 = (() => {
+const __m35 = (() => {
 
 // blackhole-params.js — the Black Hole's controls. Values in SI units, and the hole's mass in suns:
 // your bass perturbs a spinning black hole, and you hear it ring in its quasinormal modes.
@@ -2470,8 +2566,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- blackhole/src/blackhole-pedal.js
-const __m33 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m34;
+const __m34 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m35;
 // blackhole-pedal.js — the Black Hole's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2481,6 +2577,7 @@ const PEDAL = {
   name: 'Black Hole',
   description: 'Your bass perturbs a spinning black hole, and it rings in its quasinormal modes, as LIGO hears after a merger: mass sets the pitch, spin the ring',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/blackhole.wasm', location.href).href },
 };
 
@@ -2488,7 +2585,7 @@ return { PEDAL };
 })();
 
 // ---- doppler/src/doppler-params.js
-const __m36 = (() => {
+const __m37 = (() => {
 
 // doppler-params.js — the Doppler's controls. Values in SI units: a source plays your bass as it
 // passes you on a straight road, again and again, and you hear it at its retarded time.
@@ -2536,8 +2633,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- doppler/src/doppler-pedal.js
-const __m35 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m36;
+const __m36 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m37;
 // doppler-pedal.js — the Doppler's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2547,6 +2644,7 @@ const PEDAL = {
   name: 'Doppler',
   description: 'A source plays your bass as it passes you, again and again, heard at its retarded time: the pitch falls as it goes by, and above Mach 1 the boom',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/doppler.wasm', location.href).href },
 };
 
@@ -2561,20 +2659,20 @@ const { INTERFACES, byInterface, fullScaleVolts } = __m3;
 const { midiPanel } = __m4;
 const { createLayout } = __m6;
 const { PEDAL: BUFFER } = __m7;
-const { PEDAL: PHUZZ } = __m9;
-const { PEDAL: WAH } = __m11;
-const { PEDAL: PREAMP } = __m13;
-const { PEDAL: OPTO } = __m15;
-const { PEDAL: CABINET } = __m17;
-const { PEDAL: ENVELOPE } = __m19;
-const { PEDAL: OCTAVE } = __m21;
-const { PEDAL: SPRING } = __m23;
-const { PEDAL: ECHO } = __m25;
-const { PEDAL: ROTARY } = __m27;
-const { PEDAL: PLATE } = __m29;
-const { PEDAL: SYMPATHETIC } = __m31;
-const { PEDAL: BLACKHOLE } = __m33;
-const { PEDAL: DOPPLER } = __m35;
+const { PEDAL: PHUZZ } = __m10;
+const { PEDAL: WAH } = __m12;
+const { PEDAL: PREAMP } = __m14;
+const { PEDAL: OPTO } = __m16;
+const { PEDAL: CABINET } = __m18;
+const { PEDAL: ENVELOPE } = __m20;
+const { PEDAL: OCTAVE } = __m22;
+const { PEDAL: SPRING } = __m24;
+const { PEDAL: ECHO } = __m26;
+const { PEDAL: ROTARY } = __m28;
+const { PEDAL: PLATE } = __m30;
+const { PEDAL: SYMPATHETIC } = __m32;
+const { PEDAL: BLACKHOLE } = __m34;
+const { PEDAL: DOPPLER } = __m36;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the

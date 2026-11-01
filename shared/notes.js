@@ -1,17 +1,18 @@
 // notes.js — How it works: a README rendered in a dialog, as Forte's pages have it, so the physics
 // is one tap from the pedal. On a pedal's page the dialog has a tab for the pedal's own README and
-// one for each thing every page has: the test bass (testbass/README.md), the tuner
+// one for each thing every page has: the test bass (testbass/README.md) and guitar
+// (testguitar/README.md), the tuner
 // (tuner/README.md), the scope (scope/README.md) and the spectrum (spectrum/README.md). The landing
 // page opens all but the pedal's.
 // A README's "Files" section (for developers) is left out. The notes link only to the site and to
 // sources elsewhere (papers, standards), never to the repository for information (Jesse,
 // 2026-11-01): a link to another README opens its notes (the tab, or that pedal's page), a link to
 // any other file of the repository is left as plain text, and the credits link to the source.
-// Hashes open it straight away: …/#about (the pedal), #testbass, #tuner, #scope, #spectrum.
+// Hashes open it straight away: …/#about (the pedal), #testbass, #testguitar, #tuner, #scope, #spectrum.
 //
 //   const notes = howItWorks({ pedal: { id, name, version } });   // on a pedal's page
 //   notes.button(key?, label?)        a "How it works" button (for the header, or for one of them)
-//   notes.open('pedal' | 'testbass' | 'tuner' | 'scope' | 'spectrum')
+//   notes.open('pedal' | 'testbass' | 'testguitar' | 'tuner' | 'scope' | 'spectrum')
 
 import { renderMarkdown } from './markdown.js';
 
@@ -33,6 +34,7 @@ export function howItWorks({ pedal = null } = {}) {
   const docs = [
     ...(pedal ? [{ key: 'pedal', hash: '#about', name: pedal.name, dir: `${pedal.id}/`, version: pedal.version }] : []),
     { key: 'testbass', hash: '#testbass', name: 'Test bass', dir: 'testbass/' },
+    { key: 'testguitar', hash: '#testguitar', name: 'Test guitar', dir: 'testguitar/' },
     { key: 'tuner', hash: '#tuner', name: 'Tuner', dir: 'tuner/' },
     { key: 'scope', hash: '#scope', name: 'Scope', dir: 'scope/' },
     { key: 'spectrum', hash: '#spectrum', name: 'Spectrum', dir: 'spectrum/' },
