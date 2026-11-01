@@ -34,6 +34,13 @@ export function nativeValue(p, v) {
   return typeof v === 'number' && Number.isFinite(v) ? v : p.def;
 }
 
+// A native number back as the descriptor's value: a choice's key, a toggle's true or false.
+export function fromNative(p, v) {
+  if (p.type === 'select') return p.options[Math.round(v)]?.[0] ?? p.def;
+  if (p.type === 'checkbox') return v >= 0.5;
+  return v;
+}
+
 // Position 0..1 along a knob (log parameters in log(value)), and back, snapped to `step`.
 export function toUnit(p, v) {
   if (p.log) return Math.log(v / p.min) / Math.log(p.max / p.min);

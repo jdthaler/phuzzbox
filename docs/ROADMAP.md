@@ -117,8 +117,9 @@ then **PhuzzBox.app** (`native/app/`, done): the same face in a window, with aud
 RtAudio at small buffers, a few milliseconds' round trip against Chrome's 15–25. Its own program
 rather than clap-wrapper's standalone, which fixes the buffer at 256 samples on macOS. The app
 plays every ready pedal, one at a time, from a menu in its title (2026-11-01: the Phuzz on the
-site measured 70 ms in Chrome on the owner's Mac). Next: the same face as the plugins' panel in
-MainStage and Logic (Forte's editor.cpp).
+site measured 70 ms in Chrome on the owner's Mac). The plugins open the same face as their own
+window in MainStage and Logic (2026-11-01, Forte's editor.cpp): the app's bundled window in a web
+view, its knobs the host's parameters, without the rig, audio and MIDI settings the host owns.
 
 ## The page
 
