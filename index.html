@@ -69,6 +69,13 @@
       el.querySelector('p').textContent = p.blurb;
       grid.append(el);
     }
+    // the Pedalboard: every pedal in a chain
+    {
+      const el = document.createElement('div');
+      el.className = 'tile board';
+      el.innerHTML = `<b><a class="go" href="board/">Pedalboard</a></b><small>every pedal here, in a chain</small><p>Chain the pedals from your bass to the amp. The ones whose circuits include their jacks load the pedal before them and drive the one after through real cables, so a fuzz first feels your pickup, and after a buffer it doesn't.</p><span class="more"><a class="pz-about" href="board/#about" title="How the Pedalboard wires its pedals"><span class="pz-about-i" aria-hidden="true">i</span><span class="pz-about-label">How it works</span></a></span>`;
+      grid.append(el);
+    }
     // the test bass's and the tuner's notes, in the pedals' dialog
     const notes = howItWorks();
     for (const [key, label] of [['testbass', 'The test bass'], ['tuner', 'The tuner'], ['scope', 'The scope'], ['spectrum', 'The spectrum']]) document.getElementById('also').append(notes.button(key, label));

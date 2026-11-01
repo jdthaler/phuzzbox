@@ -33,13 +33,19 @@ const FADE = 0.01; // s: bypass switches over this long, without a click
 
 export function registerPedal(PEDAL) {
   const Effect = wasmEffect(PEDAL);
+  registerEffect((o, fs) => { Effect.load(o.pedal); return new Effect(fs); });
+}
+
+// The processor around any effect with the contract (setParams, process, messages, latency,
+// setQuality; handle(m) for messages of its own): make(processorOptions, sampleRate) builds it.
+// The Pedalboard (board/src/board-chain.js) is one: several pedals in series.
+export function registerEffect(make) {
   class PedalProcessor extends AudioWorkletProcessor {
     constructor(options) {
       super();
       const o = options.processorOptions || {};
-      Effect.load(o.pedal);
       TestBass.load(o.bass);
-      this.effect = new Effect(sampleRate);
+      this.effect = make(o, sampleRate);
       this.bass = new TestBass(sampleRate);
       this.source = 'input';
       this.fullScale = 1;
@@ -64,6 +70,7 @@ export function registerPedal(PEDAL) {
           case 'quality': this.effect.setQuality(m.level); break;
           case 'mute': this.mute = !!m.on; break;
           case 'measure': this.measure = { t: 0, floor: 0, sentAt: -1 }; break;
+          default: this.effect.handle?.(m);
         }
       } catch (err) { this.port.postMessage({ type: 'error', message: err.message }); }
     }

@@ -21,6 +21,7 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | ✅ | [Octave Down](octave/) | the analog octave dividers of the 1980s | a tracking filter, a comparator with hysteresis and two flip-flops that flip the bass's polarity every cycle or every other: one and two octaves down, with the real thing's warble and dropouts |
 | ✅ | [Spring Reverb](spring/) | the reverb tanks of guitar and organ amplifiers | steel springs from measured tanks as waves on a coil of wire, 2300 modes from their dispersion: every echo a chirp up to the transition frequency |
 | ✅ | [Tape Echo](echo/) | the multi-head tape echoes of the 1970s | a tape loop past a record head and three playback heads: the tape's anhysteretic magnetisation, the heads' spacing, coating and gap losses, the motor's pitch bend and the capstan's flutter |
+| ✅ | [Pedalboard](board/) | every pedal here, in a chain | the pedals in series in one worklet; the ones whose circuits include their jacks feel the pickup or a buffered output, and drive the next input through a patch cable; true bypass rewires them |
 
 ✅ playable · 🛠 in the workshop. The plan and the rest of the lineup are in
 [docs/ROADMAP.md](docs/ROADMAP.md).

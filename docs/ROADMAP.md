@@ -59,6 +59,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    curve; the playback heads' spacing, coating and gap losses as an FIR from their closed form; the
    motor's lag and the capstan's flutter; tested against those closed forms, the curve's harmonics
    by Simpson's rule, and the delays to the sample (`test/echo-circuit.mjs`).
+   The **Pedalboard** landed 2026-11-01: every pedal in series in one AudioWorklet
+   (`board/src/board-chain.js`), with true bypass; the pedals whose circuits include their jacks
+   wired to their neighbours (`board/src/board-jacks.js`): first in the chain they feel the
+   pickup, after a pedal a 100 Ω buffered output, and a pedal that drives a load drives the next
+   one's input impedance through the patch cable. Tested against convolution and commutation of
+   linear pedals, and the Phuzz's loss of the pickup against the pickup's complex impedance. Next
+   for it: the MIDI expression pedal on a wah on the board, and a tour.
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.

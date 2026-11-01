@@ -8,6 +8,8 @@
 // through `pageReady`.
 //
 //   createPedal({ PEDAL, worklet: new URL('./x-worklet.js', import.meta.url), views: [view, …] })
+//   (the Pedalboard adds rack: (api) => an element below the face, and load: async () => what its
+//   worklet's processorOptions need besides the test bass, by default { pedal: the .wasm's bytes })
 //   view = { title, caption, perform?, mount(canvasHolder, api) }  (perform: shown at first; by
 //            default the first two are) where api = { P, ctx, analyser (the output, in full-scale
 //            units), input (an analyser of the input, in volts), fullScale() (volts), note (what
@@ -52,11 +54,40 @@ const ROWS = [
 const OPEN = [28, 33, 38, 43];
 const STRING_NAMES = ['E', 'A', 'D', 'G'];
 
+// a knob: drag up or right to turn it, Shift for fine, a double tap for its default, arrows too.
+// get() is its value, put(v) sets it (the Pedalboard's pedals have knobs of their own)
+export function knobFor(p, get, put) {
+  const dial = h('div', { class: 'dial', role: 'slider', tabindex: 0, 'aria-label': p.label, title: p.hint ?? '' }, h('span', { class: 'mark' }));
+  const val = h('div', { class: 'kval' });
+  const el = h('div', { class: 'knob', 'data-param': p.id }, dial, h('div', { class: 'klabel' }, p.label.replace(/\s*\(.*\)$/, '')), val);
+  el.refresh = () => {
+    const u = toUnit(p, get());
+    dial.style.setProperty('--turn', `${-135 + 270 * u}deg`);
+    dial.setAttribute('aria-valuetext', fmt(p, get()));
+    dial.setAttribute('aria-valuenow', String(Math.round(u * 100)));
+    val.textContent = fmt(p, get());
+  };
+  let start = null;
+  dial.addEventListener('pointerdown', (e) => { dial.setPointerCapture(e.pointerId); start = { x: e.clientX, y: e.clientY, u: toUnit(p, get()) }; });
+  dial.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    const d = ((e.clientX - start.x) - (e.clientY - start.y)) / (e.shiftKey ? 800 : 200);
+    put(fromUnit(p, start.u + d));
+  });
+  dial.addEventListener('pointerup', () => { start = null; });
+  dial.addEventListener('dblclick', () => put(p.def));
+  dial.addEventListener('keydown', (e) => {
+    const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
+    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + step * (e.shiftKey ? 0.25 : 1))); }
+  });
+  return el;
+}
+
 // the page, once createPedal has built it: what a guided tour (shared/tour.js) drives
 let pageIs;
 export const pageReady = new Promise((r) => { pageIs = r; });
 
-export function createPedal({ PEDAL, worklet, views = [] }) {
+export function createPedal({ PEDAL, worklet, views = [], rack: more = null, load = null }) {
   const reg = byId(PEDAL.id) ?? {};
   const all = params(PEDAL.groups);
   const key = `phuzzbox.${PEDAL.id}`;
@@ -64,10 +95,11 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
   const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: 0, mute: false };
   const listeners = { params: [], audio: [], pedal: [] };
-  const api = { P, PEDAL, note: null, ctx: null, analyser: null, input: null, fullScale: () => state.fullScale, on: (ev, fn) => listeners[ev].push(fn) };
+  const api = { P, PEDAL, note: null, ctx: null, analyser: null, input: null, fullScale: () => state.fullScale, on: (ev, fn) => listeners[ev].push(fn), send: (m) => send(m) };
   let ctx = null, node = null, volume = null, micSource = null, micStream = null, tunerAnalyser = null, splitter = null;
   const send = (m) => node?.port.postMessage(m);
   const emit = (ev) => listeners[ev].forEach((fn) => fn(api));
+  const knob = (p) => knobFor(p, () => P[p.id], (v) => set(p.id, v));
 
   // ---- the page (shared/layout.js arranges it: the header, the pedal beside the views and the
   // controls, the test bass pinned below while it is the input)
@@ -98,6 +130,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     h('summary', { title: 'Choose a pedal' }, h('h1', {}, PEDAL.name), h('span', { class: 'caret', 'aria-hidden': 'true' }, '▾')),
     h('div', { class: 'menu-list' },
       ...PEDALS.filter((p) => p.ready).map((p) => h('a', { href: `../${p.id}/`, 'aria-current': p.id === PEDAL.id ? 'page' : false }, h('b', {}, p.name), h('small', {}, p.after))),
+      h('a', { href: '../board/', class: 'menu-board', 'aria-current': PEDAL.id === 'board' ? 'page' : false }, h('b', {}, 'Pedalboard'), h('small', {}, 'the pedals in a chain, each loading the next')),
       h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, 'physics, not samples')),
       // the credits, with the site's only link to GitHub
       h('div', { class: 'menu-foot' }, `PhuzzBox ${PHUZZBOX_VERSION} · Vibe coded by Jesse Thaler · `, h('a', { href: SOURCE, target: '_blank', rel: 'noopener' }, 'source'))));
@@ -116,9 +149,10 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const face = h('section', { class: 'pedal', 'aria-label': `${PEDAL.name} pedal` },
     h('div', { class: 'jacks' }, meterIn.el, meterOut.el),
     knobs,
-    h('div', { class: 'name' }, h('span', {}, PEDAL.name), h('small', {}, reg.after ?? '')),
+    h('div', { class: 'name' }, h('span', {}, PEDAL.name), h('small', {}, PEDAL.after ?? reg.after ?? '')),
     h('div', { class: 'switchrow' }, led, foot));
   const rack = h('aside', { class: 'rack', 'data-view': 'Pedal' }, face);
+  if (more) rack.append(more(api));
 
   // an explanation waits behind ⓘ: a tap shows it, as in Forte
   const info = (label, target, cls = 'notes-open') => {
@@ -323,33 +357,6 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     send({ type: 'bypass', on });
   }
 
-  // a knob: drag up or right to turn it, Shift for fine, a double tap for its default, arrows too
-  function knob(p) {
-    const dial = h('div', { class: 'dial', role: 'slider', tabindex: 0, 'aria-label': p.label, title: p.hint ?? '' }, h('span', { class: 'mark' }));
-    const val = h('div', { class: 'kval' });
-    const el = h('div', { class: 'knob', 'data-param': p.id }, dial, h('div', { class: 'klabel' }, p.label.replace(/\s*\(.*\)$/, '')), val);
-    el.refresh = () => {
-      const u = toUnit(p, P[p.id]);
-      dial.style.setProperty('--turn', `${-135 + 270 * u}deg`);
-      dial.setAttribute('aria-valuetext', fmt(p, P[p.id]));
-      dial.setAttribute('aria-valuenow', String(Math.round(u * 100)));
-      val.textContent = fmt(p, P[p.id]);
-    };
-    let start = null;
-    dial.addEventListener('pointerdown', (e) => { dial.setPointerCapture(e.pointerId); start = { x: e.clientX, y: e.clientY, u: toUnit(p, P[p.id]) }; });
-    dial.addEventListener('pointermove', (e) => {
-      if (!start) return;
-      const d = ((e.clientX - start.x) - (e.clientY - start.y)) / (e.shiftKey ? 800 : 200);
-      set(p.id, fromUnit(p, start.u + d));
-    });
-    dial.addEventListener('pointerup', () => { start = null; });
-    dial.addEventListener('dblclick', () => set(p.id, p.def));
-    dial.addEventListener('keydown', (e) => {
-      const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
-      if (step) { e.preventDefault(); e.stopPropagation(); set(p.id, fromUnit(p, toUnit(p, P[p.id]) + step * (e.shiftKey ? 0.25 : 1))); }
-    });
-    return el;
-  }
 
   function meter(label) {
     const bar = h('span', { class: 'bar' });
@@ -374,9 +381,9 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     try {
       // the smallest buffer the browser will give (a number is seconds; 0 asks for its minimum)
       ctx = new AudioContext({ latencyHint: 0 });
-      const [pedal, bass] = await Promise.all([fetchBytes(PEDAL.wasm.binary()), fetchBytes(TESTBASS_URL())]);
+      const [own, bass] = await Promise.all([load ? load() : fetchBytes(PEDAL.wasm.binary()).then((pedal) => ({ pedal })), fetchBytes(TESTBASS_URL())]);
       await ctx.audioWorklet.addModule(worklet);
-      node = new AudioWorkletNode(ctx, 'phuzzbox', { numberOfInputs: 1, numberOfOutputs: 2, outputChannelCount: [2, 1], processorOptions: { pedal, bass } });
+      node = new AudioWorkletNode(ctx, 'phuzzbox', { numberOfInputs: 1, numberOfOutputs: 2, outputChannelCount: [2, 1], processorOptions: { ...own, bass } });
       node.port.onmessage = (e) => onMessage(e.data);
       volume = new GainNode(ctx, { gain: state.volume });
       // a safety curve before the speakers, so a distortion pedal at full tilt can't hurt anyone:
