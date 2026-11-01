@@ -24,6 +24,7 @@ class Engine : public phuzzbox::Effect {
   Parts parts{};
   double P[kParamCount] = {};
   double a = 0.5, aTarget = 0.5; // the wiper, and where the rocker is taking it
+  double supply = 8.15;          // the supply's voltage, gliding to the Supply knob's
   double gain = 1, mix = 0; // the level, and the clean blend
   bool started = false;
   static constexpr int SUB = 32; // samples between the wiper's moves

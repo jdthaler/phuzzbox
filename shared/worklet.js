@@ -46,6 +46,9 @@ export function registerPedal(PEDAL) {
       this.wet = 1; // 1 engaged, 0 bypassed, moving toward target
       this.target = 1;
       this.v = new Float32Array(128); this.L = new Float32Array(128); this.R = new Float32Array(128);
+      // the dry signal, as late as the pedal (its latency: oversampling filters), so the footswitch's
+      // crossfade doesn't sum the signal with a copy of itself a few samples apart
+      this.dry = new Float32Array(64); this.dryAt = 0; this.dryDelay = 0;
       this.inPeak = 0; this.outPeak = 0; this.blocks = 0; this.busy = 0; this.lastError = -Infinity;
       this.port.onmessage = (e) => this.handle(e.data);
     }
@@ -106,11 +109,15 @@ export function registerPedal(PEDAL) {
       const posted = this.effect.messages();
       if (posted.length) this.port.postMessage({ type: 'pedal', messages: posted });
       const step = 1 / (FADE * sampleRate), k = 1 / this.fullScale, oL = out[0], oR = out[1];
+      const dry = this.dry, delay = Math.min(63, this.effect.latency());
       for (let i = 0; i < n; i++) {
         if (this.wet !== this.target) this.wet = this.target > this.wet ? Math.min(this.target, this.wet + step) : Math.max(this.target, this.wet - step);
         const a = Math.abs(v[i]);
         if (a > this.inPeak) this.inPeak = a;
-        const l = this.wet * L[i] + (1 - this.wet) * v[i], r = this.wet * R[i] + (1 - this.wet) * v[i];
+        dry[this.dryAt] = v[i];
+        const d = dry[(this.dryAt - delay + 64) & 63];
+        this.dryAt = (this.dryAt + 1) & 63;
+        const l = this.wet * L[i] + (1 - this.wet) * d, r = this.wet * R[i] + (1 - this.wet) * d;
         const b = Math.max(Math.abs(l), Math.abs(r));
         if (b > this.outPeak) this.outPeak = b;
         oL[i] = l * k;

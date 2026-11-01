@@ -19,7 +19,8 @@ import { params } from './params.js';
 
 // Roland FC-300 in Control Change mode, as it leaves the factory (its owner's manual, pp. 21–22):
 // expression pedal 1 sends CC 7 and expression pedal 2 CC 1, 0–127; number pedals 1–10 send CC
-// 65–74 and the control pedals CTL 1 and 2 CC 80 and 81, all latching (0–127).
+// 65–74, latching (127, then 0 on the next press); the control pedals CTL 1 and 2 send CC 80 and
+// 81, momentary (127 while held, 0 on release).
 export const FC300 = { exp1: 7, exp2: 1, pedals: [65, 66, 67, 68, 69, 70, 71, 72, 73, 74], ctl: [80, 81] };
 
 export const SWITCH_MODES = [['latch', 'latching (127, then 0)'], ['momentary', 'momentary (held)']];

@@ -108,7 +108,8 @@ As it leaves the factory the FC-300 sends (owner's manual, pp. 21–22):
 | expression pedal 2 | CC 1, 0–127 | the Rocker |
 | number pedal 1 | CC 65, latching | the footswitch (127 engaged) |
 | number pedal 2 | CC 66, latching | the tuner's mute |
-| number pedals 3–10, CTL 1–2 | CC 67–74, 80–81 | nothing yet: teach them |
+| number pedals 3–10 | CC 67–74, latching | nothing yet: teach them |
+| CTL 1–2 | CC 80–81, momentary | nothing yet: teach them (set the row to momentary) |
 
 To teach a pedal another control, press **Learn** on a row (or **+ Add a pedal**) and move the
 pedal; pick the control it moves from the row's menu. **reverse** turns an expression pedal round;
