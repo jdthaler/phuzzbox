@@ -21,14 +21,7 @@ Part of [PhuzzBox](../README.md).
 Two PNP transistors with a positive ground: the battery's + is the circuit's ground, and its − is
 the rail, about −9 V.
 
-```
-jack ─┤├── Q1 base                    Q1: emitter to ground, collector ── 33 kΩ ── rail
-     2.2 µF   │                       Q2: base on Q1's collector
-              └── 100 kΩ ── Q2 emitter ── Fuzz pot 1 kΩ ── ground (its wiper ── 20 µF ── ground)
-Q2 collector ── 8.2 kΩ ──┬── 470 Ω ── rail
-                         └──┤├── Volume pot 500 kΩ (audio) ── ground; its wiper is the output
-                          10 nF
-```
+![The Phuzz: Q1 and Q2, germanium PNPs on a −9 V rail; R4 (100 kΩ) feeds Q2's emitter back to Q1's base, and the Fuzz pot (1 kΩ) and C2 (20 µF) set how much of that feedback the signal sees; the Volume pot is audio taper](schematics/circuit.svg)
 
 Q1 amplifies; its collector drives Q2's base directly; and the 100 kΩ from Q2's emitter back to
 Q1's base is the feedback that sets the bias of both (shunt–series feedback: if Q2 runs more
