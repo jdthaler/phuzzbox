@@ -85,9 +85,16 @@ irrelevant control on the page.
 ## How it works and the guided tour
 
 **How it works**, by the page's title, is the pedal's README in a dialog (`shared/notes.js`),
-with tabs for the test bass's notes (`testbass/README.md`) and the tuner's (`tuner/README.md`),
-since every page plays the one and shows the other. It leaves out the README's `## Files` and
-lists its other `##` sections as contents. `…/#about`, `#testbass` and `#tuner` open it.
+with tabs for what every page has: the test bass (`testbass/README.md`), the tuner
+(`tuner/README.md`), the scope (`scope/README.md`) and the spectrum (`spectrum/README.md`). It
+leaves out the README's `## Files` and lists its other `##` sections as contents. `…/#about`,
+`#testbass`, `#tuner`, `#scope` and `#spectrum` open it.
+
+The site never sends a reader to GitHub for information (Jesse, 2026-11-01); the only link there is
+the credits' `source` (`SOURCE` in `shared/registry.js`). Everything a reader needs goes in the
+README, which is on the site. Link other notes as relative READMEs (`../tuner/README.md`, with
+`#section` if you like): the dialog opens their tab, or that pedal's page. A link to any other file
+of the repository shows as plain text, and papers and standards keep their own links.
 
 **Tour**, before it, is the pedal's guided tour of its physics, as Forte's instruments have: a
 card under the pedal's face steps through three to eight steps, each setting the pedal up,
