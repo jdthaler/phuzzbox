@@ -183,7 +183,9 @@ int main() {
   }
 
   // every pedal the app offers plays through its engine: a low E at a passive pickup's level
-  // comes out, and bounded, each with its defaults
+  // comes out, and bounded, each with its defaults. "Comes out" is above 1 mV: a pure 41.2 Hz
+  // sine is all fundamental, and the Envelope Filter's band-pass, swept far above it, passes
+  // only a few millivolts of it (a string's harmonics are what it is for)
   {
     using namespace phuzzbox::app;
     check(pedals().size() >= 2 && findPedal("phuzz") && !findPedal("nonesuch"), "the app has its pedals, found by slug");
@@ -202,7 +204,7 @@ int main() {
       }
       char what[96];
       std::snprintf(what, sizeof what, "the app plays the %s: a low E comes out, finite and under 20 V (peak %.3f V)", p->name, peak);
-      check(finite && peak > 0.01 && peak < 20, what);
+      check(finite && peak > 1e-3 && peak < 20, what);
     }
   }
   return failures ? 1 : 0;
