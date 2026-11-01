@@ -49,6 +49,11 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    against its ideal waveforms' Fourier coefficients by Simpson's rule (8/(3π) for one octave), the
    RC sections' bilinear images, and its tracking on the test bass's strings
    (`test/octave-circuit.mjs`).
+   The **Spring Reverb** landed 2026-11-01: the Leem Pro KA-1210's and Olson X-82's springs as
+   Parker and Bilbao measured them, as waves on the thin-spring model (a 2 × 2 eigenproblem per
+   wavenumber), played as 2300 modes with Forte's loss model and bead filter; tested against
+   Parker and Bilbao's T_D and F_C, an independent eigen-solve, and the echoes' arrival times at
+   the group delay (`test/spring-circuit.mjs`).
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.
