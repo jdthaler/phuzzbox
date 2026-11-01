@@ -24,6 +24,7 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | ✅ | [Rotary Speaker](rotary/) | the rotating-horn organ speakers of the 1960s | a horn and a drum turning past two microphones: each sound heard at its retarded time (the Doppler shift, exactly), a piston's directivity as its impulse response, motors with inertia |
 | ✅ | [Plate Reverb](plate/) | the steel plate reverbs of 1960s studios | a steel plate 2 m by 1 m as Kirchhoff's thin plate: 6432 bending modes to 5 kHz, the highs arriving first, the steel's thermoelastic and radiation losses and a damper |
 | ✅ | [Sympathetic Strings](sympathetic/) | the sitar's sympathetic strings | stiff steel strings tuned to a key on one bridge your bass drives: Fletcher's stretched partials, Chaigne and Askenfelt's losses, ringing along with the notes whose harmonics they share |
+| ✅ | [Black Hole](blackhole/) | the ringdown LIGO hears after a merger | a spinning black hole your bass strikes: its four loudest quasinormal modes from Leaver's continued fractions (Forte's table), heard through their spin-weighted harmonics as h₊ and h×, from a thud without spin to a bell near the limit |
 | ✅ | [Pedalboard](board/) | every pedal here, in a chain | the pedals in series in one worklet; the ones whose circuits include their jacks feel the pickup or a buffered output, and drive the next input through a patch cable; true bypass rewires them |
 
 ✅ playable · 🛠 in the workshop. The plan and the rest of the lineup are in

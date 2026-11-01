@@ -74,6 +74,11 @@ export const PEDALS = [
     after: 'the sitar\'s sympathetic strings',
     blurb: 'A frame of steel strings tuned to a key, all on one bridge your bass shakes: the strings whose partials your notes share ring along, a halo that follows the key.',
   },
+  {
+    id: 'blackhole', name: 'Black Hole', version: '0.1.0', ready: true, plugin: { code: 'BHol' },
+    after: 'the ringdown LIGO hears after a merger',
+    blurb: 'Your bass perturbs a spinning black hole and it rings in its quasinormal modes: a thud without spin, a bell near the limit. Mass sets the pitch.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

@@ -82,6 +82,12 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    (Fletcher's n f₀ √(1 + Bn²)) a resonator pulling on the bridge, with Chaigne and Askenfelt's
    b₁ + b₃ω² losses; tested against the string's driving-point closed form −T k cot(kL), every
    partial summed in double precision, the stretched partials and the decay heard in the output.
+   The **Black Hole** landed 2026-11-01: a Kerr hole of 30–3000 suns rung by the bass in its four
+   loudest quasinormal modes, (2,2,0), (2,1,0), (3,3,0) and (4,4,0), from Forte's table of Leaver
+   solves, each a complex one-pole heard through its spin-weighted harmonic (h₊ left, h× right),
+   with Kamaretsos et al.'s merger amplitudes; tested against fresh Leaver solves (1.6 × 10⁻⁶),
+   the literature, Hod's near-extremal limit, the harmonics' closed form and the ringing measured
+   from a click.
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.
