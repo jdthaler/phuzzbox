@@ -291,14 +291,15 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
 
 /* ================================================================================================
    The one-screen layout of a pedal's page (shared/layout.js), after Forte's: the header; the pedal
-   on its board at the left; the views' bar, the views, the controls' bar (its top edge the handle
-   that shares the height) and the Controls panel; the test bass pinned to the bottom. Each panel
-   scrolls on its own. Body classes: perform, views-folded, controls-folded, no-rack (the pedal
-   hidden), bass-off (the test bass isn't the input), audio-on, sharing (the handle dragged).
+   on its board at the left, the tuner and the metronome under it; the views' bar, the views, the
+   controls' bar (its top edge the handle that shares the height) and the Controls panel; the rig
+   pinned to the bottom (its bar, then the test bass or the rig's units). Each panel scrolls on its
+   own. Body classes: perform, views-folded, controls-folded, bass-off (the test bass isn't the
+   input), audio-on, sharing (the handle dragged).
    A phone (as layout.js's phoneQuery) scrolls instead, at the end.
    ================================================================================================ */
 body.one-screen { height: 100vh; height: 100dvh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-body.one-screen #app { max-width: none; height: 100%; padding: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+body.one-screen #app { max-width: none; height: 100%; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; }
 
 /* the header: PhuzzBox, the pedal (its menu), How it works; then the audio */
 body.one-screen header.top { padding: max(8px, env(safe-area-inset-top)) 14px 8px; gap: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); position: relative; z-index: 5; }
@@ -311,8 +312,8 @@ body.one-screen header.top .home:hover { border-color: var(--accent); }
 body.one-screen header.top .audio { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 8px; margin-left: auto; min-width: 0; }
 body.one-screen header.top .audio select { max-width: 220px; text-overflow: ellipsis; }
 body.audio-on .start, body:not(.audio-on) header.top .cpu { display: none; }
-header.top .volume { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 0 4px 0 10px; }
-header.top .volume .fader { width: 110px; height: 24px; }
+.volume { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 0 4px 0 10px; }
+.volume .fader { width: 110px; height: 24px; }
 .pedal-menu { position: relative; min-width: 0; }
 /* the menu's button: PhuzzBox's mark (a little pedal), the pedal's name, a caret, as Forte's */
 .pedal-menu summary {
@@ -354,7 +355,6 @@ body.one-screen .work {
   grid-template-columns: clamp(250px, 22vw, 330px) minmax(0, 1fr);
   grid-template-rows: var(--work-rows, auto minmax(0, 0.6fr) auto minmax(0, 0.4fr));
 }
-body.one-screen.no-rack .work { grid-template-columns: 0 minmax(0, 1fr); }
 /* the pedalboard: hook-and-loop on a dark board */
 body.one-screen .rack {
   grid-column: 1; grid-row: 1 / -1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
@@ -429,16 +429,17 @@ body.one-screen .controls { grid-row: 4; margin: 0; min-height: 0; overflow-y: a
 body.one-screen .groups { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); align-items: start; }
 body.one-screen .groups > .midi { margin: 0; grid-column: 1 / -1; }
 body.one-screen .row:not(.hint-open) .hint { display: none; }
-body.one-screen .rig .row { grid-template-areas: "label label" "input value"; }
-body.one-screen .rig .row > select { grid-area: input; }
-body.one-screen .rig .row > .inline { grid-area: input; font-size: 13px; color: var(--ink-2); }
-body.one-screen .rig .row > label.inline { grid-area: value; }
-body.one-screen .rig .row input[type="number"] { width: 70px; }
+/* the app's Rig group (native/app: the pages have theirs in the rig at the foot) */
+body.one-screen .group.rig .row { grid-template-areas: "label label" "input value"; }
+body.one-screen .group.rig .row > select { grid-area: input; }
+body.one-screen .group.rig .row > .inline { grid-area: input; font-size: 13px; color: var(--ink-2); }
+body.one-screen .group.rig .row > label.inline { grid-area: value; }
+body.one-screen .group.rig .row input[type="number"] { width: 70px; }
 .rig-note { margin: 6px 0 0; font-size: 12px; color: var(--ink-2); }
 .group-empty { margin: 6px 2px; font-size: 13px; color: var(--ink-2); }
 
-/* the dock: a tour's card, then the test bass */
-body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+/* the dock: a tour's card, then the rig */
+body.one-screen .dock { min-width: 0; margin: 0; position: relative; z-index: 4; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
 .tour-slot:empty { display: none; }
 .bass-bar.bar { border-bottom: 0; padding-top: 5px; padding-bottom: 5px; gap: 8px; }
 .bass-bar .spacer { flex: 1; }
@@ -484,7 +485,7 @@ body.perform .controls-bar { cursor: default; }
   body.one-screen header.top .audio { margin-left: 0; justify-content: flex-start; }
   body.one-screen header.top .audio select { max-width: 160px; }
   body.one-screen .work { display: flex; flex-direction: column; overflow: visible; }
-  body.one-screen .views-bar { order: -1; } /* the views' bar, with the pedal's toggle, above the pedal */
+  body.one-screen .views-bar { order: -1; } /* the views' bar above the pedal */
   body.one-screen .rack { border-right: 0; border-bottom: 1px solid var(--line); overflow: visible; padding: 16px 12px; }
   body.one-screen .views, body.one-screen .controls { overflow: visible; }
   .view-grid { grid-template-rows: none; grid-auto-rows: auto; height: auto; }
@@ -495,6 +496,7 @@ body.perform .controls-bar { cursor: default; }
   .split { display: none; }
   body.one-screen .controls-bar { cursor: default; }
   body.one-screen .dock { position: sticky; bottom: 0; }
+  body.one-screen.bass-off .dock { position: static; } /* the rig's units are too tall to stick: they come last */
   .bass-bar .toggles-label { margin-right: 0; }
   .string button { height: 24px; }
 }
@@ -536,3 +538,93 @@ body.perform .controls-bar { cursor: default; }
 .knob.toggle .rocker[aria-pressed="true"] .rocker-led { background: radial-gradient(circle at 40% 35%, #ffd1cc, var(--led) 45%, #b3140c); box-shadow: 0 0 10px 2px rgb(255 59 47 / 0.6); }
 .pedal.mini .knob.toggle .rocker { width: 30px; height: 38px; margin: 6px 0 1px; }
 .pedal.mini .knob.toggle .rocker-led { top: 5px; }
+
+/* ---- the presets, on the pedal: a little window in the enclosure, lit from behind -------------- */
+.preset-window { width: 100%; max-width: 230px; padding: 4px; border-radius: 7px; background: rgb(0 0 0 / 0.45);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.8), 0 1px 0 rgb(255 255 255 / 0.12); }
+.preset-window select.presets {
+  width: 100%; padding: 4px 8px; border-radius: 4px; border: 1px solid rgb(0 0 0 / 0.6); text-overflow: ellipsis;
+  background: linear-gradient(180deg, #17120c, #0e0b07); color: #ffb067; font: 600 13px/1.25 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  text-shadow: 0 0 6px rgb(255 140 40 / 0.55); box-shadow: inset 0 0 10px rgb(255 120 20 / 0.08);
+}
+.preset-window select.presets:hover { border-color: rgb(255 176 103 / 0.5); }
+.preset-window select.presets option, .preset-window select.presets optgroup { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; text-shadow: none; color: var(--ink); }
+
+/* ---- under the pedal: the toggles for the tuner and the metronome, then them ------------------ */
+.rack-toggles { flex: none; justify-content: center; }
+body.perform .rack-toggles { display: flex; }
+
+/* the metronome: its pendulum beside the tempo, the beats as lamps */
+.metrocard { flex: none; padding: 8px 10px 10px; }
+.metrocard figcaption { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.metrocard .play { margin-left: auto; font-size: 12px; padding: 3px 12px; }
+.metrocard .play[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.m-body { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; align-items: center; }
+.m-pendulum { width: 58px; height: auto; display: block; }
+.m-case { fill: #3a2a1c; stroke: #5b4630; stroke-width: 1; }
+.m-scale line { stroke: #d9c8a8; stroke-width: 0.8; }
+.m-scale text { fill: #d9c8a8; font: 5.5px system-ui, sans-serif; }
+.m-stick { stroke: #d0d0d0; stroke-width: 1.6; stroke-linecap: round; }
+.m-weight { fill: #c9c9c9; stroke: #6b6b6b; stroke-width: 0.6; }
+.m-pivot { fill: #9a9a9a; }
+.metrocard.running .m-weight { fill: #e8e8e8; }
+.m-controls { display: grid; gap: 7px; min-width: 0; }
+.m-tempo { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.m-tempo input { width: 58px; padding: 2px 4px; text-align: center; font: 700 18px/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.m-tempo .step { width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; flex: none; }
+.m-tempo .m-unit { font-size: 11px; color: var(--ink-2); white-space: nowrap; }
+.m-row .tap { flex: none; font-size: 12px; padding: 2px 10px; border: 1px solid var(--line); }
+.m-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.m-row select { flex: 1 1 auto; min-width: 0; font-size: 12px; padding: 2px 6px; }
+.m-level { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ink-2); }
+.m-level .fader { width: 50px; min-width: 0; }
+.m-dots { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-start; }
+.m-dots span { width: 10px; height: 10px; border-radius: 50%; background: #2a1514; box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.8); }
+.m-dots span.bell { background: #2a2214; }
+.m-dots span.on { background: radial-gradient(circle at 40% 35%, #ffd1cc, var(--led) 45%, #b3140c); box-shadow: 0 0 8px 2px rgb(255 59 47 / 0.55); }
+.m-dots span.bell.on { background: radial-gradient(circle at 40% 35%, #fff4c8, #facc15 45%, #a16207); box-shadow: 0 0 8px 2px rgb(250 204 21 / 0.55); }
+
+/* ---- the rig, at the foot of the page: its bar, then the test bass or the rig's units ----------- */
+.rig-bar.bar { border-bottom: 0; flex-wrap: wrap; gap: 6px 10px; padding-top: 6px; padding-bottom: 6px; }
+.rig-bar .spacer { flex: 1; }
+.rig-bar .info { margin-left: -4px; }
+.rig-io { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); min-width: 0; }
+.rig-io select { max-width: 220px; text-overflow: ellipsis; color: var(--ink); }
+.rig-bar .fold[aria-expanded="false"] svg { transform: rotate(180deg); }
+.rig-body { border-top: 1px solid var(--line); }
+.rig-body .bass .bass-bar { background: transparent; }
+.rig-chain { display: flex; align-items: stretch; gap: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 10px 14px 12px; scrollbar-width: thin; }
+.rig-chain > * { flex: none; }
+.rig-wire { align-self: center; width: 18px; height: 4px; border-radius: 2px; background: linear-gradient(180deg, #2b2b30, #111); box-shadow: 0 1px 0 rgb(255 255 255 / 0.05); }
+.rig-end { align-self: center; font-size: 11px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 4px; white-space: nowrap; }
+.rig-iface { display: grid; align-content: center; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); font-size: 12px; min-width: 210px; }
+.dock .rig-iface .row { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; grid-template-areas: none; align-items: center; gap: 6px; padding: 0; border: 0; }
+.dock .rig-iface .row > * { grid-area: auto; }
+.rig-iface .row label { color: var(--ink-2); }
+.rig-iface select { min-width: 0; font-size: 12px; padding: 2px 6px; }
+.rig-iface input[type="number"] { width: 64px; padding: 2px 4px; }
+.rig-iface .inline { color: var(--ink-2); white-space: nowrap; }
+.rig-name { font: 700 11px/1.2 system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+.rig-iface .rig-name { text-align: left; color: var(--ink-2); }
+/* each unit a small grey box, its knobs and its switch; dimmed while it is out */
+.dock .pedal.rig-unit { --enclosure: #4a4c52; --enclosure-ink: #eeeae2; padding: 8px 10px 8px; gap: 4px; border-radius: 10px; align-items: center; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; }
+.dock .pedal.rig-unit::before { inset: 4px; background-size: 8px 8px; }
+.dock .rig-unit .knobs { gap: 2px 4px; flex-wrap: nowrap; align-items: flex-start; }
+.dock .rig-unit .knob { width: 56px; gap: 2px; }
+.dock .rig-unit .dial { width: 34px; height: 34px; margin: 5px 0 1px; }
+.dock .rig-unit .dial::before { inset: -6px; }
+.dock .rig-unit .dial .mark { height: 12px; width: 2.5px; }
+.dock .rig-unit .klabel { font-size: 9px; letter-spacing: 0.3px; white-space: nowrap; }
+.dock .rig-unit .kval { font-size: 9.5px; white-space: nowrap; }
+.dock .rig-unit .knob.pick { justify-content: center; align-self: center; }
+.dock .rig-unit .knob.pick select { font-size: 11px; padding: 2px 4px; background: rgb(0 0 0 / 0.4); color: var(--enclosure-ink); border-color: rgb(0 0 0 / 0.5); }
+.rig-foot { display: flex; align-items: center; gap: 10px; }
+.dock .rig-unit .footswitch { width: 26px; height: 26px; margin: 5px; }
+.dock .rig-unit .led { width: 8px; height: 8px; }
+.rig-unit.off .knobs { opacity: 0.55; }
+body.one-screen .dock .bass .frets { margin-top: 2px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  .rig-io select { max-width: 150px; }
+  .rig-bar .volume .fader { width: 80px; }
+  .rig-chain { padding: 8px 10px 10px; }
+}

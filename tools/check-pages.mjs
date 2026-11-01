@@ -2,9 +2,10 @@
 // what a layout regression breaks, as Forte's tool does: errors in the console (and anything the
 // server couldn't find), a page that scrolls sideways (as loaded, with How it works open, with
 // every view and group of controls turned on, and with audio started), the controls each pedal
-// page should place (knobs and the footswitch on the pedal, ⓘ buttons, the presets in the
-// controls' bar, Discover | Perform in the views' bar, Start audio), that each toggle turns its
-// view or group of controls off and on, and on the desktop that what's turned on is still on after
+// page should place (knobs, the presets and the footswitch on the pedal, ⓘ buttons, the tuner's
+// and the metronome's toggles under the pedal, Discover | Perform in the views' bar, Start audio,
+// the rig at the foot with the input and the master volume), that each toggle turns its view (under
+// the pedal or in the views) or group of controls off and on, and on the desktop that what's turned on is still on after
 // a reload and that each bar's fold button folds its panel away and back. The front page has a
 // link for every ready pedal and the Pedalboard.
 //
@@ -83,7 +84,9 @@ const COUNT = () => {
     controls: n('#controls [data-param]'),
     info: n('button.info'),
     presets: n('select.presets option'),
-    barPresets: visible('.controls-bar .bar-tools select.presets'),
+    facePresets: visible('.rack .pedal select.presets'),
+    rackViews: n('.rack-toggles button'),
+    rig: visible('.dock .rig-bar select') + visible('.dock .rig-bar .volume'),
     views: n('.views-bar .toggles button'),
     controlGroups: n('.controls-bar .toggles button'),
     viewsOn: n('.views-bar .toggles button[aria-pressed="true"]'),
@@ -99,14 +102,16 @@ const WIDE = () => document.documentElement.scrollWidth - window.innerWidth;
 // (data-view): the pedal is the rack, and a card may sit in the rack or in the stage. Returns how
 // many toggles there are.
 const ROWS = [
+  ['.rack-toggles button', 'rack', 'view'],
   ['.views-bar .toggles button', 'views', 'view'],
   ['.controls-bar .toggles button', 'controls', 'controls'],
 ];
 const TOGGLES = (sel) => [...document.querySelectorAll(sel)].map((b) => b.getAttribute('aria-pressed') === 'true');
 const SHOWN = (what) => {
   const shown = (e) => !!e && !e.hidden && e.checkVisibility();
-  // each view's toggle names it, and its card (or the rack, the pedal's) carries that name in data-view
-  if (what === 'views') return [...document.querySelectorAll('.views-bar .toggles button')].map((b) => shown(document.querySelector(`[data-view="${CSS.escape(b.textContent.trim())}"]`)));
+  // each view's toggle names it, and its card carries that name in data-view (under the pedal or in the stage)
+  const bar = { rack: '.rack-toggles button', views: '.views-bar .toggles button' }[what];
+  if (bar) return [...document.querySelectorAll(bar)].map((b) => shown(document.querySelector(`.card[data-view="${CSS.escape(b.textContent.trim())}"]`)));
   return [...document.querySelectorAll('#controls .groups > *')].map(shown);
 };
 async function toggles(tab, broken) {
@@ -193,7 +198,9 @@ function failures(r) {
   if (!c.info) f.push('no ⓘ buttons');
   if (!c.controls) f.push('no controls');
   if (c.presets < 2) f.push('no presets');
-  if (!c.barPresets) f.push('no presets in the controls\' bar');
+  if (!c.facePresets) f.push('no presets on the pedal');
+  if (c.rackViews < 2) f.push('no toggles for the tuner and the metronome under the pedal');
+  if (c.rig < 2) f.push('no rig at the foot (the input and the master volume)');
   if (!c.views) f.push('no toggles for the views');
   if (!c.mode) f.push('no Discover | Perform in the views\' bar');
   if (!c.start) f.push('no Start audio');
