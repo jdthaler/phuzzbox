@@ -23,7 +23,8 @@ import { PEDAL as SPRING } from '../../spring/src/spring-pedal.js';
 import { PEDAL as ECHO } from '../../echo/src/echo-pedal.js';
 import { PEDAL as ROTARY } from '../../rotary/src/rotary-pedal.js';
 import { PEDAL as PLATE } from '../../plate/src/plate-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE].map((d) => [d.id, d]));
+import { PEDAL as SYMPATHETIC } from '../../sympathetic/src/sympathetic-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
