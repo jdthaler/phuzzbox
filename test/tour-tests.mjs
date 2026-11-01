@@ -2,7 +2,8 @@
 // ready pedal has a tour, its page loads it, and each step names views the page has, presets the
 // pedal has, parameters it has with values in their ranges, and notes the test bass can play. A
 // tour's numbers are the READMEs' (which the pedals' tests check), so every quantity in its text
-// must appear in its pedal's README, the test bass's or the tuner's, or be a setting the step makes.
+// must appear in its pedal's README, the test bass's, the tuner's, the scope's or the spectrum's, or be a
+// setting the step makes.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -36,7 +37,7 @@ const read = (rel) => readFileSync(`${root}${rel}`, 'utf8');
 }
 
 // How it works: every page's tabs are READMEs that exist and render
-for (const dir of ['testbass', 'tuner']) {
+for (const dir of ['testbass', 'tuner', 'scope', 'spectrum']) {
   const md = read(`${dir}/README.md`);
   let html = '';
   try { html = renderMarkdown(md, { skip: ['Files'] }).html; } catch (e) { console.log(e.message); }
@@ -48,7 +49,7 @@ check(/['"]testbass\/['"]/.test(read('shared/notes.js')) && /['"]tuner\/['"]/.te
 // a measured quantity in prose: a number and its unit
 const QUANTITY = /(\d+(?:\.\d+)?(?: × 10[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+)?) ?(kΩ|Ω|µF|nF|pF|pF\/m|mH|H|kHz|Hz|dB|mV|V|µA|mA|°C|cents|cm|ms|m|%)(?![\w/])/g;
 const norm = (s) => s.replace(/[  ]/g, ' ').replace(/\*\*/g, '');
-const shared = norm(read('testbass/README.md') + read('tuner/README.md'));
+const shared = norm(['testbass', 'tuner', 'scope', 'spectrum'].map((d) => read(`${d}/README.md`)).join('\n'));
 
 for (const p of PEDALS.filter((x) => x.ready)) {
   const file = `${p.id}/src/${p.id}-tour.js`;
@@ -59,8 +60,8 @@ for (const p of PEDALS.filter((x) => x.ready)) {
   const { TOUR } = await import(`${root}${file}`);
   const { PEDAL } = await import(`${root}${p.id}/src/${p.id}-pedal.js`);
   check(TOUR.id === p.id && TOUR.steps.length >= 3 && TOUR.steps.length <= 8, `${p.name}: its tour has 3 to 8 steps`, `${TOUR.steps.length}`);
-  // the page's views: their titles in its main module, and the tuner
-  const views = ['Tuner', ...[...read(`${p.id}/src/${p.id}-main.js`).matchAll(/^\s*title:\s*'((?:[^'\\]|\\.)*)'/gm)].map((m) => m[1].replace(/\\(.)/g, '$1'))];
+  // the page's views: their titles in its main module, and the tuner, the scope and the spectrum
+  const views = ['Tuner', 'Scope', 'Spectrum', ...[...read(`${p.id}/src/${p.id}-main.js`).matchAll(/^\s*title:\s*'((?:[^'\\]|\\.)*)'/gm)].map((m) => m[1].replace(/\\(.)/g, '$1'))];
   const byId = new Map(params(PEDAL.groups).map((q) => [q.id, q]));
   const valid = (q, v) => (q.type === 'checkbox' ? typeof v === 'boolean' : q.type === 'select' ? q.options.some(([o]) => o === v) : Number.isFinite(v) && v >= q.min && v <= q.max);
   const readme = norm(read(`${p.id}/README.md`)) + shared;

@@ -1,7 +1,8 @@
 // wah-main.js — the Wah's page: the shell (shared/shell.js) and its views.
 
 import { createPedal } from '../../shared/shell.js';
-import { fit, css, freqAxes, animate, markNote } from '../../shared/plot.js';
+import { fit, css, freqAxes } from '../../shared/plot.js';
+import { spectrumView } from '../../shared/views.js';
 import { scratch, wasmEffect } from '../../shared/wasm.js';
 import { PEDAL } from './wah-pedal.js';
 
@@ -63,35 +64,7 @@ const filterView = {
   },
 };
 
-// The live spectrum of what comes out.
-const spectrumView = {
-  title: 'Spectrum',
-  caption: 'the output as it plays (play the test bass or your own): the harmonics near the peak ring out. The green line is the note you are playing, as the tuner hears it at the input, and the ticks along the top its harmonics.',
-  mount(holder, api) {
-    const canvas = document.createElement('canvas');
-    holder.append(canvas);
-    let data = null;
-    animate(canvas, () => {
-      const { g, w, h } = fit(canvas);
-      g.clearRect(0, 0, w, h);
-      const { x, y, box } = freqAxes(g, w, h, { dbMin: -100, dbMax: -10 });
-      const a = api.analyser;
-      if (!a) { g.fillStyle = css('--ink-2'); g.textAlign = 'center'; g.fillText('Start audio, then play', (box.l + box.r) / 2, (box.t + box.b) / 2); return; }
-      markNote(g, x, box, api.note);
-      data ??= new Float32Array(a.frequencyBinCount);
-      a.getFloatFrequencyData(data);
-      const fs = api.ctx.sampleRate, bin = fs / a.fftSize;
-      g.beginPath(); g.strokeStyle = css('--accent'); g.lineWidth = 1.5;
-      let started = false;
-      for (let i = 1; i < data.length; i++) {
-        const f = i * bin;
-        if (f < 20 || f > 20000) continue;
-        const Y = Math.max(box.t, Math.min(box.b, y(data[i])));
-        if (!started) { g.moveTo(x(f), Y); started = true; } else g.lineTo(x(f), Y);
-      }
-      g.stroke();
-    });
-  },
-};
+// the Spectrum (shared/views.js), with what the wah does to it
+const WAH_SPECTRUM = 'what goes in (dashed) and what comes out (solid), in dB of volts (0 dBV is a sine of 1 V peak): the harmonics near the peak in The sweep ring out above the input\'s. The green line is the note you are playing, as the tuner hears it at the input, and the ticks along the top its harmonics.';
 
-createPedal({ PEDAL, worklet: new URL('./wah-worklet.js', import.meta.url), views: [filterView, spectrumView] });
+createPedal({ PEDAL, worklet: new URL('./wah-worklet.js', import.meta.url), views: [filterView, spectrumView({ caption: WAH_SPECTRUM })] });
