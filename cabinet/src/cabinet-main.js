@@ -60,8 +60,8 @@ const responseView = {
       // ohms, log, 1 to 300, on the right
       const Z = (z) => box.b - ((box.b - box.t) * Math.log(Math.max(1, Math.min(300, z)))) / Math.log(300);
       g.fillStyle = css('--ink-2'); g.textAlign = 'left';
-      for (const z of [1, 3, 10, 30, 100, 300]) g.fillText(`${z}`, box.r + 4, Z(z) + 4);
-      g.fillText('Ω', box.r + 4, box.t + 22);
+      for (const z of box.b - box.t > 110 ? [1, 3, 10, 30, 100, 300] : [1, 10, 100]) g.fillText(`${z}`, box.r + 4, Z(z) + 4);
+      if (box.b - box.t <= 110) g.fillText('Ω', box.r + 4, Z(300) + 4);
       if (fb) { g.strokeStyle = css('--ink-2'); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(x(fb), box.t); g.lineTo(x(fb), box.b); g.stroke(); g.setLineDash([]); }
       const xs = Array.from(FREQS, x);
       line(g, xs, r.z.map(Z), css('--accent-2'), 1.5);
@@ -76,7 +76,7 @@ const responseView = {
 // and their travel now.
 const coneView = {
   title: 'The cone',
-  caption: `above, how far a ${LOUD} V sine at each frequency would move the cones at this gain (orange, mm peak), against their linear travel Xmax (dashed); below, the cones' travel over the last second, as you play. Low notes move them most: sealed, the travel levels off below the box's resonance; ported, it dips to almost nothing at the port's tuning and then climbs fast below it, where the port no longer loads the cones. Past Xmax the motor loses its grip and the suspension stiffens, and the sound thickens.`,
+  caption: `how far a ${LOUD} V sine at each frequency would move the cones at this gain (orange, mm peak), against their linear travel Xmax (dashed); and the cones' travel over the last second, as you play. Low notes move them most: sealed, the travel levels off below the box's resonance; ported, it dips to almost nothing at the port's tuning and then climbs fast below it, where the port no longer loads the cones. Past Xmax the motor loses its grip and the suspension stiffens, and the sound thickens.`,
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -98,25 +98,28 @@ const coneView = {
       if (!r) return;
       const { g, w, h } = fit(canvas);
       g.clearRect(0, 0, w, h);
-      const xm = 1e3 * api.P.xmax, split = Math.round(h * 0.58);
-      // above: travel against frequency, log mm from Xmax/30 to 4 Xmax
-      const fbox = { l: 40, r: w - 10, t: 10, b: split - 20 };
+      // two plots: stacked in a tall card, side by side in a wide, short one
+      const xm = 1e3 * api.P.xmax, beside = w > 2.4 * h || h < 170;
+      const split = beside ? Math.round(w * 0.55) : Math.round(h * 0.58);
+      // travel against frequency, log mm from Xmax/30 to 4 Xmax
+      const fbox = beside ? { l: 40, r: split - 10, t: 10, b: h - 22 } : { l: 40, r: w - 10, t: 10, b: split - 20 };
       const X = (f) => fbox.l + ((fbox.r - fbox.l) * Math.log(f / FMIN)) / Math.log(FMAX / 10 / FMIN);
       const lo = xm / 30, hi = xm * 4;
       const Y = (mm) => fbox.b - ((fbox.b - fbox.t) * Math.log(Math.max(lo, Math.min(hi, mm)) / lo)) / Math.log(hi / lo);
       g.strokeStyle = css('--grid'); g.fillStyle = css('--ink-2'); g.lineWidth = 1; g.font = '11px system-ui, sans-serif';
       g.textAlign = 'center';
-      for (const f of [20, 50, 100, 200, 500, 1000]) { g.beginPath(); g.moveTo(X(f), fbox.t); g.lineTo(X(f), fbox.b); g.stroke(); g.fillText(f >= 1000 ? '1k' : `${f}`, X(f), fbox.b + 14); }
+      for (const f of fbox.r - fbox.l > 200 ? [20, 50, 100, 200, 500, 1000] : [20, 100, 1000]) { g.beginPath(); g.moveTo(X(f), fbox.t); g.lineTo(X(f), fbox.b); g.stroke(); g.fillText(f >= 1000 ? '1k' : `${f}`, X(f), fbox.b + 14); }
       g.textAlign = 'right';
-      for (const mm of [0.1, 0.3, 1, 3, 10, 30]) if (mm >= lo && mm <= hi) { g.beginPath(); g.moveTo(fbox.l, Y(mm)); g.lineTo(fbox.r, Y(mm)); g.stroke(); g.fillText(`${mm}`, fbox.l - 6, Y(mm) + 4); }
+      const ticks = fbox.b - fbox.t > 90 ? [0.1, 0.3, 1, 3, 10, 30] : [0.1, 1, 10];
+      for (const mm of ticks) if (mm >= lo && mm <= hi) { g.beginPath(); g.moveTo(fbox.l, Y(mm)); g.lineTo(fbox.r, Y(mm)); g.stroke(); g.fillText(`${mm}`, fbox.l - 6, Y(mm) + 4); }
       g.textAlign = 'left'; g.fillText('mm', fbox.l + 4, fbox.t + 10);
       g.strokeStyle = css('--warn'); g.setLineDash([5, 4]); g.beginPath(); g.moveTo(fbox.l, Y(xm)); g.lineTo(fbox.r, Y(xm)); g.stroke(); g.setLineDash([]);
       const idx = FREQS.findIndex((f) => f > FMAX / 10);
       const fs = Array.from(FREQS.subarray(0, idx));
       line(g, fs.map(X), fs.map((_, i) => Y(1e3 * LOUD * r.x[i])), css('--accent'), 2.5);
       markNote(g, X, fbox, api.note);
-      // below: the travel over the last second, ±1.5 Xmax
-      const tbox = { l: 40, r: w - 10, t: split, b: h - 20 };
+      // the travel over the last second, ±1.5 Xmax
+      const tbox = beside ? { l: split + 40, r: w - 10, t: 10, b: h - 22 } : { l: 40, r: w - 10, t: split, b: h - 20 };
       const mid = (tbox.t + tbox.b) / 2, T = (mm) => mid - ((tbox.b - tbox.t) / 2) * Math.max(-1, Math.min(1, mm / (1.5 * xm)));
       g.strokeStyle = css('--grid'); g.beginPath(); g.moveTo(tbox.l, mid); g.lineTo(tbox.r, mid); g.stroke();
       g.strokeStyle = css('--warn'); g.setLineDash([5, 4]);

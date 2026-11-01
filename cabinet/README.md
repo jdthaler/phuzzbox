@@ -143,8 +143,8 @@ core, with no latency.
 * **The response**: what the microphone hears for a small steady sine at each frequency, and the
   impedance the amp drives, from the coupled equations solved in the frequency domain
   (`cabinet_response`).
-* **The cone**: above, how far a 0.3 V sine at each frequency moves the cones at this gain, against
-  X_max; below, the cones' travel over the last second, from the engine as it plays.
+* **The cone**: how far a 0.3 V sine at each frequency moves the cones at this gain, against
+  X_max, and the cones' travel over the last second, from the engine as it plays.
 * **Scope** and **Spectrum**: the input and output as they play.
 
 ## What to listen for

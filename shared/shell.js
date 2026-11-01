@@ -230,7 +230,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     if (ifaceInput && P[ifaceInput.id] !== iface.inputZ) set(ifaceInput.id, iface.inputZ);
   }
   const rows = [];
-  const groupList = [];
+  const groupList = [], groupBoxes = [];
   for (const g of PEDAL.groups) {
     const box = h('fieldset', { class: 'group' }, h('legend', {}, g.name));
     for (const p of g.params) {
@@ -252,6 +252,11 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       rows.push({ p, row, input, val });
       box.append(row);
     }
+    // a group whose every control is irrelevant now (showIf) says so rather than standing empty
+    const empty = h('p', { class: 'group-empty' }, 'Not used with these settings.');
+    empty.hidden = true;
+    box.append(empty);
+    groupBoxes.push({ empty, rows: rows.slice(rows.length - g.params.length) });
     groupList.push({ key: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: g.name, el: box });
   }
   // the rig: what turns the browser's numbers into volts at the input jack
@@ -286,6 +291,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       val.textContent = p.type === 'checkbox' ? '' : fmt(p, P[p.id]);
       row.hidden = p.showIf ? !p.showIf(P) : false;
     }
+    for (const g of groupBoxes) g.empty.hidden = g.rows.some((r) => !r.row.hidden);
     for (const k of knobs.children) k.refresh?.();
   }
   function set(id, v, quiet) {
