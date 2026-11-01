@@ -88,6 +88,11 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    with Kamaretsos et al.'s merger amplitudes; tested against fresh Leaver solves (1.6 × 10⁻⁶),
    the literature, Hod's near-extremal limit, the harmonics' closed form and the ringing measured
    from a click.
+   The **Doppler** landed 2026-11-01: a point source on a straight road, pass after pass, each
+   ear's retarded time from c²D² = (X − vD)² + d² in closed form (one root below Mach 1, none or two
+   above), the moving source's field integrated over each output sample so it stays finite at the
+   Mach cone; tested against bisection on the light-cone condition, the field summed at those
+   times, the textbook shift (to 0.10 cents), the cone's arrival and a click's area through it.
    Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
    Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
    Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.

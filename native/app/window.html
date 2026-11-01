@@ -590,6 +590,10 @@ body.one-screen .card .canvas.echoes { flex: 1 1 0; height: auto; min-height: 14
 /* the Black Hole's enclosure: night, with the gold of an accretion disc's light */
 :root[data-pedal="blackhole"] { --enclosure: #0d0d12; --enclosure-ink: #f3d9a4; }
 
+/* ---- doppler/style.css */
+/* the Doppler's enclosure: road-sign teal, with white */
+:root[data-pedal="doppler"] { --enclosure: #1f4e5f; --enclosure-ink: #e9f3f5; }
+
 /* ---- native/app/app.css */
 /* app.css — the app window's own styles, after the site's shared/pedal.css (whose one-screen
    layout, from shared/layout.js, the window uses as the pages do). */
@@ -2429,6 +2433,72 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- doppler/src/doppler-params.js
+const __m36 = (() => {
+
+// doppler-params.js — the Doppler's controls. Values in SI units: a source plays your bass as it
+// passes you on a straight road, again and again, and you hear it at its retarded time.
+
+const pass = [
+  { id: 'speed', label: 'Speed', min: 0, max: 700, def: 25, unit: 'm/s', decimals: 0, perform: true,
+    hint: 'How fast the source passes, through still air: 25 m/s is 90 km/h. Coming it sounds higher, going lower: at 25 m/s a note falls by 2.5 semitones as it passes. Above the speed of sound (343 m/s at 20 °C) the source outruns its sound: nothing, then the boom as its Mach cone sweeps over you, then two sounds at once, the one from its approach played backwards. The boom is far louder than the pass: the Mach presets turn Level down by 24 dB. A change takes effect from the next pass.' },
+  { id: 'distance', label: 'Distance', min: 1, max: 100, def: 4, log: true, unit: 'm', decimals: 1, perform: true,
+    hint: 'How close the road comes to you. Close, the pitch drops fast as it passes and the level swells; far, the pitch glides down slowly. From the next pass.' },
+  { id: 'period', label: 'Every', min: 1, max: 8, def: 4, unit: 's', decimals: 1, perform: true,
+    hint: 'The time from one pass to the next: each source is heard for this long, fading in and out at the ends of its stretch of road, and passes you halfway. From the next pass.' },
+  { id: 'dry', label: 'Dry', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Your bass as it came in, as if you stood by the road playing too.' },
+];
+
+const air = [
+  { id: 'listener', label: 'Your speed', min: -50, max: 50, def: 0, unit: 'm/s', decimals: 0,
+    hint: 'How fast you move along the road, through the air: plus the way the source goes, minus toward it. Riding at 25 m/s past a source standing still, you hear it 122 cents high as you come and 131 cents low as you go; a source passing you at 25 m/s is the other way round, 131 cents high and 122 low. The pitch depends on who moves through the air, not only on how fast you close. From the next pass.' },
+  { id: 'temp', label: 'Air', min: -20, max: 40, def: 20, unit: '°C', decimals: 0,
+    hint: 'The air\'s temperature, which sets the speed of sound: 331 m/s at 0 °C, 343 m/s at 20 °C. From the next pass.' },
+  { id: 'mix', label: 'Fly-by', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0,
+    hint: 'How much of the passing source is heard.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the mix, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'The pass', params: pass },
+  { name: 'The air and output', params: air },
+];
+
+const PRESETS = {
+  'Car at 90 km/h': { speed: 25, distance: 4, period: 4, listener: 0, dry: 0, mix: 1 },
+  'Race car': { speed: 90, distance: 6, period: 3 },
+  'Train': { speed: 40, distance: 20, period: 8 },
+  'You ride past': { speed: 0, listener: 25, distance: 4, period: 4 },
+  'Head on': { speed: 25, listener: -25, distance: 4, period: 4 },
+  'Jet, low pass': { speed: 250, distance: 60, period: 6 },
+  'Just past Mach 1': { speed: 380, distance: 30, period: 5, level: -24 },
+  'Mach 2': { speed: 686, distance: 100, period: 6, level: -24 },
+};
+const KEEP = [];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- doppler/src/doppler-pedal.js
+const __m35 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m36;
+// doppler-pedal.js — the Doppler's descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'doppler',
+  name: 'Doppler',
+  description: 'A source plays your bass as it passes you, again and again, heard at its retarded time: the pitch falls as it goes by, and above Mach 1 the boom',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/doppler.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue } = __m1;
@@ -2450,6 +2520,7 @@ const { PEDAL: ROTARY } = __m27;
 const { PEDAL: PLATE } = __m29;
 const { PEDAL: SYMPATHETIC } = __m31;
 const { PEDAL: BLACKHOLE } = __m33;
+const { PEDAL: DOPPLER } = __m35;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -2477,7 +2548,8 @@ const { PEDAL: BLACKHOLE } = __m33;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
