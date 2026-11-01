@@ -346,7 +346,8 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     const outs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'audiooutput' && d.label);
     if (!ctx?.setSinkId || !outs.length) return;
     const was = sinkSel.value || store.get('phuzzbox.sink', '');
-    sinkSel.replaceChildren(h('option', { value: '' }, 'System output'), ...outs.filter((d) => d.deviceId !== 'default').map((d) => h('option', { value: d.deviceId }, `→ ${d.label}`)));
+    const sys = outs.find((d) => d.deviceId === 'default');
+    sinkSel.replaceChildren(h('option', { value: '', 'data-group': sys?.groupId }, 'System output'), ...outs.filter((d) => d.deviceId !== 'default').map((d) => h('option', { value: d.deviceId, 'data-group': d.groupId }, `→ ${d.label}`)));
     sinkSel.hidden = false;
     if ([...sinkSel.options].some((o) => o.value === was)) { sinkSel.value = was; if (was) setSink(was); }
   }
@@ -402,9 +403,18 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       return;
     }
     const track = micStream?.getAudioTracks()[0]?.getSettings();
-    const ms = 1000 * ((ctx.baseLatency || 0) + (ctx.outputLatency || 0) + (state.source === 'input' ? track?.latency || 0 : 0));
+    const input = state.source === 'input' ? track?.latency || 0 : 0, base = ctx.baseLatency || 0, output = ctx.outputLatency || 0;
+    const ms = 1000 * (input + base + output);
     latency.textContent = ms ? `latency ≈ ${ms.toFixed(0)} ms` : 'latency –';
     latency.classList.toggle('warn', ms > 40);
+    // where the estimate comes from, and the usual reason it is large (the output is yours to choose)
+    const f = (x) => `${(1000 * x).toFixed(1)} ms`;
+    const parts = [`The browser's estimate of the delay from input to output, at ${(ctx.sampleRate / 1000).toFixed(1)} kHz:`];
+    if (state.source === 'input') parts.push(`input ${f(input)}`);
+    parts.push(`processing ${f(base)}`, `output ${f(output)}`);
+    const group = track?.groupId, out = sinkSel.selectedOptions[0];
+    if (state.source === 'input' && group && !sinkSel.hidden && out?.dataset.group !== group) parts.push('The output is not on the interface the input is: choosing that interface\'s output usually saves the most.');
+    latency.title = parts.join('\n');
   }
   function onMessage(m) {
     if (m.type === 'levels') {
