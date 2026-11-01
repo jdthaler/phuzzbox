@@ -39,6 +39,8 @@ nodes numbered as theirs:
 | R9 | 10 kΩ | Q2's emitter, ground | supply | 8.15 V | after the polarity diode |
 | R10 | 1 kΩ | Q2's collector, supply | | | |
 
+![The inductor wah: Q1 drives the Rocker pot; its wiper feeds Q2, whose emitter drives the coil L1 through the sweep capacitor C3; the coil's current returns to Q1's base through R6](schematics/circuit.svg)
+
 Q1 is a common-emitter stage, its gain a few tens; its collector drives the pot, and the output
 is the top of the pot. The wiper passes a share of that swing to Q2, an emitter follower, which
 drives the top of the coil through the sweep capacitor C3; the coil's current returns to Q1's base
