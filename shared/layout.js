@@ -128,7 +128,7 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
       for (let j = 0; j < k; j++, i++) on[i].card.style.gridColumn = `span ${12 / k}`;
     }
     stage.style.setProperty('--rows', Math.max(1, rows));
-    noView.hidden = n > 0 || pedalView.shown();
+    noView.hidden = n > 0;
   }
 
   // ---- sharing the height: the views' share (0 folds them away, 1 the controls)

@@ -98,6 +98,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       ...PEDALS.filter((p) => p.ready).map((p) => h('a', { href: `../${p.id}/`, 'aria-current': p.id === PEDAL.id ? 'page' : false }, h('b', {}, p.name), h('small', {}, p.after))),
       h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, `PhuzzBox ${PHUZZBOX_VERSION} · physics, not samples`))));
   addEventListener('pointerdown', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
   const header = h('header', { class: 'top' },
     h('div', { class: 'brand' }, h('a', { class: 'home', href: '../', title: 'Every pedal' }, 'PhuzzBox'), menu, notesBtn, installBtn),
     h('div', { class: 'audio' }, startBtn, cpu, sourceSel, chanSel, sinkSel, latency, measureBtn,
@@ -533,7 +534,8 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     const beat = 60 / RIFF_BPM;
     const next = () => {
       const [k, b] = RIFF[i % RIFF.length];
-      if (k) { play(k, 0.6 + 0.2 * ((i % 4) === 0)); setTimeout(() => stop(k), 1000 * b * beat * 0.85); }
+      // each note lights its fret while it sounds, so the riff can be followed on the board
+      if (k) { fretOfKey.get(k)?.classList.add('down'); play(k, 0.6 + 0.2 * ((i % 4) === 0)); setTimeout(() => { fretOfKey.get(k)?.classList.remove('down'); stop(k); }, 1000 * b * beat * 0.85); }
       i++;
       riff = setTimeout(next, 1000 * b * beat);
     };
