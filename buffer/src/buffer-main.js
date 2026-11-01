@@ -1,7 +1,7 @@
 // buffer-main.js — the Buffer's page: the shell (shared/shell.js) and its views.
 
 import { createPedal } from '../../shared/shell.js';
-import { fit, css, freqAxes } from '../../shared/plot.js';
+import { fit, css, freqAxes, animate, markNote, markPartials, atFreq } from '../../shared/plot.js';
 import { spectrumView } from '../../shared/views.js';
 import { scratch, wasmEffect } from '../../shared/wasm.js';
 import { PEDAL } from './buffer-pedal.js';
@@ -26,7 +26,7 @@ const db = (x) => 20 * Math.log10(x);
 // The circuit's response: the pickup as plugged in, as wanted, and the pedal's filter between them.
 const circuitView = {
   title: 'The pickup\'s response',
-  caption: 'what your pickup gives at each frequency into your interface (dashed) and into the cable and input you chose (solid); the Buffer plays the difference (thin). The bump is the pickup resonating with the cable\'s capacitance.',
+  caption: 'what your pickup gives at each frequency into your interface (dashed) and into the cable and input you chose (solid); the Buffer plays the difference (thin). The bump is the pickup resonating with the cable\'s capacitance. The green line is the note you are playing, and the green dots its harmonics on the solid curve, each as large as it is loud now: a long cable\'s bump lifts the ones near it, and the treble past it falls away.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -46,6 +46,8 @@ const circuitView = {
       line(r.rec, css('--ink-2'), 1.5, [5, 4]);
       line(r.H, css('--accent-2'), 1);
       line(r.want, css('--accent'), 2.5);
+      markNote(g, x, box, api.note);
+      markPartials(g, x, y, box, api, (f) => db(atFreq(FREQS, r.want, f)));
       for (const [f, c] of [[r.fRec, css('--ink-2')], [r.fWant, css('--accent')]]) {
         if (!f || f > 20000) continue;
         g.strokeStyle = c; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(x(f), box.t); g.lineTo(x(f), box.b); g.stroke(); g.setLineDash([]);
@@ -53,7 +55,7 @@ const circuitView = {
     };
     legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>into what it drives</span><span><i style="background:${css('--ink-2')}"></i>into your interface</span><span><i style="background:${css('--accent-2')}"></i>the Buffer's filter</span><span>dotted: 1/(2π√LC)</span>`;
     api.on('params', () => { r = response(api.P); draw(); });
-    new ResizeObserver(draw).observe(canvas);
+    animate(canvas, draw); // each frame, so the note's harmonics follow your playing
     draw();
   },
 };

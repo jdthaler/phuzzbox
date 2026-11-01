@@ -8,6 +8,7 @@ import { loadPedal } from '../tools/engine.mjs';
 import { scratch } from '../shared/wasm.js';
 import { defaults } from '../shared/params.js';
 import { peak, sine } from '../tools/audio-util.mjs';
+import { tankModes, springBank, POINTS } from '../spring/src/spring-motion.js';
 import { TANKS, spring, tdPB, fcPB, beads, sigmaOf, kAt } from './spring-circuit.mjs';
 
 const { PEDAL, Effect } = await loadPedal('spring');
@@ -189,6 +190,42 @@ function peakTime(env, t0, t1) {
   check(dry.every((v, i) => Math.abs(v - n[i]) < 1e-6), 'Dry: the bass as it came in');
   const lv = run(W({ dry: 1, reverb: 0, level: -6 }), n).L;
   check(lv.every((v, i) => Math.abs(v - 0.501187 * n[i]) < 1e-6), 'Level: gain after the mix, in decibels');
+}
+
+// 5b. the bead magnets, lying along the spring or across it
+{
+  const along = info(W({ tank: 'leem' })), across = info(W({ tank: 'leem', beads: 'across' }));
+  const mine = TANKS.leem.map((c) => spring(c, 0.35e-3, true));
+  const worst = Math.max(...across.springs.map((g, k) => Math.abs(g.fb / mine[k].fb - 1)));
+  check(worst < 1e-9, 'Bead magnets: across the spring, each bead\'s inertia is a cylinder\'s about a diameter, m(a²/4 + l²/12)', `f_b ${across.springs.map((g) => `${(g.fb / 1000).toFixed(2)} kHz`).join(', ')}`);
+  const ratio = along.springs[0].fb / across.springs[0].fb;
+  check(ratio > 4.5 && ratio < 6 && Math.abs(along.springs[0].fb / 1000 - 8) < 0.1 && Math.abs(across.springs[0].fb / 1000 - 1.5) < 0.1, 'Bead magnets: across, five times harder to turn in the Leem, the corner falling from 8 kHz to 1.5 kHz', `${ratio.toFixed(2)} times; ${(along.springs[0].fb / 1000).toFixed(2)} kHz to ${(across.springs[0].fb / 1000).toFixed(2)} kHz`);
+  const click = new Float32Array(fs); click[100] = 0.1;
+  // the energy from f − w to f + w, by the Fourier transform at every 20 Hz
+  const band = (y, f, w) => { let e = 0; for (let q = f - w; q <= f + w; q += 20) { let re = 0, im = 0; for (let i = 0; i < y.length; i++) { const p = (2 * Math.PI * q * i) / fs; re += y[i] * Math.cos(p); im -= y[i] * Math.sin(p); } e += re * re + im * im; } return Math.sqrt(e); };
+  const hi = (P) => { const y = run(W({ ...P, dry: 0, reverb: 1 }), click).L; return band(y, 4000, 1000); };
+  check(hi({ beads: 'across' }) < 0.3 * hi({}), 'and the tank is darker', `${(20 * Math.log10(hi({ beads: 'across' }) / hi({}))).toFixed(1)} dB near 4 kHz`);
+}
+
+// 5c. the page's slow motion (spring/src/spring-motion.js): the engine's own modes played here, a
+// sample at a time, hear at the pickup what the engine's tank does; the field along each spring
+// at its far end is that spring's share
+{
+  const P = W({ tank: 'leem' }), tank = tankModes(x, Effect, P), b = springBank(tank, fs);
+  const inp = sine(110, fs, 2400, 0.1);
+  const v = Effect.native(P), s = scratch(x), n = inp.length;
+  s.f64(v.length + n).set([...v, ...inp]);
+  x.spring_run(s.at, n);
+  const want = Array.from(s.f64(n, 8 * (v.length + n)));
+  let err = 0, sig = 0, ends = 0;
+  const f = new Float64Array(POINTS);
+  for (let i = 0; i < n; i++) {
+    b.bank.seek(i + 1, inp);
+    const got = b.pickup(); err += (got - want[i]) ** 2; sig += want[i] ** 2;
+    if (i % 300 === 299) { let sum = 0; for (let k = 0; k < tank.count; k++) sum += b.field(k, f)[POINTS - 1]; ends = Math.max(ends, Math.abs(sum - got)); }
+  }
+  check(tank.modes.length === info(P).bank && Math.sqrt(err / sig) < 1e-4, 'The springs (slow motion): the engine\'s own modes, played here, hear at the pickup what the engine\'s tank does', `${tank.modes.length} modes, ${Math.sqrt(err / sig).toExponential(1)} RMS difference (the engine adds in single precision)`);
+  check(ends < 1e-12, 'and the springs\' fields at their far ends add up to what the pickup hears', `worst ${ends.toExponential(1)}`);
 }
 
 // 6. hygiene

@@ -33,9 +33,8 @@ if (PHUZZ_PLUGINS)
     set(WIL_SDK_ROOT ${wil_SOURCE_DIR} CACHE PATH "" FORCE)
   endif()
 
-  if (PHUZZ_APP)
-    phuzz_fetch(choc https://github.com/Tracktion/choc 1c3ab9ed0b59a145ad6a2f38e35b601117a657b4)             # 2026-10-08 (ISC), the app's window, as Forte's
-  endif()
+  # choc: the app's window and the plugins' (a web view), and the JSON they talk in
+  phuzz_fetch(choc https://github.com/Tracktion/choc 1c3ab9ed0b59a145ad6a2f38e35b601117a657b4)               # 2026-10-08 (ISC), as Forte's
 
   set(CLAP_WRAPPER_DOWNLOAD_DEPENDENCIES OFF CACHE BOOL "" FORCE)
   set(CLAP_WRAPPER_BUILD_AUV2 ${APPLE} CACHE BOOL "" FORCE)

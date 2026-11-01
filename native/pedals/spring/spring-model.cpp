@@ -15,7 +15,7 @@ const Tank &tankOf(int which) {
   return which == 1 ? olson : which == 2 ? one : leem;
 }
 
-void Spring::set(const Coil &c, double wireD) {
+void Spring::set(const Coil &c, double wireD, bool across) {
   R = c.D / 2;
   r = wireD / 2;
   // the wire's length: the helix unrolled, √((2πRN)² + H²) (Parker & Bilbao)
@@ -34,11 +34,12 @@ void Spring::set(const Coil &c, double wireD) {
   }
   kc = (a + b) / 2;
   Fc = omega(kc) / (2 * PI);
-  // the bead: a cylindrical magnet on the spring's axis, magnetised across it, turning about its own
-  // axis (I = ma²/2); the spring's wire turning about the same axis at its radius R
+  // the bead: a cylindrical magnet, radius a and length l, turning about the spring's axis: lying
+  // along the axis, about its own (I = ma²/2); lying across it, about a diameter through its middle
+  // (I = m(a²/4 + l²/12)). The spring's wire turns about the same axis at its radius R.
   const double ma = c.magnetD / 2, ml = c.magnetL;
   const double mb = MAGNET_RHO * PI * ma * ma * ml;
-  const double Ib = mb * ma * ma / 2;
+  const double Ib = across ? mb * (ma * ma / 4 + ml * ml / 12) : mb * ma * ma / 2;
   const double Is = STEEL_RHO * PI * r * r * L * R * R;
   mu = Ib / Is;
   fb = (1 / TD) / (PI * mu); // f₀/(πμ), f₀ = c₀/2L = 1/T_D
@@ -70,6 +71,7 @@ double sigma(double f, double cg, double L, double mountsDb, double eta, double 
 Model model(const double *P) {
   Model M;
   M.tank = (int)std::lround(P[tank]);
+  M.across = std::lround(P[beads]) == 1;
   M.wire = P[wire]; M.mounts = P[mounts]; M.eta = P[steel]; M.oil = P[oil];
   M.dry = P[dry]; M.reverb = P[reverb];
   M.level = std::pow(10.0, P[level] / 20);

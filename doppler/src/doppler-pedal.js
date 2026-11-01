@@ -8,5 +8,6 @@ export const PEDAL = {
   name: 'Doppler',
   description: 'A source plays your bass as it passes you, again and again, heard at its retarded time: the pitch falls as it goes by, and above Mach 1 the boom',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/doppler.wasm', import.meta.url).href },
 };

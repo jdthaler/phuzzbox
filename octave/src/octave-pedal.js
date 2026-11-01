@@ -8,5 +8,7 @@ export const PEDAL = {
   name: 'Octave Down',
   description: 'The analog octave divider: a comparator and flip-flops that flip the bass\'s polarity once a cycle, an octave below, and every other cycle, two',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: the tracking filter an octave higher, as the low E is (README, ## Tracking)
+  guitar: { track: 150 },
   wasm: { binary: () => new URL('../wasm/octave.wasm', import.meta.url).href },
 };

@@ -4,8 +4,11 @@
 // program's web view as one page, bundled by tools/bundle-app.mjs. The menu in the header picks
 // the pedal: the program swaps it and the window is drawn again for it. MIDI foot controllers are
 // the site's MIDI card (shared/midi-panel.js), fed by the program's MIDI (window.phuzzMidi).
+// The plugins show the same window for their one pedal (native/plugin/editor.h): describe() says
+// host 'plugin', and the window leaves out what the host does (the audio, the pedal menu, MIDI),
+// takes the parameters as the plugin's numbers, and follows the host's automation in poll().
 
-import { params, defaults, fmt, toUnit, fromUnit, nativeValue } from '../../shared/params.js';
+import { params, defaults, fmt, toUnit, fromUnit, nativeValue, fromNative } from '../../shared/params.js';
 import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
 import { midiPanel } from '../../shared/midi-panel.js';
@@ -50,7 +53,9 @@ async function main(info, carry = {}) {
   const all = params(PEDAL.groups);
   document.documentElement.dataset.pedal = PEDAL.id;
   const S = info.settings ?? {};
-  const P = { ...defaults(PEDAL.groups), ...(info.params ?? {}) };
+  const plugin = info.host === 'plugin';
+  const given = info.native ? Object.fromEntries(all.filter((p) => p.id in (info.params ?? {})).map((p) => [p.id, fromNative(p, info.params[p.id])])) : info.params;
+  const P = { ...defaults(PEDAL.groups), ...(given ?? {}) };
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
   // the bass and how it is plugged in are the same whichever pedal it plays
   for (const id of PEDAL.keep ?? []) if (id in carry && all.some((p) => p.id === id)) P[id] = carry[id];
@@ -103,9 +108,9 @@ async function main(info, carry = {}) {
     h('div', { class: 'row' }, h('label', {}, 'Audio interface'), ifaceSel, gainLabel),
     h('div', { class: 'row', title: 'How many volts at the input jack make a full-scale sample' }, h('label', {}, 'Full scale'), h('span', { class: 'inline' }, fsInput, ' V')),
     h('p', { class: 'rig-note' }, 'Choose your interface and its gain, and Full scale comes from the maker\'s specification.'));
-  // the header: PhuzzBox, the pedal (its menu), then the stream, the CPU and the volume
+  // the header: PhuzzBox, the pedal (its menu; a plugin's is its one pedal), then the stream, the CPU and the volume
   const header = h('header', { class: 'top' },
-    h('div', { class: 'brand' }, h('span', { class: 'home' }, 'PhuzzBox'), h('h1', { class: 'pedal-head' }, pedalSel)),
+    h('div', { class: 'brand' }, h('span', { class: 'home' }, 'PhuzzBox'), h('h1', { class: 'pedal-head' }, plugin ? PEDAL.name : pedalSel)),
     h('div', { class: 'audio' }, streamPill, cpu,
       h('label', { class: 'volume', title: 'The level after the pedal, as a volume pedal sets it (a MIDI expression pedal moves it)' }, 'Volume', volInput, volOut), status));
   inSel.value = audio.input || info.inputs[0]?.name || '';
@@ -116,11 +121,11 @@ async function main(info, carry = {}) {
   fsInput.value = audio.fullScale;
   volInput.addEventListener('input', () => setVolume(+volInput.value));
   let volTimer = null;
-  function setVolume(g) {
+  function setVolume(g, quiet = false) {
     audio.volume = Math.min(1, Math.max(0, g));
     volInput.value = audio.volume;
     volOut.textContent = `${Math.round(100 * audio.volume)} %`;
-    call('volume', audio.volume);
+    if (!quiet) call('volume', audio.volume);
     clearTimeout(volTimer);
     volTimer = setTimeout(() => call('store', 'audio', audio), 300);
   }
@@ -139,6 +144,11 @@ async function main(info, carry = {}) {
   }
   function showStream() {
     status.textContent = stream.error || '';
+    if (stream.host) { // a plugin: the host owns the audio
+      streamPill.textContent = stream.rate ? `${(stream.rate / 1000).toFixed(stream.rate % 1000 ? 1 : 0)} kHz` : 'in the host';
+      streamPill.title = 'The host\'s sample rate; its buffer and devices are set in the host';
+      return;
+    }
     if (!stream.open) { streamPill.textContent = 'no audio'; return; }
     streamPill.textContent = `${(stream.rate / 1000).toFixed(stream.rate % 1000 ? 1 : 0)} kHz · ${stream.frames} · ≈ ${stream.latencyMs.toFixed(1)} ms`;
     streamPill.title = `${stream.api}: ${stream.frames} samples a buffer at ${stream.rate} Hz; the buffers alone make a round trip of ${stream.latencyMs.toFixed(1)} ms, and the converters add a little`;
@@ -247,7 +257,8 @@ async function main(info, carry = {}) {
   createLayout({ id: PEDAL.id, h, store: layoutStore, app, header, share: 0.36,
     rack: h('aside', { class: 'rack', 'data-view': 'Pedal' }, face),
     views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }],
-    groups: [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
+    // a plugin's audio and MIDI are the host's (its MIDI pedals are mapped in the plugin: the FC-300's numbers)
+    groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
     presets: presetSel,
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
   for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
@@ -280,10 +291,9 @@ async function main(info, carry = {}) {
     saveParams();
     refresh();
   }
-  function setBypass(on) {
+  function setBypass(on, quiet = false) {
     audio.bypass = on ? 1 : 0;
-    call('bypass', audio.bypass);
-    call('store', 'audio', audio);
+    if (!quiet) { call('bypass', audio.bypass); call('store', 'audio', audio); }
     led.classList.toggle('on', !on);
     foot.setAttribute('aria-pressed', String(!on));
   }
@@ -349,6 +359,13 @@ async function main(info, carry = {}) {
       if (r.measured === -2) status.textContent = 'Nothing came back: is a cable connected from the output to this input?';
       else { status.textContent = ''; measured.hidden = false; measured.textContent = `round trip ${r.measured.toFixed(1)} ms (measured)`; }
     }
+    // a plugin's host moves the parameters too (automation, its own panel, a MIDI pedal)
+    if (r.params && Object.keys(r.params).length) {
+      for (const p of all) if (p.id in r.params) P[p.id] = fromNative(p, r.params[p.id]);
+      refresh();
+    }
+    if (r.bypass !== undefined) setBypass(r.bypass >= 0.5, true);
+    if (r.volume !== undefined) setVolume(r.volume, true);
     const n = tuning.push(r.f, t);
     tunerCard.classList.toggle('idle', !n);
     tunerCard.classList.toggle('stale', !!n && !n.live);
@@ -364,12 +381,13 @@ async function main(info, carry = {}) {
     setTimeout(tick, 100);
   }
 
-  // the program already holds the saved parameters; send them all once so both agree
-  for (const p of all) send(p);
+  // the program already holds the saved parameters; send them all once so both agree (a plugin's
+  // are the host's, which the window only shows: sending them would touch the song)
+  if (!plugin) for (const p of all) send(p);
   if (Object.keys(carry).length) saveParams();
-  setBypass(!!audio.bypass);
-  setFullScale();
-  setVolume(audio.volume);
+  setBypass(!!audio.bypass, plugin);
+  if (!plugin) setFullScale();
+  setVolume(audio.volume, plugin);
   refresh();
   showStream();
   tick();

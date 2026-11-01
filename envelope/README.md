@@ -32,7 +32,8 @@ Each integrator's resistor here is a photocell, with 33 kΩ across it and 1 kΩ 
 With 47 nF capacitors (the **Range**), the dark cells leave the 33 kΩ, and the cutoff rests at
 101.2 Hz. With the LED at its 20 mA the cells fall to about 1.2 kΩ, and the cutoff rises to
 1537 Hz. That is the sweep for bass. With 15 nF it is 317 Hz to 4815 Hz, a guitar's range,
-since the cutoff goes as 1/C. The two cells are lit by one LED and are taken as matched.
+since the cutoff goes as 1/C: a page set for a guitar (the Rig's **Instrument**) starts there.
+The two cells are lit by one LED and are taken as matched.
 
 ## The follower and the LED
 
@@ -99,7 +100,9 @@ on the test bass is within 0.07 %. It takes under 0.2 % of a core, with no laten
 ## The views
 
 * **The filter**: the response where the cells have the cutoff now, from the engine's messages,
-  and at rest and at the far end of the sweep (`envelope_static`, the cells' steady state).
+  and at rest and at the far end of the sweep (`envelope_static`, the cells' steady state). The
+  note being played is marked, and its harmonics ride the curve as dots, each as large as it is
+  loud at the input: the quack is the peak lifting them one after another.
 * **The sweep**: the last four seconds of the cutoff, the LED's current and the traps' fill.
 * **Scope** and **Spectrum**: the input and output as they play.
 

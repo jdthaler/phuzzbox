@@ -21,6 +21,14 @@ native/pedals/<slug>/<slug>-params.h    generated from the descriptor (tools/gen
 test/<slug>-tests.mjs
 ```
 
+Every descriptor says what changes for a **guitar** (`guitar`, shared/instruments.js): the values
+its parameters take on a page set for a guitar where the defaults (a bass's) won't do, or `{}` when
+nothing does. A pedal that models the pickup takes `GUITAR_PICKUP` (the test guitar's single coil);
+one built for a bass's range takes the guitar's (the Wah's 10 nF, the Envelope Filter's 15 nF,
+the Octave Down's 150 Hz). The page keeps each instrument's settings apart
+(`phuzzbox.<id>.params` and `phuzzbox.<id>.guitar.params`); `test/guitar-tests.mjs` checks every
+pedal's values and what they do on the test guitar.
+
 A descriptor may name its `expression` parameter (the Wah's `position`): a MIDI expression pedal
 (CC 1) moves it by default on the page and in the plugins. Every page also has the MIDI pedals card
 (`shared/midi-panel.js`), and every plugin a MIDI input with Bypass and Volume pedal parameters
@@ -75,6 +83,27 @@ Rules of thumb:
   by the nodal DK method (`native/pedals/phuzz/phuzz-model.cpp`).
 - **Telling the page what happens inside**: `post()` a `Message` (a type and up to 30 numbers) at
   a few hundred a second at most; the page's views get them with `api.on('pedal', (messages) => …)`.
+
+## Showing the physics live
+
+A view shows the physics moving, not only a curve (Jesse, 2026-11-01): what a mechanism does as you
+play. Three ways, by how fast the thing moves:
+
+- **Live**, from the engine's messages (`post()`, above), for what moves at the speed you can watch:
+  a rotor's angle, a tape's motion, a sweep, a load-line trail.
+- **Slow motion**, for what moves at audio rate: `slowMotion(holder, api, { seconds })` in
+  `shared/motion.js` catches each note played at the input (until one is, a test bass note
+  rendered on the page), and the view runs the pedal's own model on it from rest and draws it on a
+  clock running at 1/10 to 1/1000 of real time, with a speed menu, a pause and a replay in the
+  card's title bar. Either run the engine itself on the page (`new Effect(fs)`, reading its state
+  through a web export, as The box does), or play the engine's own modes a sample at a time
+  (`Bank` in `shared/motion.js`, as The springs and The plate do) and test that what they hear is
+  what the engine plays. The input's analyser holds about 0.13 s of a note; say so in the caption.
+- **On a curve**: `markPartials(g, x, y, box, api, gainAt)` (`shared/plot.js`) puts the note's
+  harmonics on a response curve as dots, each as large as it is loud at the input now.
+
+A physical choice the builder makes (where a pickup sits, which way a magnet lies) is a control,
+not a constant, and where it has a place on a view, dragging it there sets it (`api.page.setAll`).
 
 ## Parameters
 

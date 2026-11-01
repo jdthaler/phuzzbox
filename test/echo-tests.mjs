@@ -169,6 +169,37 @@ function instFreq(y, f0, sd, i0, i1) {
   check(Math.abs(ms[0] / 0.19 - 1) < 0.01 && Math.abs(ms[1] - 0.04 / 0.19) < 1e-6, 'the page hears the tape\'s speed and the heads\' delays', `${(100 * ms[0]).toFixed(2)} cm/s, ${(1e3 * ms[1]).toFixed(1)} ms`);
 }
 
+// 7b. the heads moved along the tape, and the page's picture of it
+{
+  // a click comes back d/v after it went in, wherever the head is put
+  const echoAt = (P, want) => {
+    const c = new Float32Array(Math.round((want + 0.05) * fs) + 2000); c[1000] = 0.1;
+    const y = run(W({ ...CLEAN, ...P }), c).L;
+    let best = 0, at = 0;
+    for (let i = 1000 + Math.round((want - 0.01) * fs); i < Math.min(y.length, 1000 + Math.round((want + 0.01) * fs)); i++) if (Math.abs(y[i]) > best) { best = Math.abs(y[i]); at = i; }
+    return (at - 1000) / fs;
+  };
+  const near = echoAt({ heads: '1', head1: 0.04, speed: 0.19 }, 0.04 / 0.19), far = echoAt({ heads: '1', head1: 0.08, speed: 0.19 }, 0.08 / 0.19);
+  check(Math.abs(far / near - 2) < 2 / (near * fs), 'Head 1: its echo comes after its distance over the tape\'s speed: twice as far, twice as late', `${(1e3 * near).toFixed(2)} ms at 4 cm, ${(1e3 * far).toFixed(2)} ms at 8 cm`);
+  const longest = echoAt({ heads: '3', head3: 0.2, speed: 0.05 }, 4);
+  check(Math.abs(longest - 4) * fs <= 1, 'Head 3: 20 cm after the record head, at 5 cm/s, a 4 s echo', `${longest.toFixed(5)} s`);
+  // slid ahead of a click already on the tape: the head plays it when the tape brings it there
+  const c = new Float32Array(fs); c[1000] = 0.1;
+  const y = run(W({ ...CLEAN, heads: '2', head2: 0.04, speed: 0.19 }), c, [[14400, { head2: 0.12 }]]).L;
+  let at = 0, best = 0; for (let i = 14400; i < y.length; i++) if (Math.abs(y[i]) > best) { best = Math.abs(y[i]); at = i; }
+  check(Math.abs((at - 1000) / fs - 0.12 / 0.19) * fs <= 1, 'Head 2: slid along the tape ahead of a click, it plays the click when the tape brings it there', `${(1e3 * (at - 1000) / fs).toFixed(2)} ms, 12 cm at 19 cm/s`);
+  // the record head's magnetisation, as the page draws the tape: 24 means of the samples between
+  // messages, each message 20 ms of tape further on; a small, slow sine is on the tape as it went in
+  const e = new Effect(fs); e.setParams(W({ ...CLEAN, speed: 0.19 }));
+  const inp = sine(41.2, fs, fs, 0.05), L = new Float32Array(480), R = new Float32Array(480), tape = [];
+  for (let i = 0; i < inp.length; i += 480) { e.process(inp.subarray(i, i + 480), L, R); for (const q of e.messages()) if (q.type === 2) tape.push([q.values[0], q.values[1], Array.from(q.values.slice(2))]); }
+  e.destroy();
+  const steps = tape.slice(1).map((q, i) => q[0] - tape[i][0]);
+  check(tape.length >= 45 && tape.every((q) => q[1] === 960 && q[2].length === 24) && steps.every((d) => Math.abs(d / (0.19 * 0.02) - 1) < 0.01), 'The tape loop: the page hears the record head\'s magnetisation, 24 values each 20 ms, each 3.8 mm of tape after the last', `${tape.length} messages, steps ${(1e3 * Math.min(...steps)).toFixed(2)} to ${(1e3 * Math.max(...steps)).toFixed(2)} mm`);
+  const late = tape.slice(25).flatMap((q) => q[2]), amp = Math.max(...late.map(Math.abs)), want = (0.05 * 41.2) / Math.hypot(41.2, 20);
+  check(Math.abs(amp / want - 1) < 0.02, 'and a quiet 41 Hz sine is on the tape as it went in, through the record amplifier\'s 20 Hz coupling (the tape\'s curve is straight there)', `${(1e3 * amp).toFixed(2)} mV peak, ${(1e3 * want).toFixed(2)} mV for 50 mV through a 20 Hz high-pass`);
+}
+
 // 8. hygiene
 {
   const r = run(D, sine(55, fs, fs, 0.5));

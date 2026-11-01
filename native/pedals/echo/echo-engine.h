@@ -14,6 +14,10 @@ enum MessageType : uint16_t {
   // every 20 ms: the tape's speed now (m/s), the three heads' delays now (s), and the largest
   // g·x the record head saw since the last (where on the tape's curve it is working)
   kState = 1,
+  // every 20 ms: where the record head was on the tape at the first of them (m, modulo 1000), the
+  // samples between messages, then 24 values of the magnetisation the record head left, each the
+  // mean of an equal share of those samples, oldest first (the page draws the tape with them)
+  kTape = 2,
 };
 
 class Engine : public phuzzbox::Effect {
@@ -48,6 +52,12 @@ class Engine : public phuzzbox::Effect {
   int every = 960, tick = 0;
   phuzzbox::Message msg;
   double read(int j, double p);   // head j at tape position p
+  void seat(int j);               // head j's place in the buffer, found afresh
+  double placed[3] = {-1, -1, -1};// where the heads were seated
+  static constexpr int STRIPES = 24;
+  phuzzbox::Message tapeMsg;
+  double stripe = 0, tapeAt = 0;  // the magnetisation summed so far for the next value, and where it began
+  int stripes = 0, inStripe = 0;
  public:
   void redesign();
 };

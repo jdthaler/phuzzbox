@@ -54,7 +54,7 @@ struct Spring {
   double c0 = 0, TD = 0;         // the low-frequency speed along the wire κε, and the echo time 2L/c₀
   double kc = 0, Fc = 0;         // the transition: the lower root's peak
   double mu = 0, fb = 0;         // the bead's inertia, as a share of the spring's, and its corner
-  void set(const Coil &c, double wireD);
+  void set(const Coil &c, double wireD, bool across = false); // across: the beads' magnets lie across the axis
   double w2(double k) const;            // the lower root ω²(k)
   double omega(double k) const { return std::sqrt(w2(k)); }
   double cg(double k) const;            // dω/dk
@@ -69,6 +69,7 @@ double sigma(double f, double cg, double L, double mountsDb, double eta, double 
 // The page's numbers for the controls.
 struct Model {
   int tank = 0;
+  bool across = false;           // the beads' magnets lie across the spring's axis, not along it
   double wire = 0.35e-3, mounts = 0.4, eta = 2e-4, oil = 0;
   double dry = 1, reverb = 0.3, level = 1;
 };

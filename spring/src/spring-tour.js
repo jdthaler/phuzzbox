@@ -4,14 +4,14 @@ import { tour, note, riff, sweep } from '../../shared/tour.js';
 export const TOUR = tour('spring', [
   {
     title: 'A twist sent down a coil',
-    views: ['The echoes', 'Scope'],
+    views: ['The springs', 'The echoes'],
     preset: 'Spring under the bass',
     play: [riff({ times: 2 })],
     text: `![The drive coil turns a magnetic bead, the springs carry the twist to a second bead, and its coil hears it](schematics/circuit.svg)
 
 A reverb tank is a few steel springs hung between two magnetic beads. The drive coil twists one bead with your bass, the twist runs down the springs, and the coil at the far end hears the other bead turn. The echoes bounce between the beads, losing a little at each.
 
-**The echoes** shows a click through the tank: not a smooth wash, but a string of arrivals.`,
+**The springs** shows the tank slowed a hundred times: each note you play sent into the drive bead, the twist running down every spring and back. **The echoes** shows a click through the tank: not a smooth wash, but a string of arrivals.`,
   },
   {
     title: 'Every echo a chirp',

@@ -10,22 +10,28 @@ enum Param : int {
   speed = 0,
   heads = 1,
   repeats = 2,
-  record = 3,
-  spacing = 4,
-  gap = 5,
-  flutter = 6,
-  dry = 7,
-  wet = 8,
-  level = 9,
-  kParamCount = 10
+  head1 = 3,
+  head2 = 4,
+  head3 = 5,
+  record = 6,
+  spacing = 7,
+  gap = 8,
+  flutter = 9,
+  dry = 10,
+  wet = 11,
+  level = 12,
+  kParamCount = 13
 };
 
-inline const char *const headsChoices[] = {"Head 1 (4 cm)", "Head 2 (8 cm)", "Head 3 (12 cm)", "Heads 1 and 2", "Heads 2 and 3", "Heads 1 and 3", "All three"};
+inline const char *const headsChoices[] = {"Head 1", "Head 2", "Head 3", "Heads 1 and 2", "Heads 2 and 3", "Heads 1 and 3", "All three"};
 
 inline const phuzzbox::ParamInfo kParams[] = {
   {"speed", "Tape speed", "The tape", phuzzbox::ParamKind::continuous, 0.05, 0.4, 0.19, 0.0, true, "cm/s", 100.0, 1},
   {"heads", "Playback heads", "The tape", phuzzbox::ParamKind::choice, 0.0, 6.0, 3.0, 0.0, false, "", 1.0, 2, headsChoices, 7},
   {"repeats", "Repeats", "The tape", phuzzbox::ParamKind::continuous, 0.0, 1.2, 0.35, 0.0, false, "%", 100.0, 0},
+  {"head1", "Head 1", "The heads", phuzzbox::ParamKind::continuous, 0.01, 0.2, 0.04, 0.0, false, "cm", 100.0, 1},
+  {"head2", "Head 2", "The heads", phuzzbox::ParamKind::continuous, 0.01, 0.2, 0.08, 0.0, false, "cm", 100.0, 1},
+  {"head3", "Head 3", "The heads", phuzzbox::ParamKind::continuous, 0.01, 0.2, 0.12, 0.0, false, "cm", 100.0, 1},
   {"record", "Record level", "The machine", phuzzbox::ParamKind::continuous, -24.0, 24.0, 0.0, 0.0, false, "dB", 1.0, 1},
   {"spacing", "Head spacing", "The machine", phuzzbox::ParamKind::continuous, 5e-7, 0.00003, 0.000004, 0.0, true, "µm", 1000000.0, 1},
   {"gap", "Head gap", "The machine", phuzzbox::ParamKind::continuous, 0.000001, 0.00002, 0.000005, 0.0, true, "µm", 1000000.0, 1},
@@ -35,11 +41,11 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"level", "Level", "The mix", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
 };
 
-inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.38}, {1, 0.0}, {2, 0.0}, {3, 0.0}, {4, 0.000003}, {5, 0.000005}, {6, 0.000003}, {7, 1.0}, {8, 0.6}};
-inline const phuzzbox::PresetValue kPreset1[] = {{0, 0.19}, {1, 1.0}, {2, 0.55}, {3, 3.0}, {4, 0.000006}, {5, 0.000005}, {6, 0.000003}, {7, 1.0}, {8, 0.6}};
-inline const phuzzbox::PresetValue kPreset2[] = {{0, 0.19}, {1, 6.0}, {2, 0.3}, {3, 0.0}, {4, 0.000004}, {5, 0.000005}, {6, 0.000003}, {7, 1.0}, {8, 0.5}};
-inline const phuzzbox::PresetValue kPreset3[] = {{0, 0.095}, {1, 3.0}, {2, 0.5}, {3, 6.0}, {4, 0.000015}, {5, 0.00001}, {6, 0.000012}, {7, 1.0}, {8, 0.6}};
-inline const phuzzbox::PresetValue kPreset4[] = {{0, 0.19}, {1, 5.0}, {2, 1.1}, {3, 6.0}, {4, 0.000005}, {5, 0.000005}, {6, 0.000004}, {7, 0.8}, {8, 0.5}};
+inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.38}, {1, 0.0}, {2, 0.0}, {6, 0.0}, {7, 0.000003}, {8, 0.000005}, {9, 0.000003}, {10, 1.0}, {11, 0.6}};
+inline const phuzzbox::PresetValue kPreset1[] = {{0, 0.19}, {1, 1.0}, {2, 0.55}, {6, 3.0}, {7, 0.000006}, {8, 0.000005}, {9, 0.000003}, {10, 1.0}, {11, 0.6}};
+inline const phuzzbox::PresetValue kPreset2[] = {{0, 0.19}, {1, 6.0}, {2, 0.3}, {6, 0.0}, {7, 0.000004}, {8, 0.000005}, {9, 0.000003}, {10, 1.0}, {11, 0.5}};
+inline const phuzzbox::PresetValue kPreset3[] = {{0, 0.095}, {1, 3.0}, {2, 0.5}, {6, 6.0}, {7, 0.000015}, {8, 0.00001}, {9, 0.000012}, {10, 1.0}, {11, 0.6}};
+inline const phuzzbox::PresetValue kPreset4[] = {{0, 0.19}, {1, 5.0}, {2, 1.1}, {6, 6.0}, {7, 0.000005}, {8, 0.000005}, {9, 0.000004}, {10, 0.8}, {11, 0.5}};
 inline const phuzzbox::Preset kPresets[] = {
   {"Slapback", kPreset0, 9},
   {"Dub bass", kPreset1, 9},

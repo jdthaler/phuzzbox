@@ -4,6 +4,7 @@ import { createPedal } from '../../shared/shell.js';
 import { fit, css, animate, markNote } from '../../shared/plot.js';
 import { scopeView, spectrumView } from '../../shared/views.js';
 import { scratch, wasmEffect } from '../../shared/wasm.js';
+import { slowMotion } from '../../shared/motion.js';
 import { PEDAL } from './blackhole-pedal.js';
 
 const Effect = wasmEffect(PEDAL);
@@ -110,7 +111,68 @@ const ringView = {
   },
 };
 
+// The hole's wave arriving, in slow motion: a ring of free-falling test masses facing the hole,
+// stretched and squeezed by the strain the engine rings with for the note you played.
+const SECS = 0.3;
+const massesView = {
+  title: 'The test masses',
+  perform: true,
+  caption: 'a ring of free-falling test masses, facing the hole across space, as its wave passes them, slowed down: the note you played last (or a test bass note, until you play) shaking the hole from rest, and the strain the engine rings with for it. h₊ (the left channel, orange below) stretches the ring across while it squeezes it up and down, and then the other way; h× (the right, blue) does the same along the diagonals. Face-on (Inclination 0°) the two take turns a quarter cycle apart and the squeeze goes round; edge-on there is only h₊. The stretching is magnified many times over: a real wave moves masses a kilometre apart by a fraction of a proton\'s width. Only the first 0.13 s of a note you play is caught (the input\'s analyser holds no more); the hole rings on from there.',
+  mount(holder, api) {
+    const canvas = document.createElement('canvas');
+    holder.append(canvas);
+    const m = slowMotion(holder, api, { seconds: SECS, speed: 1 / 30 });
+    let hp = null, hx = null, big = 1, timer = 0;
+    // the engine's strain for this note: the hole alone (Hole 100 %, Dry 0, Level 0 dB), from rest
+    const run = () => {
+      if (!m.signal) return;
+      const n = Math.round(SECS * m.fs), x = new Float32Array(n);
+      x.set(m.signal.subarray(0, n));
+      const e = new Effect(m.fs);
+      e.setParams({ ...api.P, mix: 1, dry: 0, level: 0 });
+      hp = new Float32Array(n); hx = new Float32Array(n);
+      e.process(x, hp, hx);
+      e.destroy();
+      big = 1e-12;
+      for (let i = 0; i < n; i++) big = Math.max(big, Math.abs(hp[i]), Math.abs(hx[i]));
+    };
+    m.on(run);
+    api.on('params', () => { clearTimeout(timer); timer = setTimeout(run, 120); });
+    const N = 24;
+    animate(canvas, () => {
+      if (!hp) return;
+      const { g, w, h } = fit(canvas);
+      g.clearRect(0, 0, w, h);
+      const k = Math.min(hp.length - 1, Math.round(m.t() * m.fs)), p = hp[k] / big, c = hx[k] / big;
+      // the ring, the strain magnified so its largest stretches it by a third
+      const trace = Math.max(40, Math.min(70, h * 0.25)), cy = (h - trace - 18) / 2 + 4, cx = w / 2;
+      const R = Math.max(10, Math.min(w * 0.3, (h - trace - 26) / 2 / 1.4)), A = 0.6;
+      g.strokeStyle = css('--grid'); g.lineWidth = 1; g.setLineDash([3, 4]);
+      g.beginPath(); g.arc(cx, cy, R, 0, 2 * Math.PI); g.stroke(); g.setLineDash([]);
+      for (let i = 0; i < N; i++) {
+        const th = (2 * Math.PI * i) / N, x0 = Math.cos(th), y0 = Math.sin(th);
+        const dx = 0.5 * A * (p * x0 + c * y0), dy = 0.5 * A * (c * x0 - p * y0);
+        g.beginPath(); g.arc(cx + R * (x0 + dx), cy - R * (y0 + dy), 4, 0, 2 * Math.PI);
+        g.fillStyle = css('--ink'); g.fill();
+      }
+      // the two polarisations over the whole note, and where the ring is in them
+      const box = { l: 10, r: w - 10, t: h - trace - 14, b: h - 18 }, mid = (box.t + box.b) / 2;
+      const X = (i) => box.l + ((box.r - box.l) * i) / (hp.length - 1), Y = (v) => mid - ((box.b - box.t) / 2) * (v / big);
+      g.strokeStyle = css('--grid'); g.beginPath(); g.moveTo(box.l, mid); g.lineTo(box.r, mid); g.stroke();
+      const step = Math.max(1, Math.floor(hp.length / (2 * (box.r - box.l))));
+      for (const [arr, col] of [[hx, '#60a5fa'], [hp, css('--accent')]]) {
+        g.beginPath(); g.strokeStyle = col; g.lineWidth = 1.2;
+        for (let i = 0; i < arr.length; i += step) i ? g.lineTo(X(i), Y(arr[i])) : g.moveTo(X(i), Y(arr[i]));
+        g.stroke();
+      }
+      g.strokeStyle = css('--ink'); g.beginPath(); g.moveTo(X(k), box.t); g.lineTo(X(k), box.b); g.stroke();
+      g.fillStyle = css('--ink-2'); g.font = '11px system-ui, sans-serif'; g.textAlign = 'center';
+      g.fillText(m.label(), w / 2, h - 4);
+    });
+  },
+};
+
 const BH_SCOPE = 'the voltage at the input (dashed) and the left channel, h₊ (solid), as you play, each scaled to fit. With little spin the hole only colours each note; near the limit it rings on after it.';
 const BH_SPECTRUM = 'what goes in (dashed) and what comes out on the left (solid), in dB of volts: the hole lifts the frequencies near its modes, broadly without spin and in sharp peaks near the limit. The green line is the note you are playing, and the ticks its harmonics.';
 
-createPedal({ PEDAL, worklet: new URL('./blackhole-worklet.js', import.meta.url), views: [modesView, ringView, spectrumView({ caption: BH_SPECTRUM }), scopeView({ caption: BH_SCOPE })] });
+createPedal({ PEDAL, worklet: new URL('./blackhole-worklet.js', import.meta.url), views: [massesView, modesView, ringView, spectrumView({ caption: BH_SPECTRUM }), scopeView({ caption: BH_SCOPE })] });

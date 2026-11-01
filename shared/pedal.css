@@ -163,10 +163,15 @@ button.info::after { content: ""; position: absolute; inset: -5px; border-radius
 .card .caption { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
 .card .caption button.link { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; min-height: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .card .caption button.link:hover { color: var(--ink); }
+/* a slow-motion view's speed, pause and replay, at the right of its title bar (shared/motion.js) */
+.card figcaption .motion { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
+.card figcaption .motion select { font-size: 12px; padding: 2px 6px; }
+.card figcaption .motion button { font-size: 12px; min-width: 26px; min-height: 24px; padding: 1px 6px; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
 .legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
 
-/* ---- the test bass: a rosewood board, nickel frets, a bone nut, pearl dots, four strings ------- */
+/* ---- the test bass: a rosewood board, nickel frets, a bone nut, pearl dots, four strings (the
+   test guitar's six) ---- */
 .fretboard { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .fret-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
 .fret-head b { color: var(--ink); }
@@ -194,6 +199,11 @@ button.info::after { content: ""; position: absolute; inset: -5px; border-radius
   content: ""; position: absolute; left: 50%; bottom: 0; width: 10px; height: 10px; margin-left: -5px; transform: translateY(50%); z-index: 1; border-radius: 50%;
   background: radial-gradient(circle at 40% 35%, #fffaf0, #d8d2c4 60%, #b7b0a0);
 }
+/* the test guitar: six lighter strings, the bottom three wound, on a narrower board */
+.string.guitar.s0 button { --gauge: 2.6px; } .string.guitar.s1 button { --gauge: 2.2px; } .string.guitar.s2 button { --gauge: 1.9px; }
+.string.guitar.s3 button { --gauge: 1.6px; } .string.guitar.s4 button { --gauge: 1.3px; } .string.guitar.s5 button { --gauge: 1.1px; }
+.string.guitar.s2 button::after { background: repeating-linear-gradient(90deg, #e6e6e6 0 1px, #a5a5a5 1px 2px); }
+.frets[data-strings="6"] .string button { height: 21px; }
 .string button:active, .string button.down { background: radial-gradient(circle, var(--accent) 0 5px, rgb(251 146 60 / 0.35) 6px, transparent 13px); }
 
 /* ---- controls: faders, toggle switches -------------------------------------------------------- */
@@ -435,6 +445,7 @@ body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: v
 /* a short screen: a smaller fretboard and a more compact pedal (the tuner under it) */
 @media (max-height: 960px) {
   .string button { height: 22px; }
+  .frets[data-strings="6"] .string button { height: 16px; }
   body.one-screen .pedal { padding: 16px 16px 18px; gap: 10px; }
   body.one-screen .dial { width: 50px; height: 50px; }
   body.one-screen .dial .mark { height: 18px; }
@@ -482,7 +493,7 @@ body.perform .controls-bar { cursor: default; }
   .bass-bar .toggles-label { margin-right: 0; }
   .string button { height: 24px; }
 }
-@media (max-width: 1050px) and (max-height: 500px) { .string button { height: 17px; } .bass .frets { margin-bottom: 6px; } }
+@media (max-width: 1050px) and (max-height: 500px) { .string button { height: 17px; } .frets[data-strings="6"] .string button { height: 13px; } .bass .frets { margin-bottom: 6px; } }
 @media (max-width: 600px) {
   body.one-screen .groups { grid-template-columns: minmax(0, 1fr); }
   .bar-tools .presets { width: 150px; }

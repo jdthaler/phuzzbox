@@ -1,7 +1,7 @@
 // wah-main.js — the Wah's page: the shell (shared/shell.js) and its views.
 
 import { createPedal } from '../../shared/shell.js';
-import { fit, css, freqAxes } from '../../shared/plot.js';
+import { fit, css, freqAxes, animate, markNote, markPartials, atFreq } from '../../shared/plot.js';
 import { spectrumView } from '../../shared/views.js';
 import { scratch, wasmEffect } from '../../shared/wasm.js';
 import { PEDAL } from './wah-pedal.js';
@@ -33,7 +33,7 @@ const peakOf = (H) => { let k = 0; H.forEach((v, i) => { if (v > H[k]) k = i; })
 // The filter: where the rocker has it now, and its two ends.
 const filterView = {
   title: 'The sweep',
-  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide. In Auto the envelope follower rocks it: play, and watch each note push the peak and let it fall back. Plugged in backwards (Reversed) it is the input jack\'s voltage per volt from the bass, far lower; and where the circuit oscillates on its own there is no response to draw, only the squeal\'s pitch.',
+  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide. In Auto the envelope follower rocks it: play, and watch each note push the peak and let it fall back. The green line is the note you are playing, and the green dots its harmonics on the curve, each as large as it is loud in your bass now: rock the pedal and watch the peak lift them one after another. Plugged in backwards (Reversed) it is the input jack\'s voltage per volt from the bass, far lower; and where the circuit oscillates on its own there is no response to draw, only the squeal\'s pitch.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -89,6 +89,8 @@ const filterView = {
         return;
       }
       line(now, css('--accent'), 2.5);
+      markNote(g, x, box, api.note);
+      markPartials(g, x, y, box, api, (f) => db(atFreq(FREQS, now, f)));
       const p = peakOf(now);
       g.fillStyle = css('--ink');
       g.textAlign = x(p.f) > (box.l + box.r) / 2 ? 'right' : 'left';
@@ -100,7 +102,7 @@ const filterView = {
       legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>${auto() ? `${nowText}: the follower has it at ${(100 * drawn).toFixed(0)} %` : nowText}</span>${end(heel, heelSq, 'heel down', 'dashed')}${end(toe, toeSq, 'toe down', 'dotted')}${api.P.reversed ? '<span>plugged in backwards</span>' : ''}`;
     };
     api.on('params', () => { compute(); show(); draw(); });
-    new ResizeObserver(draw).observe(canvas);
+    animate(canvas, draw); // each frame, so the note's harmonics follow your playing
     compute(); show(); draw();
   },
 };

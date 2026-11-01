@@ -11,7 +11,7 @@ export const TOUR = tour('plate', [
 
 A plate reverb is a sheet of steel, 2 m by 1 m and 0.5 mm thick, hung in a frame. A driver shakes it near the middle; two pickups listen near the ends, one for each side.
 
-**The plate** shows it from above as it moves: red where it is moving up, blue where down.`,
+**The plate** shows it from above, slowed a hundred times, as each note you play reaches it: red where it is moving up, blue where down. Watch the ripples spread from the driver and come back off the edges. The orange dot is the driver and the white ones the pickups: drag them.`,
   },
   {
     title: 'Thousands of modes',
@@ -21,6 +21,16 @@ A plate reverb is a sheet of steel, 2 m by 1 m and 0.5 mm thick, hung in a frame
     text: `A thin plate bends as Kirchhoff's plate, and with its edges held its modes are at ω = κ[(mπ/Lx)² + (nπ/Ly)²], κ = 0.7637 m²/s. They are spread evenly: 1.31 modes in every hertz, 6432 of them up to 5 kHz.
 
 Every one is played. A low note moves a few broad ones, a higher note many finer ones.`,
+  },
+  {
+    title: 'Where the driver sits',
+    views: ['The plate', 'Spectrum'],
+    preset: 'All plate',
+    set: { driveX: 1 },
+    play: [note('A1', { dur: 2.5, vel: 0.9 }), { at: 3, set: { driveX: 0.8 } }, note('A1', { at: 3, dur: 2.5, vel: 0.9 })],
+    text: `The driver moved to the middle of the plate, 1 m across. Every mode with an even number of half-waves across has a nodal line through the middle, so the driver cannot play it: half of them, 49.8 % to 5 kHz, fall silent, and the ripples spread from the middle in a pattern that is the same either side.
+
+Then the driver goes back to 0.8 m, two fifths of the way across, where only the modes with a multiple of five half-waves across are silent. The pickups work the same way: one on a mode's nodal line hears nothing of it.`,
   },
   {
     title: 'The highs arrive first',

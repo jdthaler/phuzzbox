@@ -6,3 +6,8 @@ body.one-screen .card .canvas.echoes { flex: 1 1 0; height: auto; min-height: 14
 @media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
   body.one-screen .card .canvas.echoes { flex: none; height: 260px; }
 }
+.card .canvas.springs { height: 260px; }
+body.one-screen .card .canvas.springs { flex: 1 1 0; height: auto; min-height: 150px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.springs { flex: none; height: 300px; }
+}

@@ -1,7 +1,7 @@
 // envelope-main.js — the Envelope Filter's page: the shell (shared/shell.js) and its views.
 
 import { createPedal } from '../../shared/shell.js';
-import { fit, css, freqAxes, animate, markNote } from '../../shared/plot.js';
+import { fit, css, freqAxes, animate, markNote, markPartials, atFreq } from '../../shared/plot.js';
 import { scopeView, spectrumView } from '../../shared/views.js';
 import { scratch, wasmEffect } from '../../shared/wasm.js';
 import { PEDAL } from './envelope-pedal.js';
@@ -34,7 +34,7 @@ function ends(P) {
 // The filter: its response now, where the cells have the cutoff, and at the sweep's two ends.
 const filterView = {
   title: 'The filter',
-  caption: 'the filter\'s response where the photocells have its cutoff now (solid), at rest and at the far end of the sweep (dashed). Play, and watch each note push the peak up (or, Down, pull it down) and let it drift back. The green line is the note you are playing, and the ticks its harmonics: the quack is the peak passing over them.',
+  caption: 'the filter\'s response where the photocells have its cutoff now (solid), at rest and at the far end of the sweep (dashed). Play, and watch each note push the peak up (or, Down, pull it down) and let it drift back. The green line is the note you are playing, and the ticks its harmonics: the quack is the peak passing over them. The green dots are those harmonics on the filter\'s curve, each as large as it is loud in your bass now: watch the peak lift the ones it passes.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -72,6 +72,7 @@ const filterView = {
       line(full, css('--ink-2'), 1.2, [2, 3]);
       line(now, css('--accent'), 2.5);
       markNote(g, x, box, api.note);
+      markPartials(g, x, y, box, api, (f) => db(atFreq(FREQS, now, f)));
     });
     compute(); show();
   },

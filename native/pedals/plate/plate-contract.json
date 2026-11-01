@@ -3,6 +3,12 @@
   {"id":"decay","kind":"continuous","min":0.6,"max":10,"step":0,"log":true,"def":3},
   {"id":"reverb","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.35},
   {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
+  {"id":"driveX","kind":"continuous","min":0.02,"max":1.98,"step":0,"log":false,"def":0.8},
+  {"id":"driveY","kind":"continuous","min":0.02,"max":0.98,"step":0,"log":false,"def":0.415},
+  {"id":"leftX","kind":"continuous","min":0.02,"max":1.98,"step":0,"log":false,"def":0.2},
+  {"id":"leftY","kind":"continuous","min":0.02,"max":0.98,"step":0,"log":false,"def":0.45},
+  {"id":"rightX","kind":"continuous","min":0.02,"max":1.98,"step":0,"log":false,"def":1.7},
+  {"id":"rightY","kind":"continuous","min":0.02,"max":0.98,"step":0,"log":false,"def":0.45},
   {"id":"top","kind":"continuous","min":2000,"max":8000,"step":0,"log":true,"def":5000},
   {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
  ],

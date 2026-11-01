@@ -215,7 +215,10 @@ async function mount(t) {
 
   function begin({ sound = true } = {}) {
     if (saved) return;
-    saved = { P: page.get(), bypass: page.bypassed(), mute: page.muted(), source: page.source(), stored: stored() };
+    // the tours are written for the bass: a guitarist's page turns into a bass's for one, and back
+    const was = page.instrument?.() ?? 'bass';
+    if (was !== 'bass') page.setInstrument('bass');
+    saved = { instrument: was, P: page.get(), bypass: page.bypassed(), mute: page.muted(), source: page.source(), stored: stored() };
     if (saved.mute) page.setMute(false);
     card.hidden = false;
     card.classList.remove('folded');
@@ -235,6 +238,7 @@ async function mount(t) {
     page.setBypass(was.bypass);
     if (was.mute) page.setMute(true);
     page.restoreSource(was.source);
+    if (was.instrument !== 'bass') page.setInstrument(was.instrument);
     restore(was.stored);
     card.hidden = true;
     document.body.classList.remove('touring');

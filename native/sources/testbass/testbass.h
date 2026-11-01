@@ -1,13 +1,15 @@
-// testbass.h — a bass guitar made of physics, so the tests, the demos and a page with nothing
-// plugged in have a signal to put through the pedals without a recording (testbass/README.md).
+// testbass.h — a bass guitar and a guitar made of physics, so the tests, the demos and a page with
+// nothing plugged in have a signal to put through the pedals without a recording
+// (testbass/README.md, testguitar/README.md).
 //
-// Four stiff strings (E1 A1 D2 G2 on a 34-inch scale), each a sum of its transverse modes
+// Stiff strings (the bass's E1 A1 D2 G2 on a 34-inch scale, the guitar's E2 A2 D3 G3 B3 E4 on a
+// 25.5-inch one), each a sum of its transverse modes
 //   f_n = n f₀ √(1 + B n²),   B = π³ E d⁴ / (64 T ℓ²)
-// plucked from rest by a finger of some width at some distance from the bridge (the triangular
-// shape's modal amplitudes, smoothed by the finger), losing energy at σ(f) = b₁ + b₃ f² (Chaigne and
-// Askenfelt's form), heard by a magnetic pickup as the velocity of the string over its aperture, and
-// then through the pickup's circuit into a cable and an interface (phuzzbox/pickup.h): the signal a
-// passive bass gives an audio interface, in volts.
+// plucked from rest by a finger or a pick of some width at some distance from the bridge (the
+// triangular shape's modal amplitudes, smoothed by its width), losing energy at σ(f) = b₁ + b₃ f²
+// (Chaigne and Askenfelt's form), heard by a magnetic pickup as the velocity of the string over its
+// aperture, and then through the pickup's circuit into a cable and an interface
+// (phuzzbox/pickup.h): the signal a passive bass or guitar gives an audio interface, in volts.
 #pragma once
 
 #include <array>
@@ -17,22 +19,35 @@
 
 namespace testbass {
 
-constexpr int kStrings = 4;
+constexpr int kMaxStrings = 6;
 constexpr int kMaxModes = 160;
 
 struct StringSpec {
   double f;     // open pitch (Hz)
-  double core;  // steel core diameter (m)
+  double core;  // steel core diameter (m): the whole string, for a plain one
   double T;     // tension (N)
+  int key;      // the open string's MIDI key
 };
 // E1, A1, D2, G2 at A = 440 Hz; round-wound cores and tensions of a medium set
-inline const StringSpec kStringSpecs[kStrings] = {
-  {41.2034, 1.00e-3, 190}, {55.0, 0.85e-3, 200}, {73.4162, 0.65e-3, 190}, {97.9989, 0.50e-3, 170}};
+inline const StringSpec kBassStrings[4] = {
+  {41.2034, 1.00e-3, 190, 28}, {55.0, 0.85e-3, 200, 33}, {73.4162, 0.65e-3, 190, 38}, {97.9989, 0.50e-3, 170, 43}};
+// E2, A2, D3, G3, B3, E4: a 10–46 set, its tensions as D'Addario lists them for a 25.5-inch scale
+// (17.0, 19.0, 18.4, 16.6, 15.4 and 16.2 lb); the three wound strings' cores typical, the plain
+// strings' their gauges (0.017, 0.013, 0.010 inch)
+inline const StringSpec kGuitarStrings[6] = {
+  {82.4069, 0.46e-3, 75.6, 40}, {110.0, 0.40e-3, 84.5, 45}, {146.832, 0.33e-3, 81.8, 50},
+  {195.998, 0.432e-3, 73.8, 55}, {246.942, 0.330e-3, 68.5, 59}, {329.628, 0.254e-3, 72.1, 64}};
+
+enum class Kind { bass = 0, guitar = 1 };
 
 struct Settings {
+  Kind kind = Kind::bass;
+  int strings = 4;
+  std::array<StringSpec, kMaxStrings> spec{};
   double scale = 0.864;    // m: the scale length, nut to bridge (34 inches)
   double pluckAt = 0.12;   // m from the bridge
-  double finger = 0.015;   // m: the finger's width
+  double finger = 0.015;   // m: the width of what plucks (a finger, a pick)
+  double pull = 2.0e-3;    // m: how far a firm pluck pulls the string
   double pickupAt = 0.16;  // m from the bridge (a P pickup's middle)
   double aperture = 0.02;  // m: the width the pickup hears
   double b1 = 1.0;         // 1/s: losses independent of frequency (air, the bridge)
@@ -41,6 +56,10 @@ struct Settings {
   double volts = 0.3;      // V of EMF per m/s of string velocity at the pickup (a passive bass peaks at a few hundred mV)
   phuzzbox::PickupCircuit circuit; // the pickup, its cable and the interface
 };
+// The two instruments as built: the bass (a P pickup, 3.6 H and 10.5 kΩ, played with a finger) and
+// the guitar (a single coil of 2.5 H and 6 kΩ in the middle position, played with a pick)
+Settings bassSettings();
+Settings guitarSettings();
 
 // The string's inharmonicity coefficient, for a length ℓ (m)
 double inharmonicity(const StringSpec &s, double length);
@@ -48,10 +67,11 @@ double inharmonicity(const StringSpec &s, double length);
 struct Partial { double f, sigma, amp; };
 std::vector<Partial> partials(const Settings &S, int string, int fret, double fs);
 
-class Bass {
+class Instrument {
  public:
-  explicit Bass(double fs);
+  explicit Instrument(double fs, Kind kind = Kind::bass);
   Settings settings;
+  void use(Kind kind);  // become the bass or the guitar as built (silences what rings)
   void applySettings(); // after changing settings
   void pluck(int string, int fret, double velocity); // velocity 0..1
   void mute(int string);
@@ -69,9 +89,10 @@ class Bass {
     int key = -1;
   };
   double fs;
-  std::array<Voice, kStrings * 2> voices; // two per string: the last pluck rings out under the next
-  std::array<int, kStrings> next{};
+  std::array<Voice, kMaxStrings * 2> voices; // two per string: the last pluck rings out under the next
+  std::array<int, kMaxStrings> next{};
   phuzzbox::Biquad circuit;
 };
+using Bass = Instrument;
 
 } // namespace testbass
