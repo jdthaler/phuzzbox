@@ -130,3 +130,27 @@ dialog.pz-notes::backdrop { background: rgb(10 8 6 / 0.55); }
 button.about { border: 0; background: none; padding: 0 4px; margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1; }
 button.about:hover { color: var(--accent); }
 .fret-head button.about { margin-left: -4px; }
+
+/* your own presets (shared/user-presets.js): a smaller sheet in the notes' dialog, and a toast */
+dialog.pz-notes.pz-sheet { width: min(560px, calc(100vw - 32px)); height: fit-content; max-height: min(88vh, 760px); max-height: min(88dvh, 760px); }
+.pz-sheet .pz-notes-body { padding: 4px 24px 22px; }
+.pz-mypresets label { display: block; font-weight: 600; margin: 10px 0 6px; }
+.pz-mypresets-row { display: flex; gap: 8px; }
+.pz-mypresets-row input { flex: 1; min-width: 0; background: #0e0e11; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); padding: 6px 9px; }
+.pz-mypresets-msg { min-height: 1.4em; margin: 6px 0 0; color: var(--accent); font-size: 13.5px; }
+.pz-mypresets h3 { margin: 14px 0 6px; font-size: 15px; }
+.pz-mypresets-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.pz-mypresets-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pz-mypresets-name { border: 0; background: none; box-shadow: none; flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-left: 0; }
+.pz-mypresets-acts { display: flex; gap: 4px; flex: none; }
+.pz-mypresets-acts button { font-size: 12.5px; padding: 3px 8px; }
+.pz-mypresets-none { color: var(--ink-2); font-size: 14px; }
+.pz-mypresets-files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pz-mypresets-more { color: var(--ink-2); font-size: 13px; margin: 12px 0 0; }
+.pz-toast {
+  position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); z-index: 50;
+  transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+  max-width: min(520px, calc(100vw - 32px)); padding: 9px 14px; border-radius: 10px;
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); font-size: 14px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.4);
+}
+.pz-toast.on { opacity: 1; transform: translate(-50%, 0); }
