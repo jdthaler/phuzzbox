@@ -95,8 +95,9 @@ const COUNT = () => {
 const WIDE = () => document.documentElement.scrollWidth - window.innerWidth;
 
 // Each toggle turns its view, or its group of controls, off and on again, the button and what it
-// shows both following; everything is on at the end. The views' first toggle is the pedal (the
-// rack beside them), the rest the cards in the stage. Returns how many toggles there are.
+// shows both following; everything is on at the end. A view's card is found by its name
+// (data-view): the pedal is the rack, and a card may sit in the rack or in the stage. Returns how
+// many toggles there are.
 const ROWS = [
   ['.views-bar .toggles button', 'views', 'view'],
   ['.controls-bar .toggles button', 'controls', 'controls'],
@@ -104,7 +105,8 @@ const ROWS = [
 const TOGGLES = (sel) => [...document.querySelectorAll(sel)].map((b) => b.getAttribute('aria-pressed') === 'true');
 const SHOWN = (what) => {
   const shown = (e) => !!e && !e.hidden && e.checkVisibility();
-  if (what === 'views') return [document.querySelector('.rack'), ...document.querySelectorAll('.view-grid > :not(.no-view)')].map(shown);
+  // each view's toggle names it, and its card (or the rack, the pedal's) carries that name in data-view
+  if (what === 'views') return [...document.querySelectorAll('.views-bar .toggles button')].map((b) => shown(document.querySelector(`[data-view="${CSS.escape(b.textContent.trim())}"]`)));
   return [...document.querySelectorAll('#controls .groups > *')].map(shown);
 };
 async function toggles(tab, broken) {
