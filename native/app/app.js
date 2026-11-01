@@ -10,7 +10,8 @@ import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces
 // every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
 import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
 import { PEDAL as PHUZZ } from '../../phuzz/src/phuzz-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ].map((d) => [d.id, d]));
+import { PEDAL as WAH } from '../../wah/src/wah-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

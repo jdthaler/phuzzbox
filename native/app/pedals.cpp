@@ -8,11 +8,12 @@
 
 namespace buffer { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace phuzz { const phuzzbox::PedalInfo &pedalInfo(); }
+namespace wah { const phuzzbox::PedalInfo &pedalInfo(); }
 
 namespace phuzzbox::app {
 
 const std::vector<const PedalInfo *> &pedals() {
-  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo()};
+  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo()};
   return all;
 }
 

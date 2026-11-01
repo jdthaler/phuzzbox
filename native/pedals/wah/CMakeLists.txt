@@ -1,7 +1,7 @@
 # The Wah: its model and engine in C++, its plugins and its WebAssembly.
 include(wah-info.cmake) # generated: PHUZZ_NAME, PHUZZ_VERSION, PHUZZ_AU_SUBTYPE
 
-add_library(phuzz_wah STATIC wah-model.cpp wah-engine.cpp wah-pedal.cpp)
+add_library(phuzz_wah STATIC wah-model.cpp wah-engine.cpp wah-pedal.cpp wah-entry.cpp)
 target_include_directories(phuzz_wah PUBLIC .)
 target_link_libraries(phuzz_wah PUBLIC phuzzbox_core)
 
