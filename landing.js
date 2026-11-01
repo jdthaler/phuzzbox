@@ -86,6 +86,6 @@ for (const s of sections) {
     h('div', { class: 'boardwalk' }, ...(s.board ? [boardTile()] : s.list.map(tile)))));
 }
 
-// the test bass's, the test guitar's, the tuner's, the scope's and the spectrum's notes, in the pedals' dialog
+// the test bass's, the test guitar's, the tuner's, the scope's, the spectrum's and the plugins' notes, in the pedals' dialog
 const notes = howItWorks();
-for (const [key, label] of [['testbass', 'The test bass'], ['testguitar', 'The test guitar'], ['tuner', 'The tuner'], ['scope', 'The scope'], ['spectrum', 'The spectrum']]) document.getElementById('also').append(notes.button(key, label));
+for (const [key, label] of [['testbass', 'The test bass'], ['testguitar', 'The test guitar'], ['tuner', 'The tuner'], ['scope', 'The scope'], ['spectrum', 'The spectrum'], ['plugins', 'Plugins and the app']]) document.getElementById('also').append(notes.button(key, label));
