@@ -197,7 +197,7 @@ async function mount(t) {
     mark([...new Set([step.set ?? {}, ...score(step).filter((e) => e.set).map((e) => e.set)].flatMap(Object.keys))]);
     kicker.textContent = `Physics tour · ${at + 1} of ${t.steps.length}`;
     title.textContent = step.title;
-    text.innerHTML = renderMarkdown(step.text ?? '').html;
+    text.innerHTML = renderMarkdown(step.text ?? '', { assets: location.href }).html;
     text.scrollTop = 0;
     back.disabled = at === 0;
     next.textContent = at === t.steps.length - 1 ? 'Done' : 'Next ▶';
