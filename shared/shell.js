@@ -1,5 +1,5 @@
 // shell.js — everything a pedal page shares: the audio graph (the interface's input or the test
-// bass → the pedal's AudioWorklet → volume → a safety limiter → the speakers), the pedal's face
+// bass → the pedal's AudioWorklet → volume → a safety curve → the speakers), the pedal's face
 // (knobs for its `perform` controls, the footswitch and its LED), meters, a tuner, the latency,
 // the Controls panel with every parameter, the rig and the presets, the MIDI pedals, the test
 // bass's fretboard, and How it works (the READMEs: shared/notes.js). shared/layout.js lays them out on one
@@ -25,6 +25,7 @@ import { byId, PEDALS, PHUZZBOX_VERSION } from './registry.js';
 import { createLayout } from './layout.js';
 import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
+import { safetyCurve, SAFE_SPAN } from './safety.js';
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -363,10 +364,12 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       node = new AudioWorkletNode(ctx, 'phuzzbox', { numberOfInputs: 1, numberOfOutputs: 2, outputChannelCount: [2, 1], processorOptions: { pedal, bass } });
       node.port.onmessage = (e) => onMessage(e.data);
       volume = new GainNode(ctx, { gain: state.volume });
-      // a safety limiter before the speakers: a distortion pedal at full tilt shouldn't hurt anyone
-      const limiter = new DynamicsCompressorNode(ctx, { threshold: -3, knee: 3, ratio: 12, attack: 0.002, release: 0.15 });
+      // a safety curve before the speakers, so a distortion pedal at full tilt can't hurt anyone:
+      // static, so it adds no delay, where a compressor would look 6 ms ahead (shared/safety.js)
+      const span = new GainNode(ctx, { gain: 1 / SAFE_SPAN });
+      const safety = new WaveShaperNode(ctx, { curve: safetyCurve(), oversample: 'none' });
       const analyser = new AnalyserNode(ctx, { fftSize: 8192, smoothingTimeConstant: 0.6 });
-      node.connect(volume).connect(limiter).connect(ctx.destination);
+      node.connect(volume).connect(span).connect(safety).connect(ctx.destination);
       node.connect(analyser);
       tunerAnalyser = new AnalyserNode(ctx, { fftSize: 16384 });
       node.connect(tunerAnalyser, 1);
