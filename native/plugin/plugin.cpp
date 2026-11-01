@@ -1,11 +1,16 @@
 // plugin.cpp — the CLAP effect every pedal shares: stereo in (summed to the pedal's mono input),
-// stereo out, its parameters and a Preset parameter, its state, latency and tail. The DAW draws
-// its generic panel. clap-wrapper makes the VST3, AU (an effect, aufx) and standalone from it.
+// stereo out, its parameters, a Bypass, a Volume pedal and a Preset parameter, its state, latency
+// and tail, and a MIDI input whose control changes move them (phuzzbox/midi.h: a foot controller's
+// expression pedals and switches, the FC-300's numbers by default). The DAW draws its generic
+// panel. clap-wrapper makes the VST3 (whose hosts send CCs through IMidiMapping), AU (an effect,
+// aufx: the host maps CCs to parameters itself) and standalone (with RtMidi's input) from it.
 
 #include "plugin.h"
 
 #include <algorithm>
 #include <atomic>
+#include <cmath>
+#include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <memory>
@@ -17,6 +22,7 @@
 
 #include "phuzzbox/denormals.h"
 #include "phuzzbox/guard.h"
+#include "phuzzbox/midi.h"
 
 namespace phuzzbox {
 namespace {
@@ -25,13 +31,28 @@ const PedalInfo *pedal = nullptr;
 clap_plugin_descriptor_t descriptor{};
 std::string pluginId, versionText;
 
-// The plugin's parameters: the pedal's, then Preset (a choice of "—" and the pedal's presets),
-// whose choice sets the others once and then reads "—" again.
-int paramCount() { return pedal->paramCount + (pedal->presetCount ? 1 : 0); }
-uint32_t paramId(int i) { return i < pedal->paramCount ? paramHash(pedal->params[i].id) : paramHash("preset"); }
+// The plugin's parameters: the pedal's, then Bypass (the footswitch: 1 bypassed), Volume pedal
+// (a position 0…1 along an audio-taper pot after the pedal, 1 full), then Preset (a choice of "—"
+// and the pedal's presets), whose choice sets the others once and then reads "—" again.
+int bypassIndex() { return pedal->paramCount; }
+int volumeIndex() { return pedal->paramCount + 1; }
+int presetIndex() { return pedal->presetCount ? pedal->paramCount + 2 : -1; }
+int paramCount() { return pedal->paramCount + 2 + (pedal->presetCount ? 1 : 0); }
+uint32_t paramId(int i) {
+  if (i < pedal->paramCount) return paramHash(pedal->params[i].id);
+  return paramHash(i == bypassIndex() ? "phuzz.bypass" : i == volumeIndex() ? "phuzz.volume" : "preset");
+}
 int paramIndex(clap_id id) {
   for (int i = 0; i < paramCount(); i++) if (paramId(i) == id) return i;
   return -1;
+}
+// a MIDI target as the state writes it: the parameter's id, or bypass or volume
+const char *targetName(int t) { return t == MIDI_BYPASS ? "bypass" : t == MIDI_VOLUME ? "volume" : t >= 0 && t < pedal->paramCount ? pedal->params[t].id : nullptr; }
+bool targetFrom(const std::string &s, int16_t &t) {
+  if (s == "bypass") { t = MIDI_BYPASS; return true; }
+  if (s == "volume") { t = MIDI_VOLUME; return true; }
+  for (int i = 0; i < pedal->paramCount; i++) if (s == pedal->params[i].id) { t = (int16_t)i; return true; }
+  return false;
 }
 
 struct Plugin {
@@ -43,12 +64,24 @@ struct Plugin {
   std::atomic<bool> dirty{true};
   std::vector<float> in, L, R;
   double fs = 48000;
+  std::atomic<double> bypass{0}, volume{1};
+  double wet = 1, gain = 1;          // the bypass's crossfade and the volume's gain, as they glide
+  MidiMap midi, midiMain, midiPending; // the audio thread's, the main thread's, and one on its way
+  std::atomic<bool> midiNew{false};
 
   explicit Plugin(const clap_host_t *h) : host(h), values(pedal->paramCount), P(pedal->paramCount) {
     for (int i = 0; i < pedal->paramCount; i++) values[i] = pedal->params[i].def;
+    midi.defaults(*pedal);
+    midiMain = midi;
+  }
+  double value(int i) const {
+    if (i < pedal->paramCount) return values[i];
+    return i == bypassIndex() ? bypass.load() : i == volumeIndex() ? volume.load() : 0;
   }
   void set(int i, double v) {
     if (i < pedal->paramCount) { values[i] = constrain(pedal->params[i], v); dirty = true; return; }
+    if (i == bypassIndex()) { bypass = v >= 0.5 ? 1 : 0; return; }
+    if (i == volumeIndex()) { volume = std::isfinite(v) ? std::clamp(v, 0.0, 1.0) : 1.0; return; }
     const int k = (int)v - 1; // Preset: 0 is "—"
     if (k < 0 || k >= pedal->presetCount) return;
     const Preset &p = pedal->presets[k];
@@ -60,14 +93,40 @@ struct Plugin {
     for (int i = 0; i < pedal->paramCount; i++) P[i] = values[i];
     effect->setParams(P.data());
   }
-  void events(const clap_input_events_t *evs) {
+  // a MIDI CC's move, and the host told of the parameter's new value so its panel follows
+  void midiSet(int i, double v, uint32_t time, const clap_output_events_t *out) {
+    set(i, v);
+    if (!out) return;
+    clap_event_param_value_t ev{};
+    ev.header.size = sizeof ev;
+    ev.header.time = time;
+    ev.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
+    ev.header.type = CLAP_EVENT_PARAM_VALUE;
+    ev.param_id = paramId(i);
+    ev.note_id = -1; ev.port_index = -1; ev.channel = -1; ev.key = -1;
+    ev.value = value(i);
+    out->try_push(out, &ev.header);
+  }
+  void events(const clap_input_events_t *evs, const clap_output_events_t *out) {
+    if (midiNew.exchange(false)) midi = midiPending;
     if (!evs) return;
     for (uint32_t k = 0, n = evs->size(evs); k < n; k++) {
       const clap_event_header_t *e = evs->get(evs, k);
-      if (e->space_id != CLAP_CORE_EVENT_SPACE_ID || e->type != CLAP_EVENT_PARAM_VALUE) continue;
-      const auto *pv = (const clap_event_param_value_t *)e;
-      const int i = paramIndex(pv->param_id);
-      if (i >= 0) set(i, pv->value);
+      if (e->space_id != CLAP_CORE_EVENT_SPACE_ID) continue;
+      if (e->type == CLAP_EVENT_PARAM_VALUE) {
+        const auto *pv = (const clap_event_param_value_t *)e;
+        const int i = paramIndex(pv->param_id);
+        if (i >= 0) set(i, pv->value);
+      } else if (e->type == CLAP_EVENT_MIDI) {
+        const auto *m = (const clap_event_midi_t *)e;
+        midi.handle(m->data, 3, *pedal, [&](int t, char kind, double v) {
+          if (t == MIDI_VOLUME) midiSet(volumeIndex(), v, e->time, out);
+          else if (t == MIDI_BYPASS) midiSet(bypassIndex(), kind == 't' ? 1 - bypass.load() : 1 - v, e->time, out);
+          else if (kind == 'c') midiSet(t, fromNormalized(pedal->params[t], v), e->time, out);
+          else if (kind == 't') midiSet(t, 1 - values[t].load(), e->time, out);
+          else midiSet(t, v, e->time, out);
+        }, [&](int t) { return t < pedal->paramCount && pedal->params[t].kind == ParamKind::choice ? pedal->params[t].choiceCount : 0; });
+      }
     }
   }
 };
@@ -85,6 +144,8 @@ bool activate(const clap_plugin_t *p, double fs, uint32_t, uint32_t maxFrames) {
   s->R.assign(maxFrames, 0);
   s->dirty = true;
   s->apply();
+  s->wet = 1 - s->bypass.load();
+  s->gain = audioTaper(s->volume.load());
   return true;
 }
 void deactivate(const clap_plugin_t *p) { self(p)->effect.reset(); }
@@ -95,7 +156,7 @@ void reset(const clap_plugin_t *p) { if (self(p)->effect) self(p)->effect->reset
 clap_process_status process(const clap_plugin_t *p, const clap_process_t *proc) {
   Plugin *s = self(p);
   NoDenormals ftz;
-  s->events(proc->in_events);
+  s->events(proc->in_events, proc->out_events);
   s->apply();
   const uint32_t n = proc->frames_count;
   if (!proc->audio_outputs_count || !s->effect) return CLAP_PROCESS_CONTINUE;
@@ -113,8 +174,16 @@ clap_process_status process(const clap_plugin_t *p, const clap_process_t *proc) 
     }
     s->effect->process(s->in.data(), s->L.data(), s->R.data(), (int)m);
     if (!guardBlock(s->L.data(), s->R.data(), (int)m)) s->effect->reset();
-    std::memcpy(oL + at, s->L.data(), m * sizeof(float));
-    if (oR) std::memcpy(oR + at, s->R.data(), m * sizeof(float));
+    // the bypass crossfades and the volume pedal glides, each over about 10 ms, without a click
+    const double k = 1 - std::exp(-1 / (0.010 * s->fs));
+    const double wetTo = 1 - s->bypass.load(), gainTo = audioTaper(s->volume.load());
+    for (uint32_t i = 0; i < m; i++) {
+      s->wet += (wetTo - s->wet) * k;
+      s->gain += (gainTo - s->gain) * k;
+      const double dry = s->in[i];
+      oL[at + i] = (float)(s->gain * (s->wet * s->L[i] + (1 - s->wet) * dry));
+      if (oR) oR[at + i] = (float)(s->gain * (s->wet * s->R[i] + (1 - s->wet) * dry));
+    }
     at += m;
   }
   return CLAP_PROCESS_CONTINUE;
@@ -134,13 +203,37 @@ bool portsGet(const clap_plugin_t *, uint32_t index, bool isInput, clap_audio_po
 }
 const clap_plugin_audio_ports_t audioPorts{portsCount, portsGet};
 
+// note ports: one MIDI input, for a foot controller's control changes
+uint32_t notePortsCount(const clap_plugin_t *, bool isInput) { return isInput ? 1 : 0; }
+bool notePortsGet(const clap_plugin_t *, uint32_t index, bool isInput, clap_note_port_info_t *info) {
+  if (index || !isInput) return false;
+  info->id = 0;
+  info->supported_dialects = CLAP_NOTE_DIALECT_MIDI;
+  info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
+  std::snprintf(info->name, sizeof info->name, "MIDI pedals");
+  return true;
+}
+const clap_plugin_note_ports_t notePorts{notePortsCount, notePortsGet};
+
 // parameters
 uint32_t paramsCount(const clap_plugin_t *) { return (uint32_t)paramCount(); }
 bool paramsInfo(const clap_plugin_t *, uint32_t i, clap_param_info_t *info) {
   if ((int)i >= paramCount()) return false;
   std::memset(info, 0, sizeof *info);
   info->id = paramId((int)i);
-  if ((int)i == pedal->paramCount) {
+  if ((int)i == bypassIndex()) {
+    std::snprintf(info->name, sizeof info->name, "Bypass");
+    info->flags = CLAP_PARAM_IS_STEPPED | CLAP_PARAM_IS_BYPASS | CLAP_PARAM_IS_AUTOMATABLE;
+    info->min_value = 0; info->max_value = 1; info->default_value = 0;
+    return true;
+  }
+  if ((int)i == volumeIndex()) {
+    std::snprintf(info->name, sizeof info->name, "Volume pedal");
+    info->flags = CLAP_PARAM_IS_AUTOMATABLE;
+    info->min_value = 0; info->max_value = 1; info->default_value = 1;
+    return true;
+  }
+  if ((int)i == presetIndex()) {
     std::snprintf(info->name, sizeof info->name, "Preset");
     info->flags = CLAP_PARAM_IS_STEPPED | CLAP_PARAM_IS_ENUM;
     info->min_value = 0;
@@ -160,39 +253,55 @@ bool paramsInfo(const clap_plugin_t *, uint32_t i, clap_param_info_t *info) {
 bool paramsValue(const clap_plugin_t *pl, clap_id id, double *v) {
   const int i = paramIndex(id);
   if (i < 0) return false;
-  *v = i < pedal->paramCount ? self(pl)->values[i].load() : 0;
+  *v = self(pl)->value(i);
   return true;
 }
 bool paramsToText(const clap_plugin_t *, clap_id id, double v, char *out, uint32_t size) {
   const int i = paramIndex(id);
   if (i < 0) return false;
-  if (i == pedal->paramCount) { const int k = (int)v - 1; std::snprintf(out, size, "%s", k >= 0 && k < pedal->presetCount ? pedal->presets[k].name : "—"); return true; }
+  if (i == presetIndex()) { const int k = (int)v - 1; std::snprintf(out, size, "%s", k >= 0 && k < pedal->presetCount ? pedal->presets[k].name : "—"); return true; }
+  if (i == bypassIndex()) { std::snprintf(out, size, "%s", v >= 0.5 ? "bypassed" : "engaged"); return true; }
+  if (i == volumeIndex()) { std::snprintf(out, size, "%.0f %%", 100 * std::clamp(v, 0.0, 1.0)); return true; }
   formatValue(pedal->params[i], v, out, size);
   return true;
 }
 bool paramsFromText(const clap_plugin_t *, clap_id id, const char *text, double *v) {
   const int i = paramIndex(id);
   if (i < 0) return false;
-  if (i == pedal->paramCount) {
+  if (i == presetIndex()) {
     for (int k = 0; k < pedal->presetCount; k++) if (!std::strcmp(text, pedal->presets[k].name)) { *v = k + 1; return true; }
     return false;
   }
+  if (i == bypassIndex()) {
+    if (!std::strcmp(text, "bypassed")) { *v = 1; return true; }
+    if (!std::strcmp(text, "engaged")) { *v = 0; return true; }
+    return false;
+  }
+  if (i == volumeIndex()) { char *end = nullptr; const double x = std::strtod(text, &end); if (end == text) return false; *v = std::clamp(x / 100, 0.0, 1.0); return true; }
   return parseValue(pedal->params[i], text, *v);
 }
-void paramsFlush(const clap_plugin_t *pl, const clap_input_events_t *in, const clap_output_events_t *) {
+void paramsFlush(const clap_plugin_t *pl, const clap_input_events_t *in, const clap_output_events_t *out) {
   Plugin *s = self(pl);
-  s->events(in);
+  s->events(in, out);
   if (s->effect) s->apply();
 }
 const clap_plugin_params_t params{paramsCount, paramsInfo, paramsValue, paramsToText, paramsFromText, paramsFlush};
 
 // state: "phuzzbox <slug> 1" then a line "<id> <value>" for each parameter, by id so that a later
-// version with more parameters still reads it
+// version with more parameters still reads it, the bypass and volume pedal as "phuzz.bypass" and
+// "phuzz.volume", and a line "midi <cc> <channel> <target> <momentary> <invert>" for each mapping
+// (target: a parameter's id, bypass or volume)
 bool stateSave(const clap_plugin_t *pl, const clap_ostream_t *stream) {
   std::ostringstream o;
   o.precision(17);
   o << "phuzzbox " << pedal->slug << " 1\n";
-  for (int i = 0; i < pedal->paramCount; i++) o << pedal->params[i].id << ' ' << self(pl)->values[i].load() << '\n';
+  const Plugin *p = self(pl);
+  for (int i = 0; i < pedal->paramCount; i++) o << pedal->params[i].id << ' ' << p->values[i].load() << '\n';
+  o << "phuzz.bypass " << p->bypass.load() << "\nphuzz.volume " << p->volume.load() << '\n';
+  for (int k = 0; k < p->midiMain.count; k++) {
+    const MidiMapping &m = p->midiMain.maps[k];
+    if (const char *t = targetName(m.target)) o << "midi " << (int)m.cc << ' ' << (int)m.channel << ' ' << t << ' ' << (int)m.momentary << ' ' << (int)m.invert << '\n';
+  }
   const std::string s = o.str();
   for (size_t at = 0; at < s.size();) {
     const int64_t w = stream->write(stream, s.data() + at, s.size() - at);
@@ -209,10 +318,36 @@ bool stateLoad(const clap_plugin_t *pl, const clap_istream_t *stream) {
   std::string magic, slug, id;
   int version = 0;
   if (!(in >> magic >> slug >> version) || magic != "phuzzbox" || slug != pedal->slug) return false;
-  double v;
-  while (in >> id >> v)
-    for (int i = 0; i < pedal->paramCount; i++) if (id == pedal->params[i].id) self(pl)->set(i, v);
   Plugin *p = self(pl);
+  MidiMap map;
+  bool anyMidi = false;
+  std::string line;
+  std::getline(in, line);
+  while (std::getline(in, line)) {
+    std::istringstream l(line);
+    if (!(l >> id)) continue;
+    if (id == "midi") {
+      int cc, channel, momentary, invert;
+      std::string target;
+      MidiMapping m;
+      if (l >> cc >> channel >> target >> momentary >> invert && targetFrom(target, m.target)) {
+        m.cc = (uint8_t)std::clamp(cc, 0, 119); m.channel = (uint8_t)std::clamp(channel, 0, 16);
+        m.momentary = momentary != 0; m.invert = invert != 0;
+        map.add(m);
+      }
+      anyMidi = true;
+      continue;
+    }
+    double v;
+    if (!(l >> v)) continue;
+    if (id == "phuzz.bypass") p->set(bypassIndex(), v);
+    else if (id == "phuzz.volume") p->set(volumeIndex(), v);
+    else for (int i = 0; i < pedal->paramCount; i++) if (id == pedal->params[i].id) p->set(i, v);
+  }
+  if (!anyMidi) map.defaults(*pedal); // a state from before the MIDI input
+  p->midiMain = map;
+  p->midiPending = map;
+  p->midiNew = true;
   if (auto hp = (const clap_host_params_t *)p->host->get_extension(p->host, CLAP_EXT_PARAMS)) hp->rescan(p->host, CLAP_PARAM_RESCAN_VALUES);
   return true;
 }
@@ -228,6 +363,7 @@ const clap_plugin_tail_t tail{tailGet};
 
 const void *getExtension(const clap_plugin_t *, const char *id) {
   if (!std::strcmp(id, CLAP_EXT_AUDIO_PORTS)) return &audioPorts;
+  if (!std::strcmp(id, CLAP_EXT_NOTE_PORTS)) return &notePorts;
   if (!std::strcmp(id, CLAP_EXT_PARAMS)) return &params;
   if (!std::strcmp(id, CLAP_EXT_STATE)) return &state;
   if (!std::strcmp(id, CLAP_EXT_LATENCY)) return &latency;

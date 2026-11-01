@@ -51,5 +51,6 @@ inline const phuzzbox::Preset kPresets[] = {
   {"Old tube amp input (68 kΩ)", kPreset4, 3},
 };
 inline constexpr int kPresetCount = 5;
+inline constexpr int kExpression = -1;
 
 } // namespace buffer

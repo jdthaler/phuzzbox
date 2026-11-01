@@ -11,6 +11,7 @@
 //            and 'pedal' (fn(messages, api): what the pedal posted, [{ type, values }])
 
 import { params, defaults, fmt, toUnit, fromUnit } from './params.js';
+import { midiPanel } from './midi-panel.js';
 import { fetchBytes } from './wasm.js';
 import { TESTBASS_URL } from './testbass.js';
 import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
@@ -201,7 +202,14 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   }
   controls.append(groupsEl);
 
-  app.append(h('div', { class: 'stage' }, face, viewWrap), fret, controls,
+  // MIDI foot controllers (shared/midi-panel.js): what each control change moves
+  const midi = midiPanel({ PEDAL, h, store, key, ui: {
+    setVolume: (g) => { volInput.value = g; setVolume(g); }, bypassed: () => state.bypass, setBypass, muted: () => state.mute, setMute,
+    value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
+  } });
+  api.midi = midi;
+
+  app.append(h('div', { class: 'stage' }, face, viewWrap), fret, controls, midi.el,
     h('footer', {}, `${PEDAL.name} ${reg.version ?? ''} · Phuzzbox · physics, not samples · `,
       h('a', { href: '../' }, 'all pedals')));
 
@@ -232,6 +240,12 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     send({ type: 'params', P: { ...P } });
     refresh();
     emit('params');
+  }
+  // the volume after the pedal, from a MIDI volume pedal: it glides over 10 ms rather than stepping
+  function setVolume(g) {
+    state.volume = g;
+    store.set('phuzzbox.volume', g);
+    if (volume) volume.gain.setTargetAtTime(g, ctx.currentTime, 0.01);
   }
   function setBypass(on) {
     state.bypass = on;
