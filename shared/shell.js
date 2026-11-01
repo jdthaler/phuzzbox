@@ -25,7 +25,8 @@ import { tune, Tuner } from './tuner.js';
 import { INSTRUMENTS, instrument, RIFFS, INSTRUMENT_KEY, paramsKey, instrumentDefaults } from './instruments.js';
 import { howItWorks } from './notes.js';
 import { scopeView, spectrumView } from './views.js';
-import { byId, PEDALS, PHUZZBOX_VERSION, SOURCE } from './registry.js';
+import { byId } from './registry.js';
+import { navMenu } from './nav.js';
 import { createLayout } from './layout.js';
 import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
@@ -35,6 +36,12 @@ import { attachPresets } from './user-presets.js';
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } },
+};
+// what lasts only as long as the tab: whether the audio was on, so a pedal opened from the menu
+// carries on where the last one was
+const session = {
+  get(k, d) { try { const v = sessionStorage.getItem(`phuzzbox.${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { sessionStorage.setItem(`phuzzbox.${k}`, JSON.stringify(v)); } catch { /* private mode */ } },
 };
 const h = (tag, attrs = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -106,7 +113,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const all = params(PEDAL.groups);
   const key = `phuzzbox.${PEDAL.id}`;
   // the player's instrument, bass or guitar (shared/instruments.js): each keeps its own settings
-  const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: 0, mute: false,
+  const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: store.get('phuzzbox.channel', 0), mute: false,
     instrument: instrument(store.get(INSTRUMENT_KEY, 'bass')).id };
   const ownDefaults = () => instrumentDefaults(PEDAL, defaults(PEDAL.groups), state.instrument);
   const saveP = () => store.set(paramsKey(PEDAL.id, state.instrument), P);
@@ -132,7 +139,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const startBtn = h('button', { class: 'primary start', type: 'button', onclick: () => start() }, 'Start audio');
   const sourceSel = h('select', { 'aria-label': 'Input', title: 'What plays into the pedal: the test bass or guitar, or your interface\'s input', onchange: () => setSource(sourceSel.value) },
     h('option', { value: 'bass' }, `${instrument(state.instrument).test} (keys)`));
-  const chanSel = h('select', { 'aria-label': 'Input channel', class: 'chan', onchange: () => { state.channel = +chanSel.value; connectMic(); } },
+  const chanSel = h('select', { 'aria-label': 'Input channel', class: 'chan', onchange: () => { state.channel = +chanSel.value; store.set('phuzzbox.channel', state.channel); connectMic(); } },
     h('option', { value: 0 }, 'In 1'), h('option', { value: 1 }, 'In 2'));
   const latency = h('span', { class: 'pill', title: 'The browser\'s estimate of the delay from input to output' }, 'latency –');
   const sinkSel = h('select', { 'aria-label': 'Output', class: 'sink', hidden: true, onchange: () => setSink(sinkSel.value) });
@@ -148,19 +155,11 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   // the volume after the pedal, beside the audio: a fader, as on a mixer
   const volInput = h('input', { type: 'range', class: 'fader', min: 0, max: 1.5, step: 0.01, value: state.volume, 'aria-label': 'Volume' });
   volInput.addEventListener('input', () => { state.volume = +volInput.value; store.set('phuzzbox.volume', state.volume); if (volume) volume.gain.value = state.volume; });
-  // the pedal's name is the menu of pedals, as an instrument's is in Forte
-  const menu = h('details', { class: 'pedal-menu' },
-    h('summary', { title: 'Choose a pedal' }, h('h1', {}, PEDAL.name), h('span', { class: 'caret', 'aria-hidden': 'true' }, '▾')),
-    h('div', { class: 'menu-list' },
-      ...PEDALS.filter((p) => p.ready).map((p) => h('a', { href: `../${p.id}/`, 'aria-current': p.id === PEDAL.id ? 'page' : false }, h('b', {}, p.name), h('small', {}, p.after))),
-      h('a', { href: '../board/', class: 'menu-board', 'aria-current': PEDAL.id === 'board' ? 'page' : false }, h('b', {}, 'Pedalboard'), h('small', {}, 'the pedals in a chain, each loading the next')),
-      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, 'physics, not samples')),
-      // the credits, with the site's only link to GitHub
-      h('div', { class: 'menu-foot' }, `PhuzzBox ${PHUZZBOX_VERSION} · Vibe coded by Jesse Thaler · `, h('a', { href: SOURCE, target: '_blank', rel: 'noopener' }, 'source'))));
-  addEventListener('pointerdown', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
+  // the one menu, as Forte's: PhuzzBox and the pedal's name, opening on the home page and every
+  // pedal by its physics (shared/nav.js)
+  const menu = navMenu({ h, here: PEDAL.id, title: PEDAL.name });
   const header = h('header', { class: 'top' },
-    h('div', { class: 'brand' }, h('a', { class: 'home', href: '../', title: 'Every pedal' }, 'PhuzzBox'), menu, notesBtn, installBtn),
+    h('div', { class: 'brand' }, menu, notesBtn, installBtn),
     h('div', { class: 'audio' }, startBtn, cpu, sourceSel, chanSel, sinkSel, latency, measureBtn,
       h('label', { class: 'volume', title: 'The level after the pedal, before the speakers (a MIDI volume pedal moves it too)' }, 'Volume', volInput), status));
 
@@ -190,7 +189,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const tCents = h('span', { class: 't-cents' }, ''), tHz = h('span', {}, 'Start audio and play a note'), tString = h('span', {}, '');
   const a4Input = h('input', { type: 'number', min: 415, max: 466, step: 0.5, value: tuning.a4, 'aria-label': 'Reference pitch, A4 in hertz' });
   a4Input.addEventListener('change', () => { tuning.a4 = Math.min(466, Math.max(415, +a4Input.value || 440)); a4Input.value = tuning.a4; store.set('phuzzbox.a4', tuning.a4); });
-  const muteBtn = h('button', { type: 'button', class: 'ghost mute', 'aria-pressed': 'false', title: 'Silence the output while you tune, as a tuner pedal does; the tuner still hears the input', onclick: () => setMute(!state.mute) }, 'Mute while tuning');
+  const muteBtn = h('button', { type: 'button', class: 'ghost mute', 'aria-pressed': 'false', title: 'Silence the output while you tune, as a tuner pedal does; the tuner still hears the input', onclick: () => setMute(!state.mute) }, 'Mute');
   const scale = h('div', { class: 't-scale', 'aria-hidden': 'true' }, h('span', { class: 't-zone' }),
     ...[-50, -25, 0, 25, 50].map((c) => { const t = h('span', { class: 't-tick' }, h('i', {}, c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0')); t.style.left = `${50 + c}%`; return t; }), tNeedle);
   const tunerCard = h('figure', { class: 'card tunercard idle', 'aria-label': 'Tuner', 'data-view': 'Tuner', 'data-keep-text': '' },
@@ -199,7 +198,8 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     h('div', { class: 't-body' }, h('div', { class: 't-name', role: 'status' }, tNote, tOct), scale, h('div', { class: 't-read' }, tCents, tHz, tString)));
 
   // views
-  const viewList = [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true }];
+  // the tuner sits under the pedal, with the controls a player reaches for (shared/layout.js)
+  const viewList = [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }];
   // every page has a Scope and a Spectrum (shared/views.js), its own if it brings them
   const has = (t) => views.some((v) => v.title === t);
   views = [...views, ...(has('Spectrum') ? [] : [spectrumView()]), ...(has('Scope') ? [] : [scopeView()])];
@@ -493,6 +493,8 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       startBtn.textContent = 'Audio on';
       document.body.classList.add('audio-on');
       status.textContent = '';
+      // the next page this tab opens (another pedal from the menu) starts its audio as this one left it
+      session.set('audio', true);
       showLatency();
       emit('audio');
       await listInputs();
@@ -526,9 +528,10 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     measureBtn.disabled = true;
     send({ type: 'measure' });
   }
-  async function setSource(v) {
+  // remember: keep the choice for the next page (not when an input that has gone falls back to the bass)
+  async function setSource(v, remember = true) {
     if (!ctx) await start();
-    if (v === 'bass') { state.source = 'bass'; send({ type: 'source', which: 'bass' }); chanSel.hidden = true; measureBtn.hidden = true; showBass(); return; }
+    if (v === 'bass') { if (remember) store.set('phuzzbox.input', 'bass'); state.source = 'bass'; send({ type: 'source', which: 'bass' }); chanSel.hidden = true; measureBtn.hidden = true; showBass(); return; }
     try {
       micStream?.getTracks().forEach((t) => t.stop());
       micStream = await navigator.mediaDevices.getUserMedia({
@@ -536,6 +539,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       });
       if (v === 'ask') { await listInputs(); const id = micStream.getAudioTracks()[0]?.getSettings().deviceId; if (id) sourceSel.value = id; }
       connectMic();
+      store.set('phuzzbox.input', sourceSel.value);
       measured = null;
       state.source = 'input';
       send({ type: 'source', which: 'input' });
@@ -545,7 +549,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     } catch (err) {
       status.textContent = `No input: ${err.message}`;
       sourceSel.value = 'bass';
-      setSource('bass');
+      setSource('bass', false);
     }
   }
   function connectMic() {
@@ -604,7 +608,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     state.mute = on;
     send({ type: 'mute', on });
     muteBtn.setAttribute('aria-pressed', String(on));
-    muteBtn.textContent = on ? 'Muted: unmute' : 'Mute while tuning';
+    muteBtn.textContent = on ? 'Muted: unmute' : 'Mute';
   }
   const buf = new Float32Array(16384);
   setInterval(() => {
@@ -709,7 +713,26 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
 
   setBypass(state.bypass);
   setInterface();
+  chanSel.value = state.channel;
   chanSel.hidden = true;
+  // the audio as the last page in this tab left it: on, from the same input and channel, to the
+  // same output. A browser lets a page opened by a click on the same site start its sound (Chrome
+  // and Edge do); where one doesn't, the first tap or key carries on
+  if (session.get('audio', false)) resumeAudio();
+  async function resumeAudio() {
+    await start();
+    if (!ctx) return;
+    if (ctx.state !== 'running') {
+      status.textContent = 'Tap anywhere or press a key to carry on with the sound';
+      const go = () => {
+        ctx.resume().then(() => { if (ctx.state === 'running') status.textContent = ''; });
+        removeEventListener('pointerdown', go, true); removeEventListener('keydown', go, true);
+      };
+      addEventListener('pointerdown', go, true); addEventListener('keydown', go, true);
+    }
+    const input = store.get('phuzzbox.input', 'bass');
+    if (input !== 'bass' && [...sourceSel.options].some((o) => o.value === input)) { sourceSel.value = input; await setSource(input); }
+  }
   refresh();
   pageIs(api);
   return api;

@@ -44,7 +44,7 @@ const slot = (id, over, bypass = false) => ({ id, P: Pd(id, over), bypass });
   check(/^## Prior art and references/m.test(readme) && /^## What is simplified/m.test(readme) && renderMarkdown(readme, { skip: ['Files'] }).html.length > 500,
     'the board\'s README credits prior art, says what is simplified, and renders as its notes');
   check(readFileSync(new URL('sw.js', root), 'utf8').includes("'./board/'") && /rel="manifest"/.test(readFileSync(new URL('board/index.html', root), 'utf8')), 'the app keeps the board\'s page');
-  check(/href="board\/"/.test(readFileSync(new URL('index.html', root), 'utf8')) && /'\.\.\/board\/'/.test(readFileSync(new URL('shared/shell.js', root), 'utf8')), 'the landing page and every pedal\'s menu link the board');
+  check(/href: 'board\/'/.test(readFileSync(new URL('landing.js', root), 'utf8')) && /id: 'board'/.test(readFileSync(new URL('shared/nav.js', root), 'utf8')), 'the landing page and every pedal\'s menu link the board');
   check(params(BOARD.groups).every((q) => q.hint && (q.type || (q.min < q.max && q.def >= q.min && q.def <= q.max))), 'every board control explains itself, with its default in its range');
 }
 
