@@ -3,7 +3,10 @@
 // one for each thing every page has: the test bass (testbass/README.md), the tuner
 // (tuner/README.md), the scope (scope/README.md) and the spectrum (spectrum/README.md). The landing
 // page opens all but the pedal's.
-// A README's "Files" section (for developers) is left out, and its links point at the repository.
+// A README's "Files" section (for developers) is left out. The notes link only to the site and to
+// sources elsewhere (papers, standards), never to the repository for information (Jesse,
+// 2026-11-01): a link to another README opens its notes (the tab, or that pedal's page), a link to
+// any other file of the repository is left as plain text, and the credits link to the source.
 // Hashes open it straight away: …/#about (the pedal), #testbass, #tuner, #scope, #spectrum.
 //
 //   const notes = howItWorks({ pedal: { id, name, version } });   // on a pedal's page
@@ -12,7 +15,6 @@
 
 import { renderMarkdown } from './markdown.js';
 
-const REPO = 'https://github.com/jdthaler/phuzzbox/blob/live/';
 const SITE = new URL('../', import.meta.url); // the site's root, wherever it is served
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
@@ -35,7 +37,6 @@ export function howItWorks({ pedal = null } = {}) {
     { key: 'scope', hash: '#scope', name: 'Scope', dir: 'scope/' },
     { key: 'spectrum', hash: '#spectrum', name: 'Spectrum', dir: 'spectrum/' },
   ];
-  const what = { pedal: 'pedal', testbass: 'bass made of physics', tuner: 'tuner', scope: 'scope', spectrum: 'spectrum analyser' };
   let dialog = null, body = null, heading = null, ver = null, tabs = [], at = null;
   const loaded = new Map();
 
@@ -74,17 +75,50 @@ export function howItWorks({ pedal = null } = {}) {
       pressed.clear();
       if (docs.some((d) => d.hash === location.hash)) history.replaceState(null, '', location.pathname + location.search);
     });
-    // the contents' own links scroll within the notes, a README's links to its own sections too
-    body.addEventListener('click', (e) => {
+    // the contents' own links stay in the notes: to a section, or to another tab and its section
+    body.addEventListener('click', async (e) => {
       const a = e.target.closest('a[href]');
       if (!a || !at) return;
-      const href = a.getAttribute('href'), own = `${REPO}${at.dir}README.md#`;
-      const id = href.startsWith('#') ? href.slice(1) : href.startsWith(own) ? `about-${href.slice(own.length)}` : null;
-      if (id === null) return;
+      const href = a.getAttribute('href');
+      const doc = href.startsWith('#') ? at.key : a.dataset.doc;
+      if (!doc) return;
       e.preventDefault();
-      body.querySelector(`#${CSS.escape(id)}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      const id = href.startsWith('#') ? href.slice(1) : a.dataset.at ? `about-${a.dataset.at}` : null;
+      if (doc !== at.key) await open(doc);
+      if (id) body.querySelector(`#${CSS.escape(id)}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
     });
     document.body.append(dialog);
+  }
+
+  // A README's links, made the site's: one to a README whose notes are tabs here opens that tab
+  // (data-doc, and data-at its section); one to another pedal's README opens that pedal's page at
+  // its notes; one to any other file of the site's repository, or to GitHub, becomes plain text;
+  // the rest (papers, standards, other sites) open in a new tab.
+  function siteLinks(html, d) {
+    const t = document.createElement('template');
+    t.innerHTML = html;
+    for (const a of t.content.querySelectorAll('a[href]')) {
+      const href = a.getAttribute('href');
+      if (href.startsWith('#')) continue;
+      let u;
+      try { u = new URL(href); } catch { continue; }
+      const site = u.origin === SITE.origin && u.pathname.startsWith(SITE.pathname);
+      if (!site) {
+        if (!/(^|\.)github\.com$/.test(u.hostname)) continue;
+        a.replaceWith(...a.childNodes);
+        continue;
+      }
+      const rel = u.pathname.slice(SITE.pathname.length); // e.g. 'tuner/README.md', 'phuzz/', 'shared/x.js'
+      const dir = rel.replace(/README\.md$/, '');
+      const anchor = u.hash.slice(1);
+      const tab = (rel.endsWith('README.md') || rel === d.dir) ? docs.find((x) => x.dir === dir) : null;
+      a.removeAttribute('target'); a.removeAttribute('rel');
+      if (tab) { a.dataset.doc = tab.key; if (anchor) a.dataset.at = anchor; a.setAttribute('href', `${location.pathname}${location.search}${tab.hash}`); }
+      else if (/^[a-z0-9-]+\/README\.md$/.test(rel)) a.setAttribute('href', `${SITE.pathname}${dir}#about`); // another pedal's page
+      else if (rel === 'README.md' || rel === '') a.setAttribute('href', SITE.pathname); // the landing page
+      else a.replaceWith(...a.childNodes);
+    }
+    return t.innerHTML;
   }
 
   function load(d) {
@@ -94,16 +128,15 @@ export function howItWorks({ pedal = null } = {}) {
         .then((md) => {
           // the README's line for GitHub readers says nothing on the page itself
           md = md.replace(/^Part of \[Phuzz[Bb]ox\]\([^)]*\)\.?[ \t]*\n/m, '');
-          const { html, sections } = renderMarkdown(md, { base: REPO + d.dir, skip: ['Files'], idPrefix: 'about-' });
+          const { html, sections } = renderMarkdown(md, { base: new URL(d.dir, SITE).href, skip: ['Files'], idPrefix: 'about-' });
           const toc = sections.length > 2
             ? `<nav class="pz-notes-toc" aria-label="Contents">${sections.map((s) => `<a href="#${s.id}">${esc(s.text)}</a>`).join('')}</nav>`
             : '';
-          return `${toc}<article class="pz-notes-text">${html}</article>
-            <p class="pz-notes-src">These notes are this ${what[d.key]}'s <a href="${REPO}${d.dir}README.md" target="_blank" rel="noopener">README</a>, beside its source code.</p>`;
+          return `${toc}<article class="pz-notes-text">${siteLinks(html, d)}</article>`;
         })
         .catch(() => {
           loaded.delete(d.key); // try again next time
-          return `<p class="pz-notes-status">The notes didn't load. Read them on <a href="${REPO}${d.dir}README.md" target="_blank" rel="noopener">GitHub</a>.</p>`;
+          return '<p class="pz-notes-status">The notes didn\'t load. Close them and try again once the page can reach the site.</p>';
         }));
     }
     return loaded.get(d.key);
