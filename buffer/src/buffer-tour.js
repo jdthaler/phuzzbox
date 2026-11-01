@@ -19,7 +19,9 @@ On the low E, B ≈ 6.8 × 10⁻⁴, and the 20th partial is 200 cents sharp. Th
     views: ['The pickup\'s response', 'Spectrum'],
     preset: 'As plugged in',
     play: [riff()],
-    text: `A passive pickup is a coil of a few henries, and the cable it drives is a capacitor: together they resonate, at
+    text: `![The pickup: its EMF behind the coil's resistance and inductance, across the capacitance and the load it drives](schematics/pickup.svg)
+
+A passive pickup is a coil of a few henries, and the cable it drives is a capacitor: together they resonate, at
 
   f₀ = 1 / (2π √(L C))
 
