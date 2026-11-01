@@ -564,7 +564,14 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     if (e.target.closest?.('input, select, textarea, [role=slider]')) return;
     const k = codeKey.get(e.code);
     if (k !== undefined && state.source === 'bass') { e.preventDefault(); held.add(e.code); fretOf.get(e.code)?.classList.add('down'); play(k, 0.75); }
-    else if (e.code === 'Space') { e.preventDefault(); setBypass(!state.bypass); }
+    else if (e.code === 'Space') {
+      // Space is the footswitch, except on a button, menu or link reached with the keyboard
+      // (:focus-visible), which Space presses as usual; one clicked with the mouse keeps focus
+      // without it, and Space there is still the footswitch
+      const t = e.target;
+      if (t !== foot && t.closest?.('button, summary, a[href], [role=button], [role=tab]') && t.matches?.(':focus-visible')) return;
+      e.preventDefault(); setBypass(!state.bypass);
+    }
   });
   addEventListener('keyup', (e) => { const k = codeKey.get(e.code); if (k !== undefined && held.delete(e.code)) { fretOf.get(e.code)?.classList.remove('down'); stop(k); } });
 

@@ -54,11 +54,12 @@ header.top .spacer { flex: 1; }
 
 /* an explanation behind ⓘ */
 button.info {
-  display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border-radius: 50%; flex: none;
+  position: relative; z-index: 1; display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border-radius: 50%; flex: none;
   border: 1px solid #4a4950; background: transparent; box-shadow: none; color: var(--ink-2);
   font: italic 700 12px/1 Georgia, "Times New Roman", serif;
 }
 button.info:hover, button.info[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); }
+button.info::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; } /* a 26 px target (WCAG 2.2 asks 24) around the 18 px ring */
 
 /* ---- the enclosure: powder coat over a bent steel box, four screws in the corners -------------- */
 .stage { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 16px; align-items: start; }
