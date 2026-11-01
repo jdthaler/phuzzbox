@@ -30,6 +30,8 @@ Read first:
 - `cd native && cmake --preset linux && cmake --build --preset linux && ctest --preset linux`
   builds the plugins and the native tests (ALSA and JACK headers needed on Linux).
 - `CI=1 npm test` skips the CPU-timing tests, as CI does.
+- `node tools/check-pages.mjs [--base origin/main] [filter]` opens every page at six sizes in headless
+  Chromium and checks errors, sideways scrolling and the controls (CI's `pages` job).
 - `node tools/release.mjs --dry-run` shows what the next release would bump and the changelog
   entry it would write; `node tools/contract.mjs` what a change breaks in songs saved with the plugins.
 
@@ -52,7 +54,11 @@ Read first:
 1. Work on a branch off `main`, never directly on `main` or `live`.
 2. Verify: `npm test` passes; for a page change, open it in a browser (Playwright headless will
    do) at phone (390×664), tablet and desktop (1440×900) sizes, with no console errors and no
-   sideways scrolling.
+   sideways scrolling. `node tools/check-pages.mjs --base origin/main` does that for every page at
+   six sizes (with How it works open, every view and group on, and audio started), checks the
+   pedal's knobs, footswitch, ⓘ buttons, presets and toggles, and lists every count that differs
+   from `main`, each of which the change should mean; `node tools/check-pages.mjs phuzz` checks one.
+   The `pages` job in CI runs it against the pull request's base.
 3. **A release note, not a version.** A pull request into `main` bumps no version (semver, all
    0.x, as Forte's). It adds one note to `changes/` (`changes/README.md`): a `# <topic>` line, then
    a `### PhuzzBox (minor|patch)` or `### <Pedal name> (major|minor|patch|new)` section for each
