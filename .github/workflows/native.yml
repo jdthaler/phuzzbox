@@ -1,27 +1,66 @@
 name: native
+
+# The C++ side (native/): the WebAssembly rebuilt with the pinned Emscripten and checked against the
+# committed files, and the plugins and the app built, tested and packed on Linux, macOS and Windows.
+#
+# Only what changed is built, as Forte's CI does. A job whose sources (native/ and the few files
+# outside it that the build or the packing reads) a green run has already built and tested passes
+# at once, so a change to the site or the docs alone builds nothing here and the checks still
+# report; a compiler cache (ccache, on Linux and macOS) makes a change recompile only what it
+# touches. On live every job builds in full, since the release-plugins workflow publishes the
+# archives that run packs.
+
 on:
   pull_request:
   push:
     branches: [main, live]
+
+concurrency:
+  group: native-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/live' }}
+
 jobs:
   wasm:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Built before?
+        id: passed
+        uses: actions/cache/restore@v4
+        with:
+          path: .native-passed
+          key: native-passed-wasm-${{ hashFiles('native/**', '*/wasm/*.wasm', 'testbass/wasm/*', '.github/workflows/native.yml') }}
+          lookup-only: true
+      - name: Skip what a green run built
+        if: steps.passed.outputs.cache-hit == 'true' && github.ref != 'refs/heads/live'
+        run: |
+          echo "::notice::A green run already built these sources; nothing to build."
+          echo "SKIP=1" >> "$GITHUB_ENV"
       - uses: mymindstorm/setup-emsdk@v14
+        if: env.SKIP != '1'
         with:
           version: 6.0.10
       - name: Build the WebAssembly and check the committed files are current
+        if: env.SKIP != '1'
         run: |
           cd native && cmake --preset wasm && cmake --build --preset wasm && ctest --preset wasm
           cd .. && git diff --exit-code -- '*.wasm'
       # what it built, so a change made where Emscripten isn't installed can take CI's build
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && env.SKIP != '1'
         with:
           name: wasm
           path: '*/wasm/*.wasm'
           retention-days: 7
+      - name: Remember these sources passed
+        if: success() && env.SKIP != '1'
+        run: mkdir -p .native-passed && echo "${{ github.sha }}" > .native-passed/sha
+      - uses: actions/cache/save@v4
+        if: success() && env.SKIP != '1'
+        with:
+          path: .native-passed
+          key: ${{ steps.passed.outputs.cache-primary-key }}
+
   plugins:
     strategy:
       fail-fast: false
@@ -30,55 +69,97 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y ninja-build libasound2-dev libjack-jackd2-dev libx11-dev libgtk-3-dev libwebkit2gtk-4.1-dev
-      - if: runner.os == 'macOS'
-        run: brew install ninja
+      - name: Built before?
+        id: passed
+        uses: actions/cache/restore@v4
+        with:
+          path: .native-passed
+          key: native-passed-${{ matrix.os }}-${{ hashFiles('native/**', '.github/workflows/native.yml', 'tools/package-plugins.sh', 'tools/plugin-release.mjs', 'shared/plugins.js', 'shared/registry.js', 'plugins/README.md', 'LICENSE', 'THIRD-PARTY-NOTICES.md') }}
+          lookup-only: true
+      - name: Skip what a green run built
+        if: steps.passed.outputs.cache-hit == 'true' && github.ref != 'refs/heads/live'
+        shell: bash
+        run: |
+          echo "::notice::A green run already built, tested and packed these sources on ${{ matrix.os }}; nothing to build."
+          echo "SKIP=1" >> "$GITHUB_ENV"
+      - if: runner.os == 'Linux' && env.SKIP != '1'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build ccache libasound2-dev libjack-jackd2-dev libx11-dev libgtk-3-dev libwebkit2gtk-4.1-dev
+      - if: runner.os == 'macOS' && env.SKIP != '1'
+        run: brew install ninja ccache
+      # A compiler cache, so a change recompiles only what it touches (not on Windows, whose
+      # Visual Studio generator doesn't take a compiler launcher)
+      - name: ccache
+        if: runner.os != 'Windows' && env.SKIP != '1'
+        run: |
+          for lang in C CXX OBJC OBJCXX; do echo "CMAKE_${lang}_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"; done
+          { echo "CCACHE_DIR=$RUNNER_TEMP/ccache"; echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE"; echo "CCACHE_MAXSIZE=500M"; } >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        if: runner.os != 'Windows' && env.SKIP != '1'
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.os }}-
       - name: Build and test (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && env.SKIP != '1'
         run: cd native && cmake --preset linux && cmake --build --preset linux && ctest --preset linux
       - name: Build and test (macOS)
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && env.SKIP != '1'
         run: cd native && cmake --preset macos && cmake --build --preset macos && ctest --preset macos
       - name: Build and test (Windows)
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && env.SKIP != '1'
         run: cd native && cmake --preset windows && cmake --build --preset windows && ctest --preset windows
+      - name: ccache statistics
+        if: runner.os != 'Windows' && env.SKIP != '1'
+        run: ccache --show-stats
       - uses: actions/upload-artifact@v4
+        if: env.SKIP != '1'
         with:
           name: plugins-${{ matrix.os }}
           path: native/build/*/plugins/
           retention-days: 14
       # What a plugin release ships (the release-plugins workflow publishes live's): the archives
-      # tools/package-plugins.sh packs, on every run so a pull request checks they pack. On a Mac,
+      # tools/package-plugins.sh packs, on every build so a pull request checks they pack. On a Mac,
       # every bundle gets an ad-hoc signature first, without which Apple silicon won't load it.
       - name: Sign the bundles (macOS)
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && env.SKIP != '1'
         run: find native/build/macos/plugins \( -name '*.component' -o -name '*.vst3' -o -name '*.clap' -o -name '*.app' \) -prune -exec codesign --force --deep --sign - {} \;
       - uses: actions/setup-node@v4
+        if: env.SKIP != '1'
         with:
           node-version: 22
       - name: Package the release's archives
+        if: env.SKIP != '1'
         shell: bash
         run: |
           preset=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
           tools/package-plugins.sh "$preset"
           echo "PRESET=$preset" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v4
+        if: env.SKIP != '1'
         with:
           name: release-${{ env.PRESET }}
           path: dist/
           retention-days: 30
       # the app, zipped by the system's own tool so the Mac bundle keeps its permissions and signature
       - name: Package the app (macOS)
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && env.SKIP != '1'
         run: ditto -c -k --keepParent native/build/macos/app/PhuzzBox.app PhuzzBox-macos.zip
       - name: Package the app (Windows)
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && env.SKIP != '1'
         shell: pwsh
         run: Compress-Archive -Path native/build/windows/app/Release/PhuzzBox.exe -DestinationPath PhuzzBox-windows.zip
       - uses: actions/upload-artifact@v4
-        if: runner.os != 'Linux'
+        if: runner.os != 'Linux' && env.SKIP != '1'
         with:
           name: PhuzzBox-app-${{ matrix.os }}
           path: PhuzzBox-*.zip
           retention-days: 30
+      - name: Remember these sources passed
+        if: success() && env.SKIP != '1'
+        shell: bash
+        run: mkdir -p .native-passed && echo "${{ github.sha }}" > .native-passed/sha
+      - uses: actions/cache/save@v4
+        if: success() && env.SKIP != '1'
+        with:
+          path: .native-passed
+          key: ${{ steps.passed.outputs.cache-primary-key }}
