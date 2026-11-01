@@ -1,0 +1,19 @@
+{"slug": "blackhole",
+ "params": [
+  {"id":"mass","kind":"continuous","min":30,"max":3000,"step":0,"log":true,"def":200},
+  {"id":"nines","kind":"continuous","min":0,"max":6,"step":0,"log":false,"def":0.509},
+  {"id":"mix","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.5},
+  {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
+  {"id":"ratio","kind":"continuous","min":1,"max":10,"step":0,"log":true,"def":1.2},
+  {"id":"inclination","kind":"continuous","min":0,"max":90,"step":0,"log":false,"def":30},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"Bass hole","values":{"mass":200,"nines":0.509,"ratio":1.2,"inclination":30,"mix":0.5,"dry":1}},
+  {"name":"GW150914","values":{"mass":62,"nines":0.481,"ratio":1.2}},
+  {"name":"Thud: no spin","values":{"nines":0}},
+  {"name":"Bell: nearly extremal","values":{"nines":4,"mix":0.3}},
+  {"name":"On the open E","values":{"mass":414}},
+  {"name":"Lopsided merger","values":{"ratio":8}},
+  {"name":"Edge-on","values":{"inclination":90}}
+ ]}

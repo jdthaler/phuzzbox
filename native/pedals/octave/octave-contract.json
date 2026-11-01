@@ -1,0 +1,17 @@
+{"slug": "octave",
+ "params": [
+  {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.7},
+  {"id":"oct1","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.8},
+  {"id":"oct2","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0},
+  {"id":"track","kind":"continuous","min":40,"max":1000,"step":0,"log":true,"def":70},
+  {"id":"hyst","kind":"continuous","min":0.0005,"max":0.05,"step":0,"log":true,"def":0.005},
+  {"id":"tone","kind":"continuous","min":150,"max":5000,"step":0,"log":true,"def":900},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"Octave under","values":{"dry":0.7,"oct1":0.8,"oct2":0,"track":70,"hyst":0.005,"tone":900}},
+  {"name":"Octave alone","values":{"dry":0,"oct1":1,"oct2":0,"track":70,"hyst":0.005,"tone":900}},
+  {"name":"Sub synth","values":{"dry":0.3,"oct1":0.8,"oct2":0.5,"track":60,"hyst":0.005,"tone":400}},
+  {"name":"High notes, two down","values":{"dry":0.6,"oct1":0.4,"oct2":0.8,"track":150,"hyst":0.005,"tone":1200}},
+  {"name":"Tracking too high","values":{"dry":0,"oct1":1,"oct2":0,"track":1000,"hyst":0.0005,"tone":2500}}
+ ]}

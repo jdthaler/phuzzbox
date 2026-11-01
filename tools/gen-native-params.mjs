@@ -1,5 +1,6 @@
 // gen-native-params.mjs — a pedal's parameter and preset tables for the C++, from its JavaScript
-// descriptor (the single source of them), and its <slug>-info.cmake from the registry.
+// descriptor (the single source of them), its <slug>-info.cmake from the registry, and its
+// <slug>-contract.json: what a song saved with its plugin relies on (tools/contract.mjs).
 //   node tools/gen-native-params.mjs [slug…]     write them (every ready pedal if none named)
 //   node tools/gen-native-params.mjs --check     exit 1 if any is stale (test/native-tests.mjs)
 
@@ -61,7 +62,25 @@ set(PHUZZ_NAME "${reg.name}")
 set(PHUZZ_VERSION ${reg.version})
 set(PHUZZ_AU_SUBTYPE ${reg.plugin.code})
 `;
-  return { [`native/pedals/${slug}/${slug}-params.h`]: h, [`native/pedals/${slug}/${slug}-info.cmake`]: cmake };
+  return { [`native/pedals/${slug}/${slug}-params.h`]: h, [`native/pedals/${slug}/${slug}-info.cmake`]: cmake,
+    [`native/pedals/${slug}/${slug}-contract.json`]: contract(slug, PEDAL) };
+}
+
+// What a host keeps of the plugin (native/plugin/plugin.cpp): each parameter by id with its kind,
+// range, step, scaling and default (VST3 automation is normalised, so the range is part of it), a
+// choice's options in order, and the presets in order (the Preset parameter is a position).
+export function contract(slug, PEDAL) {
+  const ps = params(PEDAL.groups);
+  const out = {
+    slug,
+    params: ps.map((p) => p.type === 'select' ? { id: p.id, kind: 'choice', options: p.options.map(([v]) => v), def: p.def }
+      : p.type === 'checkbox' ? { id: p.id, kind: 'toggle', def: !!p.def }
+        : { id: p.id, kind: 'continuous', min: p.min, max: p.max, step: p.step ?? 0, log: !!p.log, def: p.def }),
+    presets: Object.entries(PEDAL.presets ?? {}).map(([name, values]) => ({ name, values })),
+  };
+  // one parameter or preset to a line, so a diff shows what changed
+  const rows = (xs) => xs.map((x) => `  ${JSON.stringify(x)}`).join(',\n');
+  return `{"slug": ${JSON.stringify(slug)},\n "params": [\n${rows(out.params)}\n ],\n "presets": [\n${rows(out.presets)}\n ]}\n`;
 }
 
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
