@@ -12,6 +12,8 @@
 // spin-weighted spherical harmonics ₋₂Y_lm, h₊ − i h× = Σ [A ζ ₋₂Y_lm(ι) + (−1)^l A ζ* ₋₂Y_l,−m(ι)].
 #pragma once
 
+#include <cmath>
+
 namespace blackhole {
 
 constexpr double PI = 3.141592653589793;
@@ -21,7 +23,7 @@ constexpr double MSUN_KM = 1.476625;      // G M☉ / c² (km)
 struct Omega { double re, im; };
 // Mω of (l, m, n) at spin a (M = 1); false if the table has no such mode
 bool omega(int l, int m, int n, double a, Omega &out);
-inline double spinOf(double nines) { return 1 - __builtin_pow(10.0, -nines); }
+inline double spinOf(double nines) { return 1 - std::pow(10.0, -nines); }
 
 // ₋₂Y_lm(θ, φ = 0), real
 double swsh(int l, int m, double theta);
@@ -31,6 +33,6 @@ struct Amplitudes { double a21, a33, a44; };
 Amplitudes amplitudes(double q);
 
 // the horizon: r₊ = M(1 + √(1 − a²)), Ω_H = a / (r₊² + a²) (M = 1)
-inline double horizon(double a) { return 1 + __builtin_sqrt(1 - a * a); }
+inline double horizon(double a) { return 1 + std::sqrt(1 - a * a); }
 
 } // namespace blackhole
