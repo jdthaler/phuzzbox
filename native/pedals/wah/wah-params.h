@@ -15,10 +15,17 @@ enum Param : int {
   vcc = 5,
   blend = 6,
   level = 7,
-  kParamCount = 8
+  control = 8,
+  direction = 9,
+  sens = 10,
+  attack = 11,
+  decay = 12,
+  kParamCount = 13
 };
 
 inline const char *const taperChoices[] = {"Audio (log)", "Linear"};
+inline const char *const controlChoices[] = {"Foot", "Auto"};
+inline const char *const directionChoices[] = {"Up", "Down"};
 
 inline const phuzzbox::ParamInfo kParams[] = {
   {"position", "Rocker", "Rocker", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.5, 0.0, false, "%", 100.0, 0},
@@ -29,21 +36,32 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"vcc", "Supply", "Circuit", phuzzbox::ParamKind::continuous, 5.0, 12.0, 8.15, 0.0, false, "V", 1.0, 2},
   {"blend", "Clean blend", "Output", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.0, 0.0, false, "%", 100.0, 0},
   {"level", "Level", "Output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
+  {"control", "Rocked by", "Auto", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, controlChoices, 2},
+  {"direction", "Direction", "Auto", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, directionChoices, 2},
+  {"sens", "Full sweep at", "Auto", phuzzbox::ParamKind::continuous, 0.02, 1.0, 0.15, 0.0, true, "mV", 1000.0, 0},
+  {"attack", "Attack", "Auto", phuzzbox::ParamKind::continuous, 0.001, 0.1, 0.005, 0.0, true, "ms", 1000.0, 1},
+  {"decay", "Decay", "Auto", phuzzbox::ParamKind::continuous, 0.02, 2.0, 0.25, 0.0, true, "ms", 1000.0, 0},
 };
 
-inline const phuzzbox::PresetValue kPreset0[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}};
-inline const phuzzbox::PresetValue kPreset1[] = {{2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.4}};
-inline const phuzzbox::PresetValue kPreset2[] = {{2, 1e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}};
-inline const phuzzbox::PresetValue kPreset3[] = {{2, 4.7e-8}, {3, 100000.0}, {4, 0.5}, {6, 0.2}};
-inline const phuzzbox::PresetValue kPreset4[] = {{2, 2.2e-8}, {3, 15000.0}, {4, 0.5}, {6, 0.2}};
+inline const phuzzbox::PresetValue kPreset0[] = {{8, 0.0}, {2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}};
+inline const phuzzbox::PresetValue kPreset1[] = {{8, 0.0}, {2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.4}};
+inline const phuzzbox::PresetValue kPreset2[] = {{8, 0.0}, {2, 1e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.0}};
+inline const phuzzbox::PresetValue kPreset3[] = {{8, 0.0}, {2, 4.7e-8}, {3, 100000.0}, {4, 0.5}, {6, 0.2}};
+inline const phuzzbox::PresetValue kPreset4[] = {{8, 0.0}, {2, 2.2e-8}, {3, 15000.0}, {4, 0.5}, {6, 0.2}};
+inline const phuzzbox::PresetValue kPreset5[] = {{8, 1.0}, {9, 0.0}, {0, 0.0}, {10, 0.15}, {11, 0.005}, {12, 0.25}, {2, 2.2e-8}, {3, 68000.0}, {4, 0.5}, {6, 0.15}};
+inline const phuzzbox::PresetValue kPreset6[] = {{8, 1.0}, {9, 0.0}, {0, 0.1}, {10, 0.3}, {11, 0.04}, {12, 0.6}, {2, 2.2e-8}, {3, 33000.0}, {4, 0.5}, {6, 0.2}};
+inline const phuzzbox::PresetValue kPreset7[] = {{8, 1.0}, {9, 1.0}, {0, 0.9}, {10, 0.15}, {11, 0.003}, {12, 0.3}, {2, 2.2e-8}, {3, 47000.0}, {4, 0.5}, {6, 0.15}};
 inline const phuzzbox::Preset kPresets[] = {
-  {"Bass wah (22 nF)", kPreset0, 4},
-  {"Bass wah, bottom kept", kPreset1, 4},
-  {"Guitar wah as built (10 nF)", kPreset2, 4},
-  {"Deep and vocal (47 nF, 100 kΩ)", kPreset3, 4},
-  {"Gentle (15 kΩ)", kPreset4, 4},
+  {"Bass wah (22 nF)", kPreset0, 5},
+  {"Bass wah, bottom kept", kPreset1, 5},
+  {"Guitar wah as built (10 nF)", kPreset2, 5},
+  {"Deep and vocal (47 nF, 100 kΩ)", kPreset3, 5},
+  {"Gentle (15 kΩ)", kPreset4, 5},
+  {"Auto: funky envelope", kPreset5, 10},
+  {"Auto: slow bloom", kPreset6, 10},
+  {"Auto: downward", kPreset7, 10},
 };
-inline constexpr int kPresetCount = 5;
+inline constexpr int kPresetCount = 8;
 inline constexpr int kExpression = 0;
 
 } // namespace wah
