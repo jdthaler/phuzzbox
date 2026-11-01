@@ -83,12 +83,31 @@ check(/^## Prior art and references/m.test(readFileSync(`${root}testbass/README.
   const { miniFace } = await import('../shared/face.js');
   for (const p of ready) {
     const { PEDAL } = await import(`${root}${p.id}/src/${p.id}-pedal.js`);
-    const face = miniFace({ h, D: PEDAL, P: Object.fromEntries(params(PEDAL.groups).map((q) => [q.id, q.def])), enclosure: p.enclosure });
-    let knobs = 0;
-    walk(face, (e) => { if (/^knob\b/.test(e.attrs?.class ?? '')) knobs++; });
-    const want = params(PEDAL.groups).filter((q) => q.perform && q.type !== 'select').length;
-    check(knobs === want, `${p.name}: the landing page draws its face with the knobs its page has`, `${knobs} of ${want}`);
+    const face = miniFace({ h, D: PEDAL, enclosure: p.enclosure });
+    let knobs = 0, name = '', foot = 0;
+    walk(face, (e) => {
+      if (/^(knob|dial)\b/.test(e.attrs?.class ?? '')) knobs++;
+      if (e.attrs?.class === 'name') name = e.kids[0]?.kids?.[0] ?? '';
+      if (e.attrs?.class === 'footswitch') foot++;
+    });
+    check(knobs === 0 && name === p.name && foot === 1, `${p.name}: the landing page draws its face small, its name and footswitch without its knobs`, `${knobs} knobs, name ${name}, ${foot} footswitch`);
   }
+}
+// a rocker pedal on the face (shared/treadle.js): heel down at 0, level halfway, toe down at 1
+// (a positive SVG rotation is clockwise, so the toe, on the right, goes down), only for a
+// continuous control a foot rocks; the Wah's Rocker, the one its expression pedal moves, is one
+{
+  const { tiltOf } = await import('../shared/treadle.js');
+  check(tiltOf(0) < 0 && Math.abs(tiltOf(0.5)) < 1e-12 && tiltOf(1) === -tiltOf(0) && tiltOf(0.25) < tiltOf(0.75) && tiltOf(2) === tiltOf(1),
+    'the treadle rocks from heel down to toe down, level halfway', `${tiltOf(0)}° to ${tiltOf(1)}°`);
+  const treadles = [];
+  for (const p of ready) {
+    const { PEDAL } = await import(`${root}${p.id}/src/${p.id}-pedal.js`);
+    for (const q of params(PEDAL.groups).filter((x) => x.face === 'treadle')) treadles.push([p.id, q]);
+  }
+  check(treadles.every(([, q]) => q.perform && !q.type && !q.log), 'a treadle only draws a continuous perform control', treadles.map(([id, q]) => `${id}.${q.id}`).join(' '));
+  const { PEDAL: WAH } = await import('../wah/src/wah-pedal.js');
+  check(treadles.some(([id, q]) => id === 'wah' && q.id === WAH.expression), 'the Wah\'s rocker, the one its expression pedal moves, is drawn as a rocker pedal');
 }
 // the audio carries over from page to page: the input, its channel, the output, and whether it was on
 {

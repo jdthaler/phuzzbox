@@ -536,3 +536,14 @@ body.perform .controls-bar { cursor: default; }
 .knob.toggle .rocker[aria-pressed="true"] .rocker-led { background: radial-gradient(circle at 40% 35%, #ffd1cc, var(--led) 45%, #b3140c); box-shadow: 0 0 10px 2px rgb(255 59 47 / 0.6); }
 .pedal.mini .knob.toggle .rocker { width: 30px; height: 38px; margin: 6px 0 1px; }
 .pedal.mini .knob.toggle .rocker-led { top: 5px; }
+
+/* a rocker pedal (shared/treadle.js): the treadle from the side, rubber on top, rocking on its axle
+   over the cast base; it takes the face's width, above the knobs */
+.knob.treadle, body.one-screen .rack .pedal .knob.treadle { width: 100%; max-width: 260px; flex-basis: 100%; gap: 2px; }
+.treadle-pic { width: 100%; touch-action: none; cursor: grab; border-radius: 8px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.treadle-pic:active { cursor: grabbing; }
+.treadle-pic:focus-visible { outline: 2px solid var(--enclosure-ink); outline-offset: 3px; }
+.treadle-pic svg { display: block; width: 100%; height: auto; overflow: visible; }
+.treadle-pic .tr-end { font: 700 7px/1 system-ui, sans-serif; letter-spacing: 0.8px; fill: rgb(255 255 255 / 0.5); }
+.pedal.mini .knob.treadle { max-width: 220px; margin: 0 auto; }
+@media (max-height: 960px) { body.one-screen .rack .pedal .knob.treadle { max-width: 220px; } }

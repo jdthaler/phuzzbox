@@ -32,6 +32,7 @@ import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
 import { safetyCurve, SAFE_SPAN } from './safety.js';
 import { attachPresets } from './user-presets.js';
+import { treadleFor } from './treadle.js';
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -104,6 +105,13 @@ export function toggleFor(p, get, put) {
   return el;
 }
 
+// a perform control on the face, as the pedal has it: a knob, a switch, or a rocker pedal (a
+// treadle, shared/treadle.js) for the control a foot rocks
+export function controlFor(p, get, put) {
+  if (p.face === 'treadle') return treadleFor(p, get, put, h);
+  return (p.type === 'checkbox' ? toggleFor : knobFor)(p, get, put);
+}
+
 // the page, once createPedal has built it: what a guided tour (shared/tour.js) drives
 let pageIs;
 export const pageReady = new Promise((r) => { pageIs = r; });
@@ -129,7 +137,6 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   let ctx = null, node = null, volume = null, micSource = null, micStream = null, tunerAnalyser = null, splitter = null;
   const send = (m) => node?.port.postMessage(m);
   const emit = (ev) => listeners[ev].forEach((fn) => fn(api));
-  const knob = (p) => knobFor(p, () => P[p.id], (v) => set(p.id, v));
 
   // ---- the page (shared/layout.js arranges it: the header, the pedal beside the views and the
   // controls, the test bass pinned below while it is the input)
@@ -397,7 +404,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const layout = createLayout({ id: PEDAL.id, h, store, app, header, rack, views: viewList, groups: groupList, presets: presetSel, dock });
   api.layout = layout;
 
-  for (const p of all.filter((q) => q.perform && q.type !== 'select')) knobs.append(p.type === 'checkbox' ? toggleFor(p, () => P[p.id], (v) => set(p.id, v)) : knob(p));
+  for (const p of all.filter((q) => q.perform && q.type !== 'select')) knobs.append(controlFor(p, () => P[p.id], (v) => set(p.id, v)));
 
   // ---- state
   function refresh() {

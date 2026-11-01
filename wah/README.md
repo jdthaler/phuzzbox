@@ -180,7 +180,7 @@ decay resistor R_d:
 
   C dv/dt = (|v_in| − v)/R_a · [|v_in| > v] − v/R_d,  τ_a = R_a C,  τ_d = R_d C
 
-Its voltage moves the rocker from where it rests, the Rocker knob or your expression pedal, toward
+Its voltage moves the rocker from where it rests, the rocker on the pedal or your expression pedal, toward
 the toe (Direction up) or the heel (down):
 
   up: x = x_rest + (1 − x_rest)·min(1, v/V_full),  down: x = x_rest·(1 − min(1, v/V_full))

@@ -546,6 +546,17 @@ body.perform .controls-bar { cursor: default; }
 .pedal.mini .knob.toggle .rocker { width: 30px; height: 38px; margin: 6px 0 1px; }
 .pedal.mini .knob.toggle .rocker-led { top: 5px; }
 
+/* a rocker pedal (shared/treadle.js): the treadle from the side, rubber on top, rocking on its axle
+   over the cast base; it takes the face's width, above the knobs */
+.knob.treadle, body.one-screen .rack .pedal .knob.treadle { width: 100%; max-width: 260px; flex-basis: 100%; gap: 2px; }
+.treadle-pic { width: 100%; touch-action: none; cursor: grab; border-radius: 8px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.treadle-pic:active { cursor: grabbing; }
+.treadle-pic:focus-visible { outline: 2px solid var(--enclosure-ink); outline-offset: 3px; }
+.treadle-pic svg { display: block; width: 100%; height: auto; overflow: visible; }
+.treadle-pic .tr-end { font: 700 7px/1 system-ui, sans-serif; letter-spacing: 0.8px; fill: rgb(255 255 255 / 0.5); }
+.pedal.mini .knob.treadle { max-width: 220px; margin: 0 auto; }
+@media (max-height: 960px) { body.one-screen .rack .pedal .knob.treadle { max-width: 220px; } }
+
 /* ---- buffer/style.css */
 /* the Buffer's enclosure: a plain grey box, as a buffer is */
 :root[data-pedal="buffer"] { --enclosure: #5b6470; --enclosure-ink: #f5f3ef; }
@@ -1386,8 +1397,99 @@ function createLayout({ id, h, store, app, header, rack, views, groups, presets,
 return { createLayout };
 })();
 
-// ---- shared/registry.js
+// ---- shared/treadle.js
 const __m7 = (() => {
+const { toUnit, fromUnit, fmt } = __m1;
+// treadle.js — a rocker pedal on a pedal's face, for the control a foot rocks (the Wah's Rocker):
+// the treadle seen from the side, its rubber on top, rocking on its axle over the cast base, heel
+// down at 0 and toe down at 1. It is worked as a knob is: drag up or right to rock it toward the
+// toe, Shift for fine, a double tap for its default, arrows too. A parameter asks for one with
+// `face: 'treadle'`; the pages (shared/shell.js), the Pedalboard and the app's window use it.
+//
+//   treadleFor(p, get, put, h) → the element; el.refresh() draws get(), el.show(u) draws u for a
+//   while instead (the Wah's envelope follower rocking it in Auto), el.show(null) gives it back.
+
+
+const SVG = 'http://www.w3.org/2000/svg';
+const TILT = 9; // degrees either side of level, about a real wah's travel
+let ids = 0;
+
+const svg = (tag, attrs = {}, ...kids) => {
+  const e = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+  for (const k of kids) e.append(k);
+  return e;
+};
+
+// the angle of the treadle for a unit position: heel down (left end low) to toe down (right end low)
+const tiltOf = (u) => -TILT + 2 * TILT * Math.min(1, Math.max(0, u));
+
+function treadleFor(p, get, put, h) {
+  const id = `tr${++ids}`;
+  const metal = svg('linearGradient', { id: `${id}m`, x1: 0, y1: 0, x2: 0, y2: 1 },
+    svg('stop', { offset: 0, 'stop-color': '#8d8d94' }), svg('stop', { offset: 0.35, 'stop-color': '#4a4a50' }), svg('stop', { offset: 1, 'stop-color': '#1a1a1d' }));
+  const cast = svg('linearGradient', { id: `${id}c`, x1: 0, y1: 0, x2: 0, y2: 1 },
+    svg('stop', { offset: 0, 'stop-color': '#3c3c42' }), svg('stop', { offset: 1, 'stop-color': '#0c0c0e' }));
+  const shine = svg('linearGradient', { id: `${id}s`, x1: 0, y1: 0, x2: 1, y2: 0 },
+    svg('stop', { offset: 0, 'stop-color': 'rgb(255 255 255 / 0)' }), svg('stop', { offset: 0.45, 'stop-color': 'rgb(255 255 255 / 0.16)' }), svg('stop', { offset: 1, 'stop-color': 'rgb(255 255 255 / 0)' }));
+  // the rubber's ridges, across the treadle
+  const ridges = [];
+  for (let x = 18; x < 202; x += 6.5) ridges.push(svg('rect', { x, y: 15, width: 3.6, height: 4, rx: 1.2, fill: '#1c1c1f' }));
+  // the treadle, about its axle at (110, 40): a casting with rubber on top
+  const treadle = svg('g', {},
+    svg('path', { d: 'M9 26 Q9 19 16 19 L204 19 Q212 19 212 27 L211 34 Q210 40 203 40 L18 40 Q10 40 9 34 Z', fill: `url(#${id}c)`, stroke: '#000', 'stroke-width': 0.8 }),
+    svg('path', { d: 'M12 22 L208 22', stroke: `url(#${id}s)`, 'stroke-width': 1.5 }),
+    svg('rect', { x: 14, y: 17, width: 192, height: 5, rx: 2, fill: '#0b0b0c' }), // the rubber
+    ...ridges);
+  const pic = svg('svg', { viewBox: '0 0 220 84', 'aria-hidden': 'true', focusable: 'false' },
+    svg('defs', {}, metal, cast, shine),
+    svg('ellipse', { cx: 110, cy: 79, rx: 104, ry: 4, fill: 'rgb(0 0 0 / 0.45)' }), // its shadow
+    svg('path', { d: 'M96 58 L103 40 L117 40 L124 58 Z', fill: '#141416' }), // the bracket, between the treadle and the base
+    svg('path', { d: 'M11 78 L17 62 Q19 58 26 58 L194 58 Q201 58 203 62 L209 78 Z', fill: `url(#${id}m)`, stroke: '#000', 'stroke-width': 0.8 }), // the base
+    svg('path', { d: 'M20 60 L200 60', stroke: `url(#${id}s)`, 'stroke-width': 1.2 }),
+    svg('text', { x: 28, y: 73, class: 'tr-end' }, 'HEEL'), svg('text', { x: 192, y: 73, class: 'tr-end', 'text-anchor': 'end' }, 'TOE'),
+    treadle,
+    svg('circle', { cx: 110, cy: 40, r: 3.4, fill: '#d9d9d9', stroke: '#2a2a2a', 'stroke-width': 1 })); // the axle
+  const label = p.label.replace(/\s*\(.*\)$/, '');
+  const plate = h('div', { class: 'treadle-pic', role: 'slider', tabindex: 0, 'aria-label': p.label, title: p.hint ?? '', 'aria-valuemin': '0', 'aria-valuemax': '100' }, pic);
+  const val = h('div', { class: 'kval' });
+  const el = h('div', { class: 'knob treadle', 'data-param': p.id }, plate, h('div', { class: 'klabel' }, label), val);
+  let shown = null; // a position drawn instead of get(), while something else rocks it
+  const draw = () => {
+    const u = shown ?? toUnit(p, get());
+    treadle.setAttribute('transform', `rotate(${tiltOf(u).toFixed(2)} 110 40)`);
+  };
+  el.refresh = () => {
+    const u = toUnit(p, get());
+    plate.setAttribute('aria-valuetext', fmt(p, get()));
+    plate.setAttribute('aria-valuenow', String(Math.round(u * 100)));
+    val.textContent = fmt(p, get());
+    draw();
+  };
+  el.show = (u) => { shown = u; draw(); };
+  let start = null;
+  plate.addEventListener('pointerdown', (e) => { plate.setPointerCapture(e.pointerId); start = { x: e.clientX, y: e.clientY, u: toUnit(p, get()) }; });
+  plate.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    const d = ((e.clientX - start.x) - (e.clientY - start.y)) / (e.shiftKey ? 800 : 200);
+    put(fromUnit(p, start.u + d));
+  });
+  const end = () => { start = null; };
+  plate.addEventListener('pointerup', end);
+  plate.addEventListener('pointercancel', end);
+  plate.addEventListener('dblclick', () => put(p.def));
+  plate.addEventListener('keydown', (e) => {
+    const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
+    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + step * (e.shiftKey ? 0.25 : 1))); }
+  });
+  return el;
+}
+
+return { tiltOf, treadleFor };
+})();
+
+// ---- shared/registry.js
+const __m8 = (() => {
 
 // registry.js — every pedal: the landing page, the menus and the tests read this list.
 //   id: the folder; name; version (semver, bumped only at a release: CLAUDE.md);
@@ -1500,7 +1602,7 @@ return { PHUZZBOX_VERSION, SOURCE, SECTIONS, PEDALS, byId };
 })();
 
 // ---- buffer/src/buffer-params.js
-const __m9 = (() => {
+const __m10 = (() => {
 
 // buffer-params.js — the Buffer's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -1566,7 +1668,7 @@ return { bass, recorded, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- shared/instruments.js
-const __m10 = (() => {
+const __m11 = (() => {
 
 // instruments.js — the two instruments a page can be set up for, bass and guitar: their open
 // strings, the tuner's range for each, the test instrument's riff, and the pickup each pedal that
@@ -1617,9 +1719,9 @@ return { INSTRUMENTS, instrument, GUITAR_PICKUP, RIFFS, INSTRUMENT_KEY, paramsKe
 })();
 
 // ---- buffer/src/buffer-pedal.js
-const __m8 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m9;
-const { GUITAR_PICKUP } = __m10;
+const __m9 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m10;
+const { GUITAR_PICKUP } = __m11;
 // buffer-pedal.js — the Buffer's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1639,8 +1741,8 @@ return { PEDAL };
 })();
 
 // ---- phuzz/src/phuzz-params.js
-const __m12 = (() => {
-const { bass, recorded } = __m9;
+const __m13 = (() => {
+const { bass, recorded } = __m10;
 // phuzz-params.js — the Phuzz's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
 
@@ -1705,9 +1807,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- phuzz/src/phuzz-pedal.js
-const __m11 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m12;
-const { GUITAR_PICKUP } = __m10;
+const __m12 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m13;
+const { GUITAR_PICKUP } = __m11;
 // phuzz-pedal.js — the Phuzz's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1727,8 +1829,8 @@ return { PEDAL };
 })();
 
 // ---- wah/src/wah-params.js
-const __m14 = (() => {
-const { bass, recorded } = __m9;
+const __m15 = (() => {
+const { bass, recorded } = __m10;
 // wah-params.js — the Wah's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The parts are the inductor wah's as Holters and Zölzer (DAFx 2011) list them; the sweep
 // capacitor starts at 22 nF for bass, where the original's 10 nF sweeps a guitar's range.
@@ -1736,7 +1838,7 @@ const { bass, recorded } = __m9;
 
 
 const rocker = [
-  { id: 'position', label: 'Rocker', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+  { id: 'position', label: 'Rocker', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true, face: 'treadle',
     hint: 'Where your foot has the pedal: heel down (0 %) puts the peak low and sharp, toe down (100 %) high and broad. An expression pedal moves it (MIDI CC 1 unless you teach it another).' },
   { id: 'taper', label: 'Pot taper', type: 'select', options: [['audio', 'Audio (log)'], ['linear', 'Linear']], def: 'audio',
     hint: 'How the pot\'s resistance follows the rocker. A linear pot leaves the sweep\'s top octave for the last fifth of the travel; an audio pot, its lower part 10 % at mid-travel, spreads the sweep more evenly under your foot.' },
@@ -1766,7 +1868,7 @@ const output = [
 const isAuto = (P) => P.control === 'auto';
 const auto = [
   { id: 'control', label: 'Rocked by', type: 'select', options: [['foot', 'Foot'], ['auto', 'Auto']], def: 'foot',
-    hint: 'Auto: an envelope follower hears how hard you play and moves the rocker for you, from where it rests (the Rocker knob, or your expression pedal) toward the toe or the heel. Each note sweeps the peak as it starts and lets it fall back as it dies away.' },
+    hint: 'Auto: an envelope follower hears how hard you play and moves the rocker for you, from where it rests (the rocker on the pedal, or your expression pedal) toward the toe or the heel. Each note sweeps the peak as it starts and lets it fall back as it dies away.' },
   { id: 'direction', label: 'Direction', type: 'select', options: [['up', 'Up'], ['down', 'Down']], def: 'up', showIf: isAuto,
     hint: 'Which way a harder note moves the rocker. Up, each pluck opens the peak upward and it settles back down as the note fades ("wow"); down, the pluck pulls it low and it rises as the note fades.' },
   { id: 'sens', label: 'Full sweep at', min: 0.02, max: 1, def: 0.15, log: true, unit: 'mV', scale: 1000, decimals: 0, showIf: isAuto,
@@ -1820,9 +1922,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- wah/src/wah-pedal.js
-const __m13 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m14;
-const { GUITAR_PICKUP } = __m10;
+const __m14 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m15;
+const { GUITAR_PICKUP } = __m11;
 // wah-pedal.js — the Wah's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1844,8 +1946,8 @@ return { PEDAL };
 })();
 
 // ---- preamp/src/preamp-params.js
-const __m16 = (() => {
-const { bass, recorded } = __m9;
+const __m17 = (() => {
+const { bass, recorded } = __m10;
 // preamp-params.js — the Tube Preamp's controls. Values in SI units; `scale` shows them in friendlier
 // ones. The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
 
@@ -1912,9 +2014,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- preamp/src/preamp-pedal.js
-const __m15 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m16;
-const { GUITAR_PICKUP } = __m10;
+const __m16 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m17;
+const { GUITAR_PICKUP } = __m11;
 // preamp-pedal.js — the Tube Preamp's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1934,7 +2036,7 @@ return { PEDAL };
 })();
 
 // ---- opto/src/opto-params.js
-const __m18 = (() => {
+const __m19 = (() => {
 
 // opto-params.js — the Opto Compressor's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The fixed parts (the 47 kΩ series resistor, the driver's gain, the cell's
@@ -1994,8 +2096,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- opto/src/opto-pedal.js
-const __m17 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m18;
+const __m18 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m19;
 // opto-pedal.js — the Opto Compressor's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2013,7 +2115,7 @@ return { PEDAL };
 })();
 
 // ---- cabinet/src/cabinet-params.js
-const __m20 = (() => {
+const __m21 = (() => {
 
 // cabinet-params.js — the Speaker Cabinet's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The bass drivers are Thiele–Small parameters typical of a 10-inch or a 15-inch
@@ -2097,8 +2199,8 @@ return { GROUPS, GUITAR, PRESETS, KEEP };
 })();
 
 // ---- cabinet/src/cabinet-pedal.js
-const __m19 = (() => {
-const { GROUPS, PRESETS, KEEP, GUITAR } = __m20;
+const __m20 = (() => {
+const { GROUPS, PRESETS, KEEP, GUITAR } = __m21;
 // cabinet-pedal.js — the Speaker Cabinet's descriptor: everything a host needs to run it without
 // its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2117,7 +2219,7 @@ return { PEDAL };
 })();
 
 // ---- envelope/src/envelope-params.js
-const __m22 = (() => {
+const __m23 = (() => {
 
 // envelope-params.js — the Envelope Filter's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The filter is a state-variable filter whose two integrators' resistors are
@@ -2180,8 +2282,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- envelope/src/envelope-pedal.js
-const __m21 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m22;
+const __m22 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m23;
 // envelope-pedal.js — the Envelope Filter's descriptor: everything a host needs to run it without
 // its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2200,7 +2302,7 @@ return { PEDAL };
 })();
 
 // ---- octave/src/octave-params.js
-const __m24 = (() => {
+const __m25 = (() => {
 
 // octave-params.js — the Octave Down's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The circuit is the analog octave divider: a tracking filter, a comparator with
@@ -2244,8 +2346,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- octave/src/octave-pedal.js
-const __m23 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m24;
+const __m24 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m25;
 // octave-pedal.js — the Octave Down's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2264,7 +2366,7 @@ return { PEDAL };
 })();
 
 // ---- spring/src/spring-params.js
-const __m26 = (() => {
+const __m27 = (() => {
 
 // spring-params.js — the Spring Reverb's controls. Values in SI units; `scale` shows them in
 // friendlier ones. A reverb tank: helical steel springs hung between magnetic beads, one bead
@@ -2315,8 +2417,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- spring/src/spring-pedal.js
-const __m25 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m26;
+const __m26 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m27;
 // spring-pedal.js — the Spring Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2334,7 +2436,7 @@ return { PEDAL };
 })();
 
 // ---- echo/src/echo-params.js
-const __m28 = (() => {
+const __m29 = (() => {
 
 // echo-params.js — the Tape Echo's controls. Values in SI units; `scale` shows them in friendlier
 // ones. A loop of tape passes a record head and three playback heads; the echoes are the distances
@@ -2401,8 +2503,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- echo/src/echo-pedal.js
-const __m27 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m28;
+const __m28 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m29;
 // echo-pedal.js — the Tape Echo's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2420,7 +2522,7 @@ return { PEDAL };
 })();
 
 // ---- rotary/src/rotary-params.js
-const __m30 = (() => {
+const __m31 = (() => {
 
 // rotary-params.js — the Rotary Speaker's controls. Values in SI units (rotation rates in hertz,
 // shown in rpm; angles in radians, shown in degrees). A horn and a drum spin in a cabinet past two
@@ -2493,8 +2595,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- rotary/src/rotary-pedal.js
-const __m29 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m30;
+const __m30 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m31;
 // rotary-pedal.js — the Rotary Speaker's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2512,7 +2614,7 @@ return { PEDAL };
 })();
 
 // ---- plate/src/plate-params.js
-const __m32 = (() => {
+const __m33 = (() => {
 
 // plate-params.js — the Plate Reverb's controls. Values in SI units. A steel plate, 2 m by 1 m and
 // half a millimetre thick, hung in a frame: a driver shakes it, two contact pickups listen.
@@ -2569,8 +2671,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- plate/src/plate-pedal.js
-const __m31 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m32;
+const __m32 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m33;
 // plate-pedal.js — the Plate Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2588,7 +2690,7 @@ return { PEDAL };
 })();
 
 // ---- sympathetic/src/sympathetic-params.js
-const __m34 = (() => {
+const __m35 = (() => {
 
 // sympathetic-params.js — the Sympathetic Strings' controls. Values in SI units. A frame of steel
 // strings tuned to a scale, all across one bridge; a driver moves the bridge with your bass, and a
@@ -2651,8 +2753,8 @@ return { KEYS, SCALES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- sympathetic/src/sympathetic-pedal.js
-const __m33 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m34;
+const __m34 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m35;
 // sympathetic-pedal.js — the Sympathetic Strings' descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2670,7 +2772,7 @@ return { PEDAL };
 })();
 
 // ---- blackhole/src/blackhole-params.js
-const __m36 = (() => {
+const __m37 = (() => {
 
 // blackhole-params.js — the Black Hole's controls. Values in SI units, and the hole's mass in suns:
 // your bass perturbs a spinning black hole, and you hear it ring in its quasinormal modes.
@@ -2715,8 +2817,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- blackhole/src/blackhole-pedal.js
-const __m35 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m36;
+const __m36 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m37;
 // blackhole-pedal.js — the Black Hole's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2734,7 +2836,7 @@ return { PEDAL };
 })();
 
 // ---- doppler/src/doppler-params.js
-const __m38 = (() => {
+const __m39 = (() => {
 
 // doppler-params.js — the Doppler's controls. Values in SI units: a source plays your bass as it
 // passes you on a straight road, again and again, and you hear it at its retarded time.
@@ -2782,8 +2884,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- doppler/src/doppler-pedal.js
-const __m37 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m38;
+const __m38 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m39;
 // doppler-pedal.js — the Doppler's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2807,22 +2909,23 @@ const { Tuner, OPEN_STRINGS } = __m2;
 const { INTERFACES, byInterface, fullScaleVolts } = __m3;
 const { midiPanel } = __m4;
 const { createLayout } = __m6;
-const { PEDALS, SECTIONS } = __m7;
-const { PEDAL: BUFFER } = __m8;
-const { PEDAL: PHUZZ } = __m11;
-const { PEDAL: WAH } = __m13;
-const { PEDAL: PREAMP } = __m15;
-const { PEDAL: OPTO } = __m17;
-const { PEDAL: CABINET } = __m19;
-const { PEDAL: ENVELOPE } = __m21;
-const { PEDAL: OCTAVE } = __m23;
-const { PEDAL: SPRING } = __m25;
-const { PEDAL: ECHO } = __m27;
-const { PEDAL: ROTARY } = __m29;
-const { PEDAL: PLATE } = __m31;
-const { PEDAL: SYMPATHETIC } = __m33;
-const { PEDAL: BLACKHOLE } = __m35;
-const { PEDAL: DOPPLER } = __m37;
+const { treadleFor } = __m7;
+const { PEDALS, SECTIONS } = __m8;
+const { PEDAL: BUFFER } = __m9;
+const { PEDAL: PHUZZ } = __m12;
+const { PEDAL: WAH } = __m14;
+const { PEDAL: PREAMP } = __m16;
+const { PEDAL: OPTO } = __m18;
+const { PEDAL: CABINET } = __m20;
+const { PEDAL: ENVELOPE } = __m22;
+const { PEDAL: OCTAVE } = __m24;
+const { PEDAL: SPRING } = __m26;
+const { PEDAL: ECHO } = __m28;
+const { PEDAL: ROTARY } = __m30;
+const { PEDAL: PLATE } = __m32;
+const { PEDAL: SYMPATHETIC } = __m34;
+const { PEDAL: BLACKHOLE } = __m36;
+const { PEDAL: DOPPLER } = __m38;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -2832,6 +2935,7 @@ const { PEDAL: DOPPLER } = __m37;
 // The plugins show the same window for their one pedal (native/plugin/editor.h): describe() says
 // host 'plugin', and the window leaves out what the host does (the audio, the pedal menu, MIDI),
 // takes the parameters as the plugin's numbers, and follows the host's automation in poll().
+
 
 
 
@@ -3086,7 +3190,7 @@ async function main(info, carry = {}) {
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
     presets: presetSel,
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
-  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
+  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(p.face === 'treadle' ? treadleFor(p, () => P[p.id], (v) => set(p.id, v), h) : knob(p));
 
   // ---- state
   function refresh() {

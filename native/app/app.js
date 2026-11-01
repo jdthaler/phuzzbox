@@ -13,6 +13,7 @@ import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
 import { midiPanel } from '../../shared/midi-panel.js';
 import { createLayout } from '../../shared/layout.js';
+import { treadleFor } from '../../shared/treadle.js';
 import { PEDALS, SECTIONS } from '../../shared/registry.js';
 // every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
 import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
@@ -261,7 +262,7 @@ async function main(info, carry = {}) {
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
     presets: presetSel,
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
-  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
+  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(p.face === 'treadle' ? treadleFor(p, () => P[p.id], (v) => set(p.id, v), h) : knob(p));
 
   // ---- state
   function refresh() {
