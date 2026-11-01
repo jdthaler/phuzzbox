@@ -215,8 +215,8 @@ envelope** takes the peak to 1477 Hz in its first 150 ms and lets it fall to 473
 - The pot is two resistors; a worn track's taper and its contact noise are not here.
 - The pedal's input loads the pickup (68 kΩ plus a little, much less than an amplifier's 1 MΩ),
   which on a real passive bass dulls the top before the wah does anything. The pedal here sees the
-  signal as your interface recorded it; a pedalboard with real input and output impedances is on
-  the roadmap.
+  signal as your interface recorded it. On the [Pedalboard](../board/README.md) its 68 kΩ loads the
+  pedal before it, but it still takes the signal as recorded when it is first.
 - The transistors are Ebers–Moll without their capacitances, the Early effect or noise. Nothing in
   this circuit runs near their high-frequency limits.
 - Nothing is oversampled. The junctions bend gently, and their harmonics of a bass note sit far
