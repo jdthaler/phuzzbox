@@ -44,6 +44,11 @@ export const PEDALS = [
     after: 'the envelope-controlled filters of the 1970s',
     blurb: 'A resonant state-variable filter whose resistors are photocells, lit by an LED that follows how hard you play.',
   },
+  {
+    id: 'octave', name: 'Octave Down', version: '0.1.0', ready: true, plugin: { code: 'Octv' },
+    after: 'the analog octave dividers of the 1980s',
+    blurb: 'A comparator and two flip-flops that flip your bass\'s polarity once a cycle: an octave below, and two.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

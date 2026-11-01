@@ -13,11 +13,12 @@ namespace preamp { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace opto { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace cabinet { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace envelope { const phuzzbox::PedalInfo &pedalInfo(); }
+namespace octave { const phuzzbox::PedalInfo &pedalInfo(); }
 
 namespace phuzzbox::app {
 
 const std::vector<const PedalInfo *> &pedals() {
-  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo(), &preamp::pedalInfo(), &opto::pedalInfo(), &cabinet::pedalInfo(), &envelope::pedalInfo()};
+  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo(), &preamp::pedalInfo(), &opto::pedalInfo(), &cabinet::pedalInfo(), &envelope::pedalInfo(), &octave::pedalInfo()};
   return all;
 }
 
