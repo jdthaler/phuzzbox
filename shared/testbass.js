@@ -32,11 +32,15 @@ export class TestBass {
     const n = x.tb_partials(this.h, string, fret, this.fs), a = new Float64Array(x.memory.buffer, x.tb_scratch(), 3 * n);
     return Array.from({ length: n }, (_, i) => ({ f: a[3 * i], sigma: a[3 * i + 1], amp: a[3 * i + 2] }));
   }
+  // out: n samples. The view of the module's output is made once (again only if the memory grew),
+  // so an AudioWorklet's block allocates nothing.
   process(out, n = out.length) {
     for (let at = 0; at < n; at += 128) {
       const m = Math.min(128, n - at);
       x.tb_process(this.h, m);
-      out.set(new Float32Array(x.memory.buffer, x.tb_out(this.h), m), at);
+      if (this.mem !== x.memory.buffer) { this.mem = x.memory.buffer; this.view = new Float32Array(this.mem, x.tb_out(this.h), 128); }
+      if (m === 128) out.set(this.view, at);
+      else for (let i = 0; i < m; i++) out[at + i] = this.view[i];
     }
   }
   destroy() { x.tb_destroy(this.h); this.h = 0; }
