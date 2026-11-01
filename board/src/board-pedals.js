@@ -11,13 +11,14 @@ import { PEDAL as ENVELOPE } from '../../envelope/src/envelope-pedal.js';
 import { PEDAL as OCTAVE } from '../../octave/src/octave-pedal.js';
 import { PEDAL as SPRING } from '../../spring/src/spring-pedal.js';
 import { PEDAL as ECHO } from '../../echo/src/echo-pedal.js';
+import { PEDAL as ROTARY } from '../../rotary/src/rotary-pedal.js';
 
-export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO].map((d) => [d.id, d]));
+export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY].map((d) => [d.id, d]));
 
 // each pedal's enclosure and the ink printed on it, as its own page has them (<id>/style.css)
 export const ENCLOSURES = {
   buffer: ['#5b6470', '#f5f3ef'], phuzz: ['#8c2f1f', '#f7efe6'], wah: ['#2b2b2e', '#f2efe8'],
   preamp: ['#b08a55', '#2a1d10'], opto: ['#8a9096', '#16181b'], cabinet: ['#232326', '#ece8e1'],
   envelope: ['#4b2f6e', '#f1e9fb'], octave: ['#1f4d47', '#e6f4f1'], spring: ['#3a3f47', '#eef1f5'],
-  echo: ['#5a4632', '#f6eee2'],
+  echo: ['#5a4632', '#f6eee2'], rotary: ['#6b3a1e', '#f4e7d6'],
 };

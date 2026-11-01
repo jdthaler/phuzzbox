@@ -83,6 +83,16 @@ export function knobFor(p, get, put) {
   return el;
 }
 
+// a switch on the face, for a perform toggle (the Rotary Speaker's Fast): a lit rocker, its label
+// beside it
+export function toggleFor(p, get, put) {
+  const btn = h('button', { type: 'button', class: 'rocker', 'aria-pressed': 'false', title: p.hint ?? '', 'aria-label': p.label }, h('span', { class: 'rocker-led', 'aria-hidden': 'true' }));
+  const el = h('div', { class: 'knob toggle', 'data-param': p.id }, btn, h('div', { class: 'klabel' }, p.label.replace(/\s*\(.*\)$/, '')), h('div', { class: 'kval' }));
+  el.refresh = () => { btn.setAttribute('aria-pressed', String(!!get())); el.lastChild.textContent = get() ? 'on' : 'off'; };
+  btn.addEventListener('click', () => { put(!get()); btn.blur(); });
+  return el;
+}
+
 // the page, once createPedal has built it: what a guided tour (shared/tour.js) drives
 let pageIs;
 export const pageReady = new Promise((r) => { pageIs = r; });
@@ -314,7 +324,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const layout = createLayout({ id: PEDAL.id, h, store, app, header, rack, views: viewList, groups: groupList, presets: presetSel, dock });
   api.layout = layout;
 
-  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
+  for (const p of all.filter((q) => q.perform && q.type !== 'select')) knobs.append(p.type === 'checkbox' ? toggleFor(p, () => P[p.id], (v) => set(p.id, v)) : knob(p));
 
   // ---- state
   function refresh() {
