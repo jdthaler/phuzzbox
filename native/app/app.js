@@ -1,12 +1,17 @@
 // app.js — the Phuzzbox app's window: the pedal's face, the tuner, the audio settings and the
-// Controls, drawn from the same descriptor and modules as the site's page (shell.js), talking to
+// Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
-// program's web view as one page, bundled by tools/bundle-app.mjs.
+// program's web view as one page, bundled by tools/bundle-app.mjs. The menu in the header picks
+// the pedal: the program swaps it and the window is drawn again for it.
 
 import { params, defaults, fmt, toUnit, fromUnit, nativeValue } from '../../shared/params.js';
 import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
-import { PEDAL } from '../../buffer/src/buffer-pedal.js';
+// every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
+import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
+import { PEDAL as PHUZZ } from '../../phuzz/src/phuzz-pedal.js';
+import { PEDAL as WAH } from '../../wah/src/wah-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
@@ -18,23 +23,41 @@ const h = (tag, attrs = {}, ...kids) => {
   return e;
 };
 
-const all = params(PEDAL.groups);
 const FRAMES = [16, 32, 64, 128, 256, 512];
+// the window is drawn again for each pedal; what is left running (the poll, the keys) checks it
+// still belongs to the window as drawn now
+let drawn = 0;
 
-async function main() {
-  const info = await call('describe');
+async function main(info, carry = {}) {
+  const me = ++drawn;
+  const PEDAL = DESCRIPTORS[info.pedal] ?? BUFFER;
+  const all = params(PEDAL.groups);
+  document.documentElement.dataset.pedal = PEDAL.id;
   const S = info.settings ?? {};
-  const P = { ...defaults(PEDAL.groups), ...(S.params ?? {}) };
+  const P = { ...defaults(PEDAL.groups), ...(info.params ?? {}) };
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
+  // the bass and how it is plugged in are the same whichever pedal it plays
+  for (const id of PEDAL.keep ?? []) if (id in carry && all.some((p) => p.id === id)) P[id] = carry[id];
   const audio = { input: '', output: '', frames: 64, rate: 0, channel: 0, bypass: 0, fullScale: 1, interface: '', gain: 20, ...(S.audio ?? {}) };
   const ui = { a4: 440, ...(S.ui ?? {}) };
   let stream = info.stream;
 
   const app = document.getElementById('app');
+  app.replaceChildren();
   const status = h('span', { class: 'status' });
+  const pedalSel = h('select', { 'aria-label': 'Pedal', class: 'pedal-pick', title: 'The pedal to play; each keeps its own settings' },
+    ...(info.pedals ?? []).filter((d) => DESCRIPTORS[d.slug]).map((d) => h('option', { value: d.slug }, d.name)));
+  pedalSel.value = PEDAL.id;
+  pedalSel.addEventListener('change', async () => {
+    pedalSel.disabled = true;
+    status.textContent = 'switching…';
+    clearTimeout(saveTimer);
+    await call('store', 'params', P);
+    main(await call('pedal', pedalSel.value), Object.fromEntries((PEDAL.keep ?? []).map((id) => [id, P[id]])));
+  });
   const streamPill = h('span', { class: 'pill', title: 'The sample rate and buffer, and the round trip the buffers make' }, '–');
   const cpu = h('span', { class: 'pill', title: 'The share of the audio thread\'s time the pedal takes' }, 'CPU –');
-  app.append(h('header', { class: 'top' }, h('span', { class: 'home' }, 'Phuzzbox'), h('h1', {}, PEDAL.name), h('span', { class: 'spacer' }), streamPill, cpu, status));
+  app.append(h('header', { class: 'top' }, h('span', { class: 'home' }, 'Phuzzbox'), h('h1', {}, pedalSel), h('span', { class: 'spacer' }), streamPill, cpu, status));
 
   // ---- audio: the interface, its channel, the output, the buffer, Full scale
   const inSel = h('select', { 'aria-label': 'Input' }, ...info.inputs.map((d) => h('option', { value: d.name }, d.name)));
@@ -239,16 +262,14 @@ async function main() {
       },
     };
   }
-  addEventListener('keydown', (e) => {
-    if (e.code !== 'Space' || e.repeat || e.target.closest?.('input, select, textarea, button, [role=slider]')) return;
-    e.preventDefault();
-    setBypass(!audio.bypass);
-  });
+  onSpace = () => setBypass(!audio.bypass);
 
   // ---- the levels, the tuner and the measurement, ten times a second
   let t = 0, wasMeasuring = false;
   async function tick() {
+    if (me !== drawn) return; // a newer window has its own
     const r = await call('poll');
+    if (me !== drawn) return;
     t += 0.1;
     meterIn.set(r.in, r.in / audio.fullScale > 0.98);
     meterOut.set(r.out, r.out / audio.fullScale > 0.98);
@@ -277,6 +298,7 @@ async function main() {
 
   // the program already holds the saved parameters; send them all once so both agree
   for (const p of all) send(p);
+  if (Object.keys(carry).length) saveParams();
   setBypass(!!audio.bypass);
   setFullScale();
   refresh();
@@ -284,4 +306,11 @@ async function main() {
   tick();
 }
 
-main().catch((err) => { document.getElementById('app').textContent = `The window failed to start: ${err.message}`; });
+let onSpace = () => {};
+addEventListener('keydown', (e) => {
+  if (e.code !== 'Space' || e.repeat || e.target.closest?.('input, select, textarea, button, [role=slider]')) return;
+  e.preventDefault();
+  onSpace();
+});
+
+call('describe').then(main).catch((err) => { document.getElementById('app').textContent = `The window failed to start: ${err.message}`; });

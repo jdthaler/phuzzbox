@@ -1,7 +1,7 @@
 # The Phuzz: its model and engine in C++, its plugins and its WebAssembly.
 include(phuzz-info.cmake) # generated: PHUZZ_NAME, PHUZZ_VERSION, PHUZZ_AU_SUBTYPE
 
-add_library(phuzz_phuzz STATIC phuzz-model.cpp phuzz-engine.cpp phuzz-pedal.cpp)
+add_library(phuzz_phuzz STATIC phuzz-model.cpp phuzz-engine.cpp phuzz-pedal.cpp phuzz-entry.cpp)
 target_include_directories(phuzz_phuzz PUBLIC .)
 target_link_libraries(phuzz_phuzz PUBLIC phuzzbox_core)
 

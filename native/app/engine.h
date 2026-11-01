@@ -7,11 +7,16 @@
 
 #include <atomic>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "phuzzbox/pedal.h"
 
 namespace phuzzbox::app {
+
+// every pedal the app plays (pedals.cpp), and one by its slug (null if none)
+const std::vector<const PedalInfo *> &pedals();
+const PedalInfo *findPedal(std::string_view slug);
 
 class Engine {
  public:

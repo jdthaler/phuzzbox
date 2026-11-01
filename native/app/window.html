@@ -178,7 +178,19 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.45); }
 
 /* ---- buffer/style.css */
 /* the Buffer's enclosure: a plain grey box, as a buffer is */
-:root { --enclosure: #5b6470; --enclosure-ink: #f5f3ef; }
+:root[data-pedal="buffer"] { --enclosure: #5b6470; --enclosure-ink: #f5f3ef; }
+
+/* ---- phuzz/style.css */
+/* the Phuzz's enclosure: a round-cornered box in a deep red, as the germanium fuzzes of the
+   sixties often were */
+:root[data-pedal="phuzz"] { --enclosure: #8c2f1f; --enclosure-ink: #f7efe6; }
+/* the transistors' view: two plots side by side, stacked on a phone */
+.card .canvas.transistors { height: 260px; }
+@media (max-width: 560px) { .card .canvas.transistors { height: 440px; } }
+
+/* ---- wah/style.css */
+/* the Wah's enclosure: a black rocker on a dark chrome case */
+:root[data-pedal="wah"] { --enclosure: #2b2b2e; --enclosure-ink: #f2efe8; }
 
 /* ---- native/app/app.css */
 /* app.css — the app window's own styles, after the site's shared/pedal.css. */
@@ -188,6 +200,9 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.45); }
 .audio-row select { max-width: 260px; }
 .audio-row input[type="number"] { width: 70px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
 header.top .home { cursor: default; }
+/* the pedal's name is the menu that picks it */
+header.top h1 .pedal-pick { font: inherit; color: inherit; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0 4px; margin: 0 -4px; cursor: pointer; }
+header.top h1 .pedal-pick:hover, header.top h1 .pedal-pick:focus-visible { border-color: var(--line); }
 
   </style>
 </head>
@@ -492,20 +507,182 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- phuzz/src/phuzz-params.js
+const __m7 = (() => {
+const { bass, recorded } = __m5;
+// phuzz-params.js — the Phuzz's controls. Values in SI units; `scale` shows them in friendlier ones.
+// The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
+
+
+const pedal = [
+  { id: 'fuzz', label: 'Fuzz', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'The 1 kΩ pot in the second transistor\'s emitter, which sets how much of it the 20 µF capacitor bypasses. Full up, the emitter is grounded for the signal and the pair has all its gain; turning it down brings back negative feedback, and the gain falls fast: about 25 dB less by halfway. The input impedance falls with it, to a few hundred ohms, and loads your pickup harder.' },
+  { id: 'volume', label: 'Volume', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'A 500 kΩ audio-taper pot on the output: halfway passes about a tenth of the voltage (−20 dB). Full up, the peaks come out a few decibels above your bass\'s own, and since the wave is nearly square it sounds a good deal louder.' },
+  { id: 'temp', label: 'Temperature', min: -10, max: 50, def: 20, unit: '°C', decimals: 0, perform: true,
+    hint: 'Germanium leaks more as it warms, about twice as much every 7 °C. The first transistor\'s leakage takes over from the bias the feedback sets, the second transistor is starved of current and its collector slides toward the battery. Cold, it sits nearer the middle of its swing and clips evenly; hot, it clips lopsided, and near 50 °C most of the gain is gone.' },
+  { id: 'battery', label: 'Battery', min: 5, max: 9.6, def: 9, unit: 'V', decimals: 1, perform: true,
+    hint: 'The battery\'s voltage: about 9.5 V new, 7 V nearly flat. Less voltage, less room for the second transistor\'s collector to swing, so the output clips lower.' },
+];
+
+const transistors = [
+  { id: 'hfe1', label: 'Q1 current gain (hFE)', min: 20, max: 250, def: 80, log: true, unit: '', decimals: 0,
+    hint: 'The first transistor\'s current gain, as a transistor tester reads it. Builders like a lowish one here (70–80): more raises the input impedance and the gain a little.' },
+  { id: 'leak1', label: 'Q1 leakage', min: 1e-6, max: 500e-6, def: 30e-6, log: true, unit: 'µA', scale: 1e6, decimals: 0,
+    hint: 'The first transistor\'s collector current with its base open (I_CEO) at 20 °C, as a tester reads it. It adds to the current the feedback asks for, so more leakage starves the second transistor, as heat does.' },
+  { id: 'hfe2', label: 'Q2 current gain (hFE)', min: 20, max: 250, def: 120, log: true, unit: '', decimals: 0,
+    hint: 'The second transistor\'s current gain: builders like a higher one here (110–130). More of it, a little more gain.' },
+  { id: 'leak2', label: 'Q2 leakage', min: 1e-6, max: 500e-6, def: 100e-6, log: true, unit: 'µA', scale: 1e6, decimals: 0,
+    hint: 'The second transistor\'s I_CEO at 20 °C. Its bias is held by the feedback through Q1, so it matters much less than Q1\'s.' },
+];
+
+const supply = [
+  { id: 'battR', label: 'Battery resistance', min: 0.5, max: 1000, def: 2, log: true, unit: 'Ω', decimals: 1,
+    hint: 'The battery\'s internal resistance: an ohm or two new, hundreds when it is nearly dead. The rail sags with each note; and since the output is taken from a divider to the battery, it comes out a little louder.' },
+  { id: 'bias', label: 'Q2 collector resistor', min: 2200, max: 22000, def: 8200, log: true, unit: 'kΩ', scale: 0.001, decimals: 1,
+    hint: 'The 8.2 kΩ above the second transistor\'s collector, which builders trim to set its bias. More resistance lifts the collector away from the battery: about 12 kΩ centres it with these transistors, and the output clips evenly on both sides; less leaves it near the battery, and one side clips first.' },
+  { id: 'cable', label: 'Cable from the bass', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
+    hint: 'The cable from your bass to the Phuzz. Into a high-impedance input its capacitance tunes the pickup\'s resonance; the Phuzz\'s input of a few kilohms damps that resonance away, so here the cable hardly matters.' },
+  { id: 'outCable', label: 'Cable to the amp', min: 0.3, max: 30, def: 3, log: true, unit: 'm', decimals: 1,
+    hint: 'The cable from the Phuzz to what it drives. Below full volume, the pot\'s resistance and the cable\'s capacitance make a low-pass, so a long cable darkens it.' },
+  { id: 'load', label: 'Amp\'s input', min: 10e3, max: 10e6, def: 1e6, log: true, unit: 'kΩ', scale: 0.001, decimals: 0,
+    hint: 'The input impedance of what the Phuzz drives: an amp or a pedal, usually 1 MΩ. It loads the volume pot.' },
+];
+
+const GROUPS = [
+  { name: 'The Phuzz', params: pedal },
+  { name: 'Transistors', params: transistors },
+  { name: 'Battery, bias and cables', params: supply },
+  { name: 'Your bass', params: bass },
+  { name: 'How you are plugged in', params: recorded },
+];
+
+// Each preset shows one idea; the bass and how it is plugged in are kept (KEEP).
+const stock = { fuzz: 1, volume: 1, temp: 20, battery: 9, battR: 2, hfe1: 80, leak1: 30e-6, hfe2: 120, leak2: 100e-6, bias: 8200 };
+const PRESETS = {
+  'Full fuzz': { ...stock },
+  'Fuzz at half': { ...stock, fuzz: 0.5 },
+  'Cold room (5 °C)': { ...stock, temp: 5 },
+  'Hot stage (38 °C)': { ...stock, temp: 38 },
+  'Dying battery': { ...stock, battery: 7, battR: 200 },
+  'Leaky first transistor': { ...stock, leak1: 150e-6 },
+  'Trimmed for a leaky one': { ...stock, leak1: 150e-6, bias: 20000 },
+};
+const KEEP = ['active', 'pickupL', 'pickupR', 'pickupC', 'pots', 'activeR', 'recCable', 'recLoad', 'cablePF', 'cable', 'outCable', 'load'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- phuzz/src/phuzz-pedal.js
+const __m6 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m7;
+// phuzz-pedal.js — the Phuzz's descriptor: everything a host needs to run it without its page.
+// Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
+
+const PEDAL = {
+  id: 'phuzz',
+  name: 'Phuzz',
+  description: 'A two-transistor germanium fuzz, from Ebers–Moll transistors that drift with temperature',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  wasm: { binary: () => new URL('../wasm/phuzz.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- wah/src/wah-params.js
+const __m9 = (() => {
+
+// wah-params.js — the Wah's controls. Values in SI units; `scale` shows them in friendlier ones.
+// The parts are the inductor wah's as Holters and Zölzer (DAFx 2011) list them; the sweep
+// capacitor starts at 22 nF for bass, where the original's 10 nF sweeps a guitar's range.
+
+const rocker = [
+  { id: 'position', label: 'Rocker', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'Where your foot has the pedal: heel down (0 %) puts the peak low and sharp, toe down (100 %) high and broad. An expression pedal moves it (MIDI CC 1 unless you teach it another).' },
+  { id: 'taper', label: 'Pot taper', type: 'select', options: [['audio', 'Audio (log)'], ['linear', 'Linear']], def: 'audio',
+    hint: 'How the pot\'s resistance follows the rocker. A linear pot leaves the sweep\'s top octave for the last fifth of the travel; an audio pot, its lower part 10 % at mid-travel, spreads the sweep more evenly under your foot.' },
+];
+
+const circuit = [
+  { id: 'sweepC', label: 'Range (sweep capacitor)', min: 4.7e-9, max: 100e-9, def: 22e-9, log: true, unit: 'nF', scale: 1e9, decimals: 1, perform: true,
+    hint: 'The capacitor that resonates with the inductor. Bigger moves the whole sweep down, as 1/√C: 10 nF is the guitar wah, 22 nF a bass wah, 47 nF lower still.' },
+  { id: 'qR', label: 'Q (resistor across the coil)', min: 10e3, max: 220e3, def: 33e3, log: true, unit: 'kΩ', scale: 0.001, decimals: 0, perform: true,
+    hint: 'The resistor across the inductor damps it. More resistance, a taller and narrower peak, more vocal; less, a broader and gentler one.' },
+  { id: 'inductor', label: 'Inductor', min: 0.1, max: 1.5, def: 0.5, log: true, unit: 'mH', scale: 1000, decimals: 0,
+    hint: 'The coil. More henries lower the whole sweep (as 1/√L) and raise the peak a little; 500 mH is the classic value.' },
+  { id: 'vcc', label: 'Supply', min: 5, max: 12, def: 8.15, unit: 'V', decimals: 2,
+    hint: 'The transistors\' supply, after the polarity diode (a fresh 9 V battery gives about 8.15 V). Lower, and hard notes distort more (the transistors run out of room sooner); it only matters when you dig in.' },
+];
+
+const output = [
+  { id: 'blend', label: 'Clean blend', min: 0, max: 1, def: 0, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'A blend pot that mixes your dry signal back in, as bass wahs have: the wah thins out the low end, and this keeps the bottom under the sweep.' },
+  { id: 'level', label: 'Level', min: -24, max: 12, def: 0, unit: 'dB', decimals: 1,
+    hint: 'Gain after the wah, in decibels.' },
+];
+
+const GROUPS = [
+  { name: 'Rocker', params: rocker },
+  { name: 'Circuit', params: circuit },
+  { name: 'Output', params: output },
+];
+
+const PRESETS = {
+  'Bass wah (22 nF)': { sweepC: 22e-9, qR: 33e3, inductor: 0.5, blend: 0 },
+  'Bass wah, bottom kept': { sweepC: 22e-9, qR: 33e3, inductor: 0.5, blend: 0.4 },
+  'Guitar wah as built (10 nF)': { sweepC: 10e-9, qR: 33e3, inductor: 0.5, blend: 0 },
+  'Deep and vocal (47 nF, 100 kΩ)': { sweepC: 47e-9, qR: 100e3, inductor: 0.5, blend: 0.2 },
+  'Gentle (15 kΩ)': { sweepC: 22e-9, qR: 15e3, inductor: 0.5, blend: 0.2 },
+};
+const KEEP = ['position', 'vcc', 'level'];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- wah/src/wah-pedal.js
+const __m8 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m9;
+// wah-pedal.js — the Wah's descriptor: everything a host needs to run it without its page.
+// Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
+
+const PEDAL = {
+  id: 'wah',
+  name: 'Wah',
+  description: 'An inductor wah: two transistors and a resonant coil, swept by a rocker',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // the parameter an expression pedal moves (shared/midi.js maps MIDI CC 1 to it unless taught)
+  expression: 'position',
+  wasm: { binary: () => new URL('../wasm/wah.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue } = __m1;
 const { Tuner, OPEN_STRINGS } = __m2;
 const { INTERFACES, byInterface, fullScaleVolts } = __m3;
-const { PEDAL } = __m4;
+const { PEDAL: BUFFER } = __m4;
+const { PEDAL: PHUZZ } = __m6;
+const { PEDAL: WAH } = __m8;
 // app.js — the Phuzzbox app's window: the pedal's face, the tuner, the audio settings and the
-// Controls, drawn from the same descriptor and modules as the site's page (shell.js), talking to
+// Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
-// program's web view as one page, bundled by tools/bundle-app.mjs.
+// program's web view as one page, bundled by tools/bundle-app.mjs. The menu in the header picks
+// the pedal: the program swaps it and the window is drawn again for it.
 
 
 
 
+// every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
+
+
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
@@ -517,23 +694,41 @@ const h = (tag, attrs = {}, ...kids) => {
   return e;
 };
 
-const all = params(PEDAL.groups);
 const FRAMES = [16, 32, 64, 128, 256, 512];
+// the window is drawn again for each pedal; what is left running (the poll, the keys) checks it
+// still belongs to the window as drawn now
+let drawn = 0;
 
-async function main() {
-  const info = await call('describe');
+async function main(info, carry = {}) {
+  const me = ++drawn;
+  const PEDAL = DESCRIPTORS[info.pedal] ?? BUFFER;
+  const all = params(PEDAL.groups);
+  document.documentElement.dataset.pedal = PEDAL.id;
   const S = info.settings ?? {};
-  const P = { ...defaults(PEDAL.groups), ...(S.params ?? {}) };
+  const P = { ...defaults(PEDAL.groups), ...(info.params ?? {}) };
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
+  // the bass and how it is plugged in are the same whichever pedal it plays
+  for (const id of PEDAL.keep ?? []) if (id in carry && all.some((p) => p.id === id)) P[id] = carry[id];
   const audio = { input: '', output: '', frames: 64, rate: 0, channel: 0, bypass: 0, fullScale: 1, interface: '', gain: 20, ...(S.audio ?? {}) };
   const ui = { a4: 440, ...(S.ui ?? {}) };
   let stream = info.stream;
 
   const app = document.getElementById('app');
+  app.replaceChildren();
   const status = h('span', { class: 'status' });
+  const pedalSel = h('select', { 'aria-label': 'Pedal', class: 'pedal-pick', title: 'The pedal to play; each keeps its own settings' },
+    ...(info.pedals ?? []).filter((d) => DESCRIPTORS[d.slug]).map((d) => h('option', { value: d.slug }, d.name)));
+  pedalSel.value = PEDAL.id;
+  pedalSel.addEventListener('change', async () => {
+    pedalSel.disabled = true;
+    status.textContent = 'switching…';
+    clearTimeout(saveTimer);
+    await call('store', 'params', P);
+    main(await call('pedal', pedalSel.value), Object.fromEntries((PEDAL.keep ?? []).map((id) => [id, P[id]])));
+  });
   const streamPill = h('span', { class: 'pill', title: 'The sample rate and buffer, and the round trip the buffers make' }, '–');
   const cpu = h('span', { class: 'pill', title: 'The share of the audio thread\'s time the pedal takes' }, 'CPU –');
-  app.append(h('header', { class: 'top' }, h('span', { class: 'home' }, 'Phuzzbox'), h('h1', {}, PEDAL.name), h('span', { class: 'spacer' }), streamPill, cpu, status));
+  app.append(h('header', { class: 'top' }, h('span', { class: 'home' }, 'Phuzzbox'), h('h1', {}, pedalSel), h('span', { class: 'spacer' }), streamPill, cpu, status));
 
   // ---- audio: the interface, its channel, the output, the buffer, Full scale
   const inSel = h('select', { 'aria-label': 'Input' }, ...info.inputs.map((d) => h('option', { value: d.name }, d.name)));
@@ -738,16 +933,14 @@ async function main() {
       },
     };
   }
-  addEventListener('keydown', (e) => {
-    if (e.code !== 'Space' || e.repeat || e.target.closest?.('input, select, textarea, button, [role=slider]')) return;
-    e.preventDefault();
-    setBypass(!audio.bypass);
-  });
+  onSpace = () => setBypass(!audio.bypass);
 
   // ---- the levels, the tuner and the measurement, ten times a second
   let t = 0, wasMeasuring = false;
   async function tick() {
+    if (me !== drawn) return; // a newer window has its own
     const r = await call('poll');
+    if (me !== drawn) return;
     t += 0.1;
     meterIn.set(r.in, r.in / audio.fullScale > 0.98);
     meterOut.set(r.out, r.out / audio.fullScale > 0.98);
@@ -776,6 +969,7 @@ async function main() {
 
   // the program already holds the saved parameters; send them all once so both agree
   for (const p of all) send(p);
+  if (Object.keys(carry).length) saveParams();
   setBypass(!!audio.bypass);
   setFullScale();
   refresh();
@@ -783,7 +977,14 @@ async function main() {
   tick();
 }
 
-main().catch((err) => { document.getElementById('app').textContent = `The window failed to start: ${err.message}`; });
+let onSpace = () => {};
+addEventListener('keydown', (e) => {
+  if (e.code !== 'Space' || e.repeat || e.target.closest?.('input, select, textarea, button, [role=slider]')) return;
+  e.preventDefault();
+  onSpace();
+});
+
+call('describe').then(main).catch((err) => { document.getElementById('app').textContent = `The window failed to start: ${err.message}`; });
 
 return {  };
 })();
