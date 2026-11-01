@@ -8,5 +8,6 @@ export const PEDAL = {
   name: 'Black Hole',
   description: 'Your bass perturbs a spinning black hole, and it rings in its quasinormal modes, as LIGO hears after a merger: mass sets the pitch, spin the ring',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/blackhole.wasm', import.meta.url).href },
 };

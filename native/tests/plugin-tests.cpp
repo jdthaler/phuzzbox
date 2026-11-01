@@ -1,14 +1,19 @@
 // plugin-tests.cpp — the shared plugin (plugin/plugin.cpp) as a host drives it, built with the Wah:
 // it offers a MIDI input; the FC-300's control changes move the rocker, the volume pedal and the
-// bypass, and the host hears of each move; its state keeps the MIDI mappings.
+// bypass, and the host hears of each move; its state keeps the MIDI mappings. Its window's calls
+// (window.phuzz, plugin.cpp's call) set parameters the host is told of, show the host's moves, the
+// levels and the window's own settings, which the state keeps.
 
 #include <clap/clap.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <string>
 #include <vector>
+
+#include "plugin.h"
 
 bool phuzz_entry_init(const char *path);
 const void *phuzz_entry_get_factory(const char *id);
@@ -101,6 +106,51 @@ int main() {
   check(value(rocker) == 0.5, "a loaded state's mappings replace the defaults");
   run({cc(4, 127)});
   check(value(rocker) == 0, "and a reversed pedal turns the other way");
+
+  // the window (window.phuzz): what it sets reaches the audio and the host; what the host or a
+  // MIDI pedal moves, and the levels, reach the window
+  const auto *win = (const phuzzbox::WindowCalls *)p->get_extension(p, phuzzbox::kWindowCalls);
+  check(win != nullptr, "the window's calls answer without a window");
+  if (win) {
+    const std::string d = win->call(p, "[\"describe\"]");
+    check(d.find("\"host\": \"plugin\"") != std::string::npos && d.find("\"position\": 0") != std::string::npos && d.find("\"pedal\": \"wah\"") != std::string::npos,
+          "describe names the plugin, the pedal and its parameters' values");
+    win->call(p, "[\"set\", \"position\", 0.25]");
+    run({});
+    check(value(rocker) == 0.25, "a knob turned in the window moves the parameter");
+    bool heard = false;
+    for (auto &e : told) heard |= e.param_id == rocker && e.value == 0.25;
+    check(heard, "and the host is told of it");
+    std::string q = win->call(p, "[\"poll\"]");
+    check(q.find("\"position\"") == std::string::npos, "a poll doesn't send the window back its own move");
+    run({cc(4, 0)});
+    q = win->call(p, "[\"poll\"]");
+    check(q.find("\"position\": 1") != std::string::npos, "a move the window didn't make (a MIDI pedal's) shows in its next poll");
+    win->call(p, "[\"bypass\", 1]");
+    run({});
+    check(value(bypass) == 1, "the window's footswitch bypasses");
+    for (int i = 0; i < 256; i++) a[i] = b[i] = 0.5f * (float)std::sin(2 * 3.14159265 * 110 * i / 48000.0);
+    run({});
+    q = win->call(p, "[\"poll\"]");
+    check(q.find("\"in\": 0.49") != std::string::npos || q.find("\"in\": 0.5") != std::string::npos, "the window's input meter reads the peak volts");
+    win->call(p, "[\"mute\", true]");
+    for (int k = 0; k < 20; k++) run({});
+    float loud = 0;
+    for (float x : oa) loud = std::max(loud, std::abs(x));
+    check(loud < 1e-4f, "Mute (for tuning) silences the output");
+    win->call(p, "[\"mute\", false]");
+    win->call(p, "[\"store\", \"layout\", {\"views\": 0.4}]");
+    Stream w;
+    clap_ostream_t wo{&w, [](const clap_ostream_t *o, const void *buf, uint64_t n) -> int64_t { ((Stream *)o->ctx)->s.append((const char *)buf, n); return (int64_t)n; }};
+    state->save(p, &wo);
+    check(w.s.find("window {\"layout\":") != std::string::npos, "the state keeps the window's layout");
+    clap_istream_t wi{&w, [](const clap_istream_t *i, void *buf, uint64_t n) -> int64_t {
+      Stream *st = (Stream *)i->ctx; const size_t k = std::min<size_t>(n, st->s.size() - st->at);
+      std::memcpy(buf, st->s.data() + st->at, k); st->at += k; return (int64_t)k; }};
+    win->call(p, "[\"store\", \"layout\", {}]");
+    state->load(p, &wi);
+    check(win->call(p, "[\"describe\"]").find("\"views\": 0.4") != std::string::npos, "and gives it back to the window");
+  }
   p->stop_processing(p);
   p->deactivate(p);
   p->destroy(p);

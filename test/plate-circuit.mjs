@@ -43,14 +43,14 @@ export const t60 = (f, decay) => LN1000 / (steel(f) + damper(decay));
 // The plate's velocity at each pickup for a force x(t) at the driver, as the sum of its modes:
 // each (Φ_d Φ_p / M) e^{−αt}(cos ω_d t − (α/ω_d) sin ω_d t), M = ρh Lx Ly / 4, convolved with x by
 // the rectangle rule at fs (an exact recursion of the sampled response), in double precision.
-export function modalResponse(x, fs, { decay, top, gain }) {
+export function modalResponse(x, fs, { decay, top, gain, drive = DRIVE, picks = PICKS }) {
   const modes = lattice(20, top), M = (rho * h * Lx * Ly) / 4, T = 1 / fs, d = damper(decay);
   const L = new Float64Array(x.length), R = new Float64Array(x.length);
   const shape = (m, n, [px, py]) => Math.sin((m * Math.PI * px) / Lx) * Math.sin((n * Math.PI * py) / Ly);
   for (const { m, n, f } of modes) {
     const a = steel(f) + d, w = 2 * Math.PI * f, wd = Math.sqrt(w * w - a * a), r = Math.exp(-a * T);
-    const cr = r * Math.cos(wd * T), ci = r * Math.sin(wd * T), c = (gain * T * shape(m, n, DRIVE)) / M, ea = a / wd;
-    const sl = shape(m, n, PICKS[0]), sr = shape(m, n, PICKS[1]);
+    const cr = r * Math.cos(wd * T), ci = r * Math.sin(wd * T), c = (gain * T * shape(m, n, drive)) / M, ea = a / wd;
+    const sl = shape(m, n, picks[0]), sr = shape(m, n, picks[1]);
     let zr = 0, zi = 0;
     for (let i = 0; i < x.length; i++) {
       const nr = cr * zr - ci * zi + c * x[i], ni = ci * zr + cr * zi;

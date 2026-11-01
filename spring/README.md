@@ -83,14 +83,18 @@ reaches the far bead with the sign (−1)ⁿ, which sends the first arrival afte
 echoes after three, five, …
 
 The beads are magnets, 4 mm long and 1.5 mm across in the Leem (5 × 2.1 mm in the Olson). Each
-is taken as a cylinder of alnico (7300 kg/m³) on the spring's axis, magnetised across it and
-turning about its own axis. Its inertia I_b loads each end of the spring. A wave of the rotation
+is taken as a cylinder of alnico (7300 kg/m³), magnetised across it. Which way it lies is the
+**Bead magnets** control: along the spring's axis it turns about its own axis, I_b = m a²/2 (a its
+radius); across the axis it turns end over end, about a diameter through its middle,
+I_b = m (a²/4 + l²/12) (l its length), five times as much in the Leem (5.24). Its inertia I_b loads each end of the spring. A wave of the rotation
 line, whose impedance is Z = I′c₀, passes a bead as 1/|1 + iωI_b/Z|. Both beads together pass
 
   H(f) = 1 / (1 + (f/f_b)²),  f_b = f₀/(πμ),  μ = I_b / I_spring,  f₀ = 1/T_D
 
-The Leem's beads are 0.095 % of its first spring's moment of inertia about its axis, so
-f_b = 8.0 kHz. The Olson's heavier beads on lighter springs give 2.1 and 2.3 kHz, and it is darker.
+The Leem's beads, lying along the springs, are 0.095 % of its first spring's moment of inertia
+about its axis, so f_b = 8.0 kHz. Lying across, f_b = 1.5 kHz, and the tank is darker (by about
+15 dB near 4 kHz after a click). The Olson's heavier beads on lighter springs give 2.1 and 2.3 kHz
+lying along, and it is darker.
 
 Each mode n is a resonator with weight
 
@@ -148,11 +152,21 @@ and eigenvector:
 * **Wire diameter**: every spring's wire. Thinner wire carries slower waves (T_D goes as 1/r) and
   brings F_C down in proportion. At 0.25 mm the Leem's first spring echoes every 58.5 ms, with F_C
   at 3493 Hz.
+* **Bead magnets**: along the springs or across them (above); across is darker.
 * **Loss at the mounts**, **Steel loss factor** and **Oil damping**: the losses above.
 * **Dry**, **Reverb** and **Level**: the mix. Reverb is the recovery amplifier's gain.
 
 ## The views
 
+* **The springs**: the tank's springs in slow motion (1/10 to 1/1000 of real time), from the drive
+  bead to the pickup bead: the last note played (until one is, a note of the test bass) sent into
+  the drive coil from rest. The page plays the engine's own modes (`spring_modes`) a sample at a
+  time, each a standing wave whose wire turns as (−1)ⁿ cos(nπs/L) along the spring, and sums them
+  at 121 points along each: the line above each spring is how fast its wire turns there, and the
+  coil's loops are drawn moved by it, so they bunch where it turns fastest. The low frequencies
+  cross first, in T_D/2, and the highs crawl in behind them. The tests check that what this hears
+  at the far end is what the engine's tank does (`spring_run`). Of a note played, the input's
+  analyser holds about the first 0.13 s; after that the tank hears silence here.
 * **The echoes**: what the pickup hears for 300 ms after a click into the tank, as set
   (`spring_echoes` runs the C++ bank and analyses it through a 1024-sample Hann window). The first
   spring's arrival times, (2j + 1)·L/c_g(f), are dotted over it (`spring_delays`).
@@ -173,9 +187,8 @@ and eigenvector:
   within a third of a percent below 0.95 F_C, but off by a few percent where the coil's sway mixes
   in, between k = 1/R and 1.4/R.
 * **Free ends, ideal beads.** The modes are those of ends free to turn, and the beads' inertia only
-  filters them. A real bead's inertia would also move the modes a little. The beads' orientation
-  is a guess: a magnet turning crosswise, about its middle, would be five times heavier to the
-  springs, and the tank much darker (f_b about 1.5 kHz on the Leem).
+  filters them. A real bead's inertia would also move the modes a little. Which way the beads lie
+  in these tanks is not known here, so it is a control (Bead magnets).
 * **No sway, no tension.** The springs hang straight with no tension or sag, and the coil's
   sideways sway is neither driven nor heard.
 * **Losses are three numbers.** The mounts' 0.4 dB, the steel's 2 × 10⁻⁴ and the oil are chosen
@@ -187,7 +200,8 @@ and eigenvector:
 ## Files
 
 * `src/spring-params.js`: the controls and presets (the C++ tables are generated from them).
-* `src/spring-main.js`: the page's views; `src/spring-tour.js`: the tour;
+* `src/spring-main.js`: the page's views; `src/spring-motion.js`: the slow motion's modes and the
+  field along each spring; `src/spring-tour.js`: the tour;
   `src/spring-schematics.js`: the tank above.
 * `native/pedals/spring/spring-model.h`, `spring-model.cpp`: the tanks, the thin spring's
   dispersion, the beads and the losses.

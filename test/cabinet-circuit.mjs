@@ -5,7 +5,7 @@
 // the amp's impedance are left out.
 
 export const RHO = 1.204, C = 343, RC2 = RHO * C * C, QL = 7, END = 1.463;
-const LAYOUT = { '1x15': [1, 1], '2x10': [2, 1], '4x10': [4, 2], '8x10': [8, 2] }; // drivers, in series
+const LAYOUT = { '1x15': [1, 1], '2x10': [2, 1], '4x10': [4, 2], '8x10': [8, 2], '1x12': [1, 1], '2x12': [2, 1], '4x12': [4, 2] }; // drivers, in series
 
 export function derive(P) {
   const [n, s] = LAYOUT[P.layout], par = n / s, w = 2 * Math.PI * P.fs;
@@ -68,7 +68,7 @@ export function smallSignal(d, f, volts = d.e) {
 }
 
 // Small's closed box: the system's resonance and Q with the box's air as an extra spring
-export function closedBox(P) { const a = P.vas / P.volume * ({ '1x15': 1, '2x10': 2, '4x10': 4, '8x10': 8 })[P.layout], qts = (P.qes * P.qms) / (P.qes + P.qms); return { fc: P.fs * Math.sqrt(1 + a), qtc: qts * Math.sqrt(1 + a), alpha: a, qts }; }
+export function closedBox(P) { const a = P.vas / P.volume * LAYOUT[P.layout][0], qts = (P.qes * P.qms) / (P.qes + P.qms); return { fc: P.fs * Math.sqrt(1 + a), qtc: qts * Math.sqrt(1 + a), alpha: a, qts }; }
 // its response with Le = 0 and Rg = 0, normalised to the passband: s²/(s² + s ωc/Qtc + ωc²)
 export function closedBoxShape(cb, f) { const x = f / cb.fc; return x * x / Math.sqrt((1 - x * x) ** 2 + (x / cb.qtc) ** 2); }
 // Small's reference efficiency into half space, and the sound pressure level at 1 W, 1 m

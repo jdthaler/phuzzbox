@@ -14,6 +14,8 @@ Model model(const double *P) {
   static const int masks[7] = {1, 2, 4, 3, 6, 5, 7}; // the choices' heads, as bits
   const int m = masks[std::max(0, std::min(6, (int)std::lround(P[heads])))];
   for (int j = 0; j < 3; j++) M.head[j] = (m >> j) & 1;
+  const double where[3] = {P[head1], P[head2], P[head3]};
+  for (int j = 0; j < 3; j++) M.at[j] = std::clamp(where[j], 0.005, HEAD_MAX);
   M.repeats = P[repeats];
   M.g = std::pow(10.0, P[record] / 20);
   M.spacing = P[spacing]; M.gap = P[gap]; M.ecc = P[flutter];

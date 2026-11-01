@@ -22,7 +22,9 @@ Part of [PhuzzBox](../README.md).
 
 The plate is an EMT 140's as Willemsen gives it: steel 2 m by 1 m and 0.5 mm thick (Young's
 modulus 200 GPa, density 7850 kg/m³, Poisson's ratio 0.3), the driver at (0.8 m, 0.415 m) and
-pickups at (0.2 m, 0.45 m) and (1.7 m, 0.45 m), the left and right channels.
+pickups at (0.2 m, 0.45 m) and (1.7 m, 0.45 m), the left and right channels, measured from the
+plate's left and bottom edges. Those are where they sit by default; each is a control, and on the
+page they can be dragged across the plate.
 
 A plate this thin bends as Kirchhoff's thin plate:
 
@@ -96,11 +98,25 @@ the browser.
 * **Decay**: the damper. A low note's T₆₀; the highs ring shorter, as the steel takes them.
 * **Reverb** and **Dry**: the mix.
 * **Modes up to**: the highest mode played, 2–8 kHz. Higher is brighter and costs more.
+* **Where they sit**: the driver's and each pickup's place on the plate, across and up. A mode
+  whose nodal line passes through the driver is not played, and one whose nodal line passes
+  through a pickup is not heard: with the driver in the middle, 1 m across, every mode with an even
+  number of half-waves across (half of them, 49.8 % to 5 kHz) is silent. The two pickups hear
+  different mixtures of the same modes, which is the stereo; put them in one place and the
+  channels are the same. The transducers' gain is the one set for the default places, so a pickup
+  moved onto the nodal lines of the loud modes comes out quieter, as it would on the plate.
 * **Level**: gain after the mix.
 
 ## The views
 
-* **The plate**: the plate from above, as the fifteen modes moving most at that moment shape it.
+* **The plate**: the plate from above, in slow motion (1/10 to 1/1000 of real time): the last
+  note played (until one is, a note of the test bass) sent into the driver from rest, and every
+  mode the engine plays summed into the plate's velocity on a 192 × 96 grid. The page plays the
+  engine's own modes (`plate_modes`, `plate_decay`, `plate_info`) a sample at a time at the full
+  rate, so the ripples are the engine's: they spread from the driver, the short waves fastest, and
+  come back off the edges. The tests check that what this hears at the pickups is every mode summed
+  independently, and that its picture is each mode's shape times its motion. Of a note played,
+  the input's analyser holds about the first 0.13 s; after that the plate hears silence here.
 * **The decay**: each frequency's T₆₀, against the steel alone (`plate_decay`).
 * **Spectrum** and **Scope**: the input and the left pickup as they play.
 
@@ -129,11 +145,13 @@ the browser.
 ## Files
 
 * `src/plate-params.js`: the controls and presets (the C++ tables are generated from them).
-* `src/plate-main.js`: the page's views; `src/plate-tour.js`: the tour;
+* `src/plate-main.js`: the page's views; `src/plate-motion.js`: the slow motion's modes and the
+  plate's velocity on a grid; `src/plate-tour.js`: the tour;
   `src/plate-schematics.js`: the diagram above.
 * `native/pedals/plate/plate-model.h`, `plate-model.cpp`: the plate, its modes and losses.
 * `native/pedals/plate/plate-engine.cpp`: the modes, the two rates and their filters;
-  `plate-web.cpp`: the page's model calls.
+  `plate-web.cpp`: the page's model calls (the modes, their decay, their shapes at the
+  transducers).
 * `test/plate-circuit.mjs`: the same physics written independently: the lattice, Weyl's law, the
   losses, the group velocity, and every mode summed at 48 kHz in double precision.
 * `test/plate-tests.mjs`: the engine against those, and each hint.

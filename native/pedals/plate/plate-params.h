@@ -10,9 +10,15 @@ enum Param : int {
   decay = 0,
   reverb = 1,
   dry = 2,
-  top = 3,
-  level = 4,
-  kParamCount = 5
+  driveX = 3,
+  driveY = 4,
+  leftX = 5,
+  leftY = 6,
+  rightX = 7,
+  rightY = 8,
+  top = 9,
+  level = 10,
+  kParamCount = 11
 };
 
 
@@ -20,6 +26,12 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"decay", "Decay", "The plate", phuzzbox::ParamKind::continuous, 0.6, 10.0, 3.0, 0.0, true, "s", 1.0, 1},
   {"reverb", "Reverb", "The plate", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.35, 0.0, false, "%", 100.0, 0},
   {"dry", "Dry", "The plate", phuzzbox::ParamKind::continuous, 0.0, 1.0, 1.0, 0.0, false, "%", 100.0, 0},
+  {"driveX", "Driver, across", "Where they sit", phuzzbox::ParamKind::continuous, 0.02, 1.98, 0.8, 0.0, false, "m", 1.0, 2},
+  {"driveY", "Driver, up", "Where they sit", phuzzbox::ParamKind::continuous, 0.02, 0.98, 0.415, 0.0, false, "m", 1.0, 3},
+  {"leftX", "Left pickup, across", "Where they sit", phuzzbox::ParamKind::continuous, 0.02, 1.98, 0.2, 0.0, false, "m", 1.0, 2},
+  {"leftY", "Left pickup, up", "Where they sit", phuzzbox::ParamKind::continuous, 0.02, 0.98, 0.45, 0.0, false, "m", 1.0, 2},
+  {"rightX", "Right pickup, across", "Where they sit", phuzzbox::ParamKind::continuous, 0.02, 1.98, 1.7, 0.0, false, "m", 1.0, 2},
+  {"rightY", "Right pickup, up", "Where they sit", phuzzbox::ParamKind::continuous, 0.02, 0.98, 0.45, 0.0, false, "m", 1.0, 2},
   {"top", "Modes up to", "Model and output", phuzzbox::ParamKind::continuous, 2000.0, 8000.0, 5000.0, 0.0, true, "Hz", 1.0, 0},
   {"level", "Level", "Model and output", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
 };
@@ -28,7 +40,7 @@ inline const phuzzbox::PresetValue kPreset0[] = {{0, 2.5}, {1, 0.35}, {2, 1.0}};
 inline const phuzzbox::PresetValue kPreset1[] = {{0, 0.8}, {1, 0.4}, {2, 1.0}};
 inline const phuzzbox::PresetValue kPreset2[] = {{0, 8.0}, {1, 0.3}, {2, 1.0}};
 inline const phuzzbox::PresetValue kPreset3[] = {{0, 3.0}, {1, 1.0}, {2, 0.0}};
-inline const phuzzbox::PresetValue kPreset4[] = {{3, 2500.0}};
+inline const phuzzbox::PresetValue kPreset4[] = {{9, 2500.0}};
 inline const phuzzbox::Preset kPresets[] = {
   {"Studio plate", kPreset0, 3},
   {"Short and tight", kPreset1, 3},

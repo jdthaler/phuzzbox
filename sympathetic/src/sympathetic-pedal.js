@@ -8,5 +8,6 @@ export const PEDAL = {
   name: 'Sympathetic Strings',
   description: 'A frame of stiff steel strings tuned to a key, all on one bridge your bass shakes: they ring along with the notes whose harmonics they share',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/sympathetic.wasm', import.meta.url).href },
 };

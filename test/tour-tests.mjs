@@ -37,19 +37,19 @@ const read = (rel) => readFileSync(`${root}${rel}`, 'utf8');
 }
 
 // How it works: every page's tabs are READMEs that exist and render
-for (const dir of ['testbass', 'tuner', 'scope', 'spectrum']) {
+for (const dir of ['testbass', 'testguitar', 'tuner', 'scope', 'spectrum']) {
   const md = read(`${dir}/README.md`);
   let html = '';
   try { html = renderMarkdown(md, { skip: ['Files'] }).html; } catch (e) { console.log(e.message); }
   check(html.length > 500 && /^## Prior art and references/m.test(md) && /^## What is simplified/m.test(md),
     `How it works: ${dir}/README.md renders, credits prior art and says what is simplified`);
 }
-check(/['"]testbass\/['"]/.test(read('shared/notes.js')) && /['"]tuner\/['"]/.test(read('shared/notes.js')), 'How it works: every page has the test bass\'s and the tuner\'s notes');
+check(/['"]testbass\/['"]/.test(read('shared/notes.js')) && /['"]testguitar\/['"]/.test(read('shared/notes.js')) && /['"]tuner\/['"]/.test(read('shared/notes.js')), 'How it works: every page has the test bass\'s and the tuner\'s notes');
 
 // a measured quantity in prose: a number and its unit
 const QUANTITY = /(\d+(?:\.\d+)?(?: × 10[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+)?) ?(kΩ|Ω|µF|nF|pF|pF\/m|mH|H|kHz|Hz|dB|mV|V|µA|mA|°C|cents|cm|ms|m|%)(?![\w/])/g;
 const norm = (s) => s.replace(/[  ]/g, ' ').replace(/\*\*/g, '');
-const shared = norm(['testbass', 'tuner', 'scope', 'spectrum'].map((d) => read(`${d}/README.md`)).join('\n'));
+const shared = norm(['testbass', 'testguitar', 'tuner', 'scope', 'spectrum'].map((d) => read(`${d}/README.md`)).join('\n'));
 
 for (const p of PEDALS.filter((x) => x.ready)) {
   const file = `${p.id}/src/${p.id}-tour.js`;

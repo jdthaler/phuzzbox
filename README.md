@@ -33,7 +33,12 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 
 The **test bass** ([testbass/](testbass/README.md)) is a bass guitar made of physics (stiff
 strings, a finger pluck, a magnetic pickup) that every page plays from the computer keys when
-nothing is plugged in, and that the tests and demos use as their signal.
+nothing is plugged in, and that the tests and demos use as their signal. The **test guitar**
+([testguitar/](testguitar/README.md)) is its six-string sibling: a 10–46 set on a 25.5-inch
+scale, a pick and a single coil. Choose the **Instrument**, bass or guitar, in the Rig or beside
+the fretboard: it sets the test instrument, the tuner's range, and each pedal's pickup and the
+ranges built for a bass (the Wah's sweep, the Envelope Filter's, the Octave Down's tracking, the
+Cabinet), and each pedal keeps its settings for each instrument.
 
 ## Playing
 
@@ -49,6 +54,11 @@ either away with its chevron. **Discover** shows every view with its explanation
 bass sits at the bottom while it is the input. On a phone the page scrolls instead. What you turn
 on is remembered for each pedal.
 
+**Your own presets** live in the same Presets menu, as on Forte. *Save these settings…* keeps the
+pedal's settings under a name in your browser, and *Copy a link to these settings* makes a link
+that opens the page playing them, to send to someone or to bookmark for a song. *Your presets and
+files…* lists yours, and saves them to a file or opens one (`shared/presets.js` gives the format).
+
 Then either:
 
 - **Plug in.** Connect your bass to an audio interface's instrument (Hi-Z) input, choose the
@@ -58,7 +68,8 @@ Then either:
   browser's estimate of the round trip; Chrome on a Mac with a class-compliant interface does best.
 - **Play the test bass.** The rows of letter keys are its strings, as tablature has them: the
   `Z` row is the low E, then the `A` row, the `Q` row and the number row, each from the open
-  string to the ninth fret. **Play a riff** loops a short line. The fretboard shows only while the test bass is the input, and the letter keys play it only then.
+  string to the ninth fret; with the test guitar, Shift moves the rows up to the D, G, B and high E
+  strings. **Play a riff** loops a short line. The fretboard shows only while the test bass is the input, and the letter keys play it only then.
 
 `Space` is the footswitch. **Full scale** (in Controls, under Rig) says how many volts at the input jack make
 a full-scale signal in the browser. It doesn't matter to the Buffer, but it does to the Phuzz and
@@ -142,7 +153,10 @@ node tools/render-phuzz.mjs # the Phuzz's demos to examples/phuzz/ (and render-b
 ```
 
 The physics is C++ in `native/`, built as WebAssembly (committed, so the site needs no build
-step) and as plugins (CLAP, VST3, AU and a standalone app, through clap-wrapper):
+step) and as plugins (CLAP, VST3, AU and a standalone app, through clap-wrapper). A plugin opens
+the app's window as its own, in a web view (`native/plugin/editor.cpp`, Forte's): the same knobs,
+footswitch, meters and tuner, with the host's parameters behind them, so a song saves what
+the window shows and an automation lane moves its knobs.
 
 ```bash
 cd native && cmake --preset linux && cmake --build --preset linux && ctest --preset linux   # or macos, windows
@@ -150,6 +164,20 @@ cd native && cmake --preset wasm && cmake --build --preset wasm                 
 ```
 
 See [CLAUDE.md](CLAUDE.md) and [docs/PEDAL_GUIDE.md](docs/PEDAL_GUIDE.md) for how a pedal is built.
+
+## Versions
+
+PhuzzBox and each pedal carry their own [semantic version](https://semver.org), as Forte and its
+instruments do: on the front page and in each pedal's How it works, kept in `shared/registry.js`
+(and `package.json` for PhuzzBox) and logged in [CHANGELOG.md](CHANGELOG.md). The plugins carry
+their pedal's version, the app PhuzzBox's. Everything is pre-release (0.x) for now:
+
+* **MINOR** (0.**x**.0) for new features, or for changes to a pedal's sound or parameters.
+* **PATCH** (0.x.**y**) for fixes that leave the intended sound alone.
+
+From 1.0 on, a pedal's MAJOR version will change only when songs saved with its plugins, or the
+sound of its presets, break. Versions move only at a release: each change leaves a note in
+[changes/](changes/README.md), and `node tools/release.mjs` gathers them.
 
 ## Licence
 

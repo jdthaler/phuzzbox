@@ -4,14 +4,14 @@ import { tour, note, riff, sweep } from '../../shared/tour.js';
 export const TOUR = tour('echo', [
   {
     title: 'Distance over speed',
-    views: ['The heads', 'Scope'],
+    views: ['The tape loop', 'Scope'],
     preset: 'Three heads',
     play: [note('A1', { dur: 0.3, vel: 0.9 }), note('E2', { at: 2.5, dur: 0.3, vel: 0.9 })],
     text: `![A loop of tape past an erase head, a record head and three playback heads](schematics/circuit.svg)
 
 A loop of tape runs past a record head and three playback heads, 4, 8 and 12 cm further on. Each head plays what was recorded the distance over the speed ago: at 19 cm/s, 211, 421 and 632 ms.
 
-Here all three heads play together, so one note makes a rhythm.`,
+Here all three heads play together, so one note makes a rhythm. **The tape loop** shows the tape running past them, with what the record head wrote on it: a stripe for every cycle of the note, carried along to each head in turn. Drag a head to move it.`,
   },
   {
     title: 'Every repeat darker',

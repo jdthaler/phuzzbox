@@ -3,7 +3,8 @@
 A bass guitar made of physics, so the pedals have something to play when nothing is plugged in,
 and the tests and demos have a signal that is physics end to end rather than a recording. It is
 not a pedal: it sits where your instrument would, and every pedal page can play it from the
-computer keys or the fretboard on screen.
+computer keys or the fretboard on screen. Its six-string sibling is the
+[test guitar](../testguitar/README.md), the same model with a guitar's strings, pick and pickup.
 
 ## The physics
 

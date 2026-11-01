@@ -56,6 +56,11 @@ and the E string's 12th fret for 99 % of each note. The price is that high notes
 its roll-off. The switch flips the filtered signal, so their octave is weak, and above the 12th
 fret it fades. **High notes, two down** sets 150 Hz for playing up the neck.
 
+A guitar is an octave above a bass, its low E at 82.4 Hz, so a page set for a guitar (the Rig's
+**Instrument**) starts the tracking filter an octave up too, at 150 Hz. With it the comparator
+rises once a cycle on the test guitar's open strings and its low E's 12th fret for 99 % of each
+note.
+
 A note that decays below the hysteresis stops the comparator, and the flip-flops hold. The octave
 path is then the filtered note with a fixed polarity, at its own pitch, until the next note
 starts the dividers again. That last moment of the note at its own pitch is part of how these

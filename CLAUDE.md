@@ -30,6 +30,8 @@ Read first:
 - `cd native && cmake --preset linux && cmake --build --preset linux && ctest --preset linux`
   builds the plugins and the native tests (ALSA and JACK headers needed on Linux).
 - `CI=1 npm test` skips the CPU-timing tests, as CI does.
+- `node tools/release.mjs --dry-run` shows what the next release would bump and the changelog
+  entry it would write; `node tools/contract.mjs` what a change breaks in songs saved with the plugins.
 
 ## Principles (Forte's)
 
@@ -51,8 +53,15 @@ Read first:
 2. Verify: `npm test` passes; for a page change, open it in a browser (Playwright headless will
    do) at phone (390×664), tablet and desktop (1440×900) sizes, with no console errors and no
    sideways scrolling.
-3. Commit with a title that says what changed; the body says why and how it was checked.
-4. Pull request into `main` with *Why*, *What changed* and *Testing*.
+3. **A release note, not a version.** A pull request into `main` bumps no version (semver, all
+   0.x, as Forte's). It adds one note to `changes/` (`changes/README.md`): a `# <topic>` line, then
+   a `### PhuzzBox (minor|patch)` or `### <Pedal name> (major|minor|patch|new)` section for each
+   part it changes, with the lines for the changelog. PhuzzBox covers `shared/`, the landing page,
+   the Pedalboard, the test bass, `tools/` and the app; a pedal covers its folder, its tests and its
+   port. Docs alone and CI need no note. The `tests` workflow checks both rules
+   (`node tools/release.mjs --check-pr origin/main HEAD` runs it locally).
+4. Commit with a title that says what changed, and no version; the body says why and how it was checked.
+5. Pull request into `main` with *Why*, *What changed* and *Testing*.
 
 Listening with a real bass and interface is the owner's job; say in the pull request what needs it.
 
@@ -61,9 +70,16 @@ Listening with a real bass and interface is the owner's job; say in the pull req
 Only when the owner asks for a release. Merging into `main` publishes nothing; the owner hears
 `main` with `npm run serve` before each release.
 
-1. Open a pull request from `main` into `live` titled `Release YYYY-MM-DD: <what is new>`, whose
-   body lists what changed since the last release.
-2. CI runs on it as on any pull request. Whatever fails is fixed on `main` first.
+1. On a branch off the latest `main`, run `node tools/release.mjs`. It gathers the notes in
+   `changes/` into one `## YYYY-MM-DD — <topics>` entry at the top of `CHANGELOG.md`, bumps each
+   version named once by the largest kind its notes give (PhuzzBox in `package.json` and
+   `PHUZZBOX_VERSION` together), regenerates the plugins' `<slug>-info.cmake`, and deletes the
+   notes. Commit it with every version in the title (`Release PhuzzBox 0.2.0, Spring Reverb
+   0.2.0`), open a pull request into `main` whose body is the new changelog entry, and merge it
+   once green (the release-note check lets a release, and only a release, move versions).
+2. Open a pull request from `main` into `live` titled `Release YYYY-MM-DD: <what is new>`, whose
+   body is the changelog entry. CI runs on it as on any pull request, and also checks that no
+   notes are left in `changes/`. Whatever fails is fixed on `main` first.
 3. Merge it with a merge commit when the owner asks. GitHub Pages publishes `live` at once, and
    installed copies pick it up on their next load (`sw.js` asks the server first).
 4. `live` only ever takes `main`, so it never needs merging back.

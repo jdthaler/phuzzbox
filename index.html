@@ -28,6 +28,7 @@
     .tile small { display: block; color: var(--ink-2); margin: 2px 0 8px; }
     .tile p { margin: 0; font-size: 14px; }
     .tile.soon { opacity: 0.6; }
+    .tile .ver { margin-left: auto; align-self: center; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
     .tag { align-self: flex-start; font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; margin: 2px 0 2px; }
   </style>
 </head>
@@ -62,11 +63,14 @@
       el.innerHTML = p.ready
         ? `<b><a class="go" href="${p.id}/"></a></b><small></small><p></p><span class="more">
             <a class="pz-about pz-tour-start" href="${p.id}/#tour" title="A guided tour of the physics, played on the test bass"><span class="pz-about-i pz-tour-glyph" aria-hidden="true">▶</span><span class="pz-about-label">Tour</span></a>
-            <a class="pz-about" href="${p.id}/#about" title="The physics of the ${p.name}"><span class="pz-about-i" aria-hidden="true">i</span><span class="pz-about-label">How it works</span></a></span>`
+            <a class="pz-about" href="${p.id}/#about" title="The physics of the ${p.name}"><span class="pz-about-i" aria-hidden="true">i</span><span class="pz-about-label">How it works</span></a><span class="ver"></span></span>`
         : '<b></b><span class="tag">in the workshop</span><small></small><p></p>';
       (el.querySelector('.go') ?? el.querySelector('b')).textContent = p.name;
       el.querySelector('small').textContent = `after ${p.after}`;
       el.querySelector('p').textContent = p.blurb;
+      // each pedal's own version (CHANGELOG.md), as Forte's tiles show theirs
+      const ver = el.querySelector('.ver');
+      if (ver) { ver.textContent = `v${p.version}`; ver.title = `${p.name} ${p.version}; PhuzzBox ${PHUZZBOX_VERSION}`; }
       grid.append(el);
     }
     // the Pedalboard: every pedal in a chain
@@ -78,7 +82,7 @@
     }
     // the test bass's and the tuner's notes, in the pedals' dialog
     const notes = howItWorks();
-    for (const [key, label] of [['testbass', 'The test bass'], ['tuner', 'The tuner'], ['scope', 'The scope'], ['spectrum', 'The spectrum']]) document.getElementById('also').append(notes.button(key, label));
+    for (const [key, label] of [['testbass', 'The test bass'], ['testguitar', 'The test guitar'], ['tuner', 'The tuner'], ['scope', 'The scope'], ['spectrum', 'The spectrum']]) document.getElementById('also').append(notes.button(key, label));
   </script>
 </body>
 </html>

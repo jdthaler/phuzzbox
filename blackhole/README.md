@@ -121,6 +121,17 @@ is within 0.08 dB, without spin and at two nines.
 
 ## The views
 
+* **The test masses**: a ring of free-falling masses facing the hole, in slow motion (1/10 to
+  1/1000 of real time), as its wave passes them. The page runs the engine itself on the last note
+  played (until one is, a note of the test bass), with Hole at 100 % and no Dry, so the two
+  channels are h₊ and h×, and moves each mass at (x, y) on the ring by the wave's strain, as a
+  gravitational wave moves free masses across its path:
+
+    δx = ½ (h₊ x + h× y),  δy = ½ (h× x − h₊ y)
+
+  h₊ stretches the ring one way while it squeezes it the other; h× does the same along the
+  diagonals. The strain is magnified to a third of the ring at its largest. Of a note played, the
+  input's analyser holds about the first 0.13 s; after that the hole hears silence here.
 * **The modes**: the four modes' frequencies and decay times, with the path each takes as the spin
   goes from none to six nines.
 * **The ringing**: what one click does to the hole, h₊ and h×.

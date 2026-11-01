@@ -1,0 +1,23 @@
+{"slug": "echo",
+ "params": [
+  {"id":"speed","kind":"continuous","min":0.05,"max":0.4,"step":0,"log":true,"def":0.19},
+  {"id":"heads","kind":"choice","options":["1","2","3","12","23","13","123"],"def":"12"},
+  {"id":"repeats","kind":"continuous","min":0,"max":1.2,"step":0,"log":false,"def":0.35},
+  {"id":"head1","kind":"continuous","min":0.01,"max":0.2,"step":0,"log":false,"def":0.04},
+  {"id":"head2","kind":"continuous","min":0.01,"max":0.2,"step":0,"log":false,"def":0.08},
+  {"id":"head3","kind":"continuous","min":0.01,"max":0.2,"step":0,"log":false,"def":0.12},
+  {"id":"record","kind":"continuous","min":-24,"max":24,"step":0,"log":false,"def":0},
+  {"id":"spacing","kind":"continuous","min":5e-7,"max":0.00003,"step":0,"log":true,"def":0.000004},
+  {"id":"gap","kind":"continuous","min":0.000001,"max":0.00002,"step":0,"log":true,"def":0.000005},
+  {"id":"flutter","kind":"continuous","min":0,"max":0.00002,"step":0,"log":false,"def":0.000003},
+  {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
+  {"id":"wet","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.5},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"Slapback","values":{"speed":0.38,"heads":"1","repeats":0,"record":0,"spacing":0.000003,"gap":0.000005,"flutter":0.000003,"dry":1,"wet":0.6}},
+  {"name":"Dub bass","values":{"speed":0.19,"heads":"2","repeats":0.55,"record":3,"spacing":0.000006,"gap":0.000005,"flutter":0.000003,"dry":1,"wet":0.6}},
+  {"name":"Three heads","values":{"speed":0.19,"heads":"123","repeats":0.3,"record":0,"spacing":0.000004,"gap":0.000005,"flutter":0.000003,"dry":1,"wet":0.5}},
+  {"name":"Worn machine","values":{"speed":0.095,"heads":"12","repeats":0.5,"record":6,"spacing":0.000015,"gap":0.00001,"flutter":0.000012,"dry":1,"wet":0.6}},
+  {"name":"Runaway","values":{"speed":0.19,"heads":"13","repeats":1.1,"record":6,"spacing":0.000005,"gap":0.000005,"flutter":0.000004,"dry":0.8,"wet":0.5}}
+ ]}
