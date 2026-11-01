@@ -345,23 +345,14 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     // between two devices' clocks (Chrome and Edge; elsewhere the system's output)
     const outs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'audiooutput' && d.label);
     if (!ctx?.setSinkId || !outs.length) return;
-    const was = sinkSel.value || store.get('phuzzbox.sink', null);
+    const was = sinkSel.value || store.get('phuzzbox.sink', '');
     const sys = outs.find((d) => d.deviceId === 'default');
     sinkSel.replaceChildren(h('option', { value: '', 'data-group': sys?.groupId }, 'System output'), ...outs.filter((d) => d.deviceId !== 'default').map((d) => h('option', { value: d.deviceId, 'data-group': d.groupId }, `→ ${d.label}`)));
     sinkSel.hidden = false;
-    if (was !== null && [...sinkSel.options].some((o) => o.value === was)) { sinkSel.value = was; if (was) setSink(was, false); }
-    else matchSink();
+    if ([...sinkSel.options].some((o) => o.value === was)) { sinkSel.value = was; if (was) setSink(was); }
   }
-  // Until an output is chosen, the sound follows the input to the same interface: two devices run
-  // on two clocks, and the browser buffers tens of milliseconds between them.
-  function matchSink() {
-    if (sinkSel.hidden || store.get('phuzzbox.sink', null) !== null || state.source !== 'input') return;
-    const group = micStream?.getAudioTracks()[0]?.getSettings().groupId;
-    const same = group && [...sinkSel.options].find((o) => o.value && o.dataset.group === group);
-    if (same && sinkSel.value !== same.value) { sinkSel.value = same.value; setSink(same.value, false); }
-  }
-  async function setSink(id, remember = true) {
-    try { await ctx.setSinkId(id); if (remember) store.set('phuzzbox.sink', id); measured = null; showLatency(); } catch (err) { status.textContent = `Output: ${err.message}`; }
+  async function setSink(id) {
+    try { await ctx.setSinkId(id); store.set('phuzzbox.sink', id); measured = null; showLatency(); } catch (err) { status.textContent = `Output: ${err.message}`; }
   }
   function measure() {
     if (state.source !== 'input') return;
@@ -383,7 +374,6 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
       state.source = 'input';
       send({ type: 'source', which: 'input' });
       chanSel.hidden = false; measureBtn.hidden = false;
-      matchSink();
       showLatency();
     } catch (err) {
       status.textContent = `No input: ${err.message}`;
@@ -417,7 +407,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     const ms = 1000 * (input + base + output);
     latency.textContent = ms ? `latency ≈ ${ms.toFixed(0)} ms` : 'latency –';
     latency.classList.toggle('warn', ms > 40);
-    // where the estimate comes from, and the usual reason it is large
+    // where the estimate comes from, and the usual reason it is large (the output is yours to choose)
     const f = (x) => `${(1000 * x).toFixed(1)} ms`;
     const parts = [`The browser's estimate of the delay from input to output, at ${(ctx.sampleRate / 1000).toFixed(1)} kHz:`];
     if (state.source === 'input') parts.push(`input ${f(input)}`);
