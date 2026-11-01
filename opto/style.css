@@ -1,0 +1,7 @@
+/* the Opto Compressor's enclosure: the grey of a rack leveler's panel */
+:root { --enclosure: #8a9096; --enclosure-ink: #16181b; }
+/* the cell's history: a strip chart that takes the view's height */
+body.one-screen .card .canvas.history { flex: 1 1 0; height: auto; min-height: 90px; }
+@media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
+  body.one-screen .card .canvas.history { flex: none; height: 260px; }
+}

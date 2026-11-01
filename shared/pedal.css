@@ -456,7 +456,21 @@ body.perform .controls-bar { cursor: default; }
   body.one-screen .groups { grid-template-columns: minmax(0, 1fr); }
   .bar-tools .presets { width: 150px; }
 }
+/* on a phone a long pedal name gives way to the buttons beside it, and the menu stays on screen */
+@media (max-width: 600px) {
+  .pedal-menu, .pedal-menu summary { min-width: 0; }
+  .pedal-menu summary h1 { font-size: 16px; overflow: hidden; text-overflow: ellipsis; }
+  .menu-list { min-width: min(290px, calc(100vw - 24px)); }
+}
 /* figures in How it works and the tours: a circuit diagram (shared/schematic.js) and its caption */
 .pz-figure { margin: 16px 0; }
 .pz-figure img { display: block; max-width: 100%; height: auto; }
 .pz-figure figcaption { margin-top: 6px; color: var(--ink-2); font-size: 13px; line-height: 1.4; }
+/* in a tour's card a figure stays small, beside the text where there is room */
+.pz-tour-text .pz-figure { margin: 8px 0; }
+.pz-tour-text .pz-figure img { max-height: 200px; width: auto; }
+.pz-tour-text .pz-figure figcaption { display: none; }
+@media (min-width: 900px) {
+  .pz-tour-text .pz-figure { float: right; margin: 0 0 8px 16px; }
+  .pz-tour-text::after { content: ''; display: block; clear: both; }
+}

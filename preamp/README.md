@@ -18,24 +18,12 @@ Part of [PhuzzBox](../README.md).
 
 ## The circuit
 
-```
-jack ── 68 kΩ ── V1a grid;  jack ── 1 MΩ ── ground
-V1a: plate ── 100 kΩ ── rail;  cathode ── 1.5 kΩ ∥ 25 µF ── ground
-V1a plate ──┤├── Gain pot 1 MΩ (audio) ── ground;  its wiper ── 270 kΩ ── V2a grid
-           20 nF
-V2a: plate ── 100 kΩ ── rail;  cathode ── 820 Ω ── ground (no capacitor)
-V2b, a cathode follower: grid on V2a's plate, plate on the rail, cathode ── 100 kΩ ── ground
-the tone stack, from V2b's cathode:
-    ──┤├── Treble pot 250 kΩ ── (its wiper is the stack's output)
-     250 pF          │
-    ── 56 kΩ ──┬──┤├──┴── Bass pot 1 MΩ (audio) ──┐
-               │  20 nF                           │
-               └──┤├──────────────────── Middle pot 25 kΩ ── ground
-                  20 nF
-the stack's output ── Master pot 1 MΩ (audio) ── ground;  its wiper is the output
-the rail: the 385 V supply ── 14 kΩ dropper ──┬── the preamp's rail, about 325 V
-                                              └── 8 µF ── ground
-```
+![The two gain stages, V1a and V2a, and the cathode follower V2b that drives the tone stack](schematics/stages.svg)
+
+![The tone stack (Yeh and Smith's), its Treble pot's wiper into the Master](schematics/tonestack.svg)
+
+The rail: the 385 V supply through a 14 kΩ dropper to the preamp's rail, about 325 V, with 8 µF
+from it to ground.
 
 From the Bassman (5F6-A, as Silicon Chip's 2024 article and Kuehnel's analysis give it): the
 second stage's 100 kΩ plate, 820 Ω unbypassed cathode and 270 kΩ grid stopper; the cathode

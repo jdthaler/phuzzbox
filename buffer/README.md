@@ -25,6 +25,8 @@ through its own resistance *R* and inductance *L*, across a capacitance *C* to g
 own winding capacitance, plus the cable's, plus the input's), and a resistance Rₗ to ground (the
 bass's volume and tone pots, in parallel with the input it plugs into):
 
+![The pickup (the EMF e behind the coil's R and L) and what it plugs into: C across it, the coil's own, the cable's and the input's, and Rₗ, the pots and the input](schematics/pickup.svg)
+
   v / e = 1 / (L C s² + (R C + L / Rₗ) s + 1 + R / Rₗ)
 
 a second-order low-pass. With little damping it peaks near

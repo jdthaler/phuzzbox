@@ -29,7 +29,11 @@ export const PEDALS = [
     after: 'the 1959 Fender Bassman\'s preamp',
     blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
   },
-  { id: 'opto', name: 'Opto Compressor', ready: false, after: 'electro-optical leveler', blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.' },
+  {
+    id: 'opto', name: 'Opto Compressor', version: '0.1.0', ready: true, plugin: { code: 'Opto' },
+    after: 'the electro-optical leveling amplifiers of the 1960s',
+    blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
+  },
   { id: 'cabinet', name: 'Cabinet', ready: false, after: '8×10 and 1×15 bass cabinets', blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.' },
 ];
 
