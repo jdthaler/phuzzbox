@@ -24,7 +24,7 @@ const peakOf = (H) => { let k = 0; H.forEach((v, i) => { if (v > H[k]) k = i; })
 // The filter: where the rocker has it now, and its two ends.
 const filterView = {
   title: 'The sweep',
-  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide.',
+  caption: 'the circuit\'s response for a small signal: where the rocker is now (solid), heel down and toe down (dashed). Rock the pedal, or turn the Rocker knob, and watch the peak slide. In Auto the envelope follower rocks it: play, and watch each note push the peak and let it fall back.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -32,11 +32,20 @@ const filterView = {
     legend.className = 'legend';
     holder.after(legend);
     let now = null, heel = null, toe = null, ends = '';
+    // in Auto the envelope follower has the rocker: where it last said (the engine's messages)
+    let rocker = null, drawn = null, last = 0;
+    const auto = () => api.P.control === 'auto';
     const compute = () => {
       const key = ['sweepC', 'qR', 'inductor', 'vcc', 'taper'].map((k) => api.P[k]).join();
       if (key !== ends) { heel = response({ ...api.P, position: 0 }); toe = response({ ...api.P, position: 1 }); ends = key; }
-      now = response(api.P);
+      drawn = auto() && rocker !== null ? rocker : api.P.position;
+      now = response({ ...api.P, position: drawn });
     };
+    api.on('pedal', (messages) => {
+      for (const m of messages) if (m.type === 1) rocker = m.values[0];
+      const t = performance.now();
+      if (auto() && rocker !== null && Math.abs(rocker - drawn) > 0.01 && t - last > 40) { last = t; compute(); show(); draw(); }
+    });
     const draw = () => {
       const { g, w, h } = fit(canvas);
       g.clearRect(0, 0, w, h);
@@ -56,7 +65,7 @@ const filterView = {
     };
     const show = () => {
       const a = peakOf(heel), b = peakOf(toe);
-      legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>now</span><span>dashed: heel down, ${a.f.toFixed(0)} Hz</span><span>dotted: toe down, ${b.f.toFixed(0)} Hz</span>`;
+      legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>${auto() ? `now: the follower has it at ${(100 * drawn).toFixed(0)} %` : 'now'}</span><span>dashed: heel down, ${a.f.toFixed(0)} Hz</span><span>dotted: toe down, ${b.f.toFixed(0)} Hz</span>`;
     };
     api.on('params', () => { compute(); show(); draw(); });
     new ResizeObserver(draw).observe(canvas);
