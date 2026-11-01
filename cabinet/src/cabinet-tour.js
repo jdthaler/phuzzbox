@@ -4,14 +4,14 @@ import { tour, note, riff, sweep } from '../../shared/tour.js';
 export const TOUR = tour('cabinet', [
   {
     title: 'A speaker is a circuit',
-    views: ['The response', 'Scope'],
+    views: ['The box', 'The response'],
     preset: '8 × 10 sealed',
     play: [riff({ times: 2 })],
     text: `![The cabinet as one circuit: the coil, the cone on its suspension, and the air in the box and the port](schematics/circuit.svg)
 
 The amp's volts push a current through a voice coil in a magnet's gap. The current pushes the cone, the cone pushes the air in the box, and the air pushes back. Each of those is a circuit's equations: the cone's mass is an inductor, its suspension a capacitor, the box's air another.
 
-Every number comes from the drivers' datasheet parameters, the Thiele–Small parameters. **The response** shows what the microphone hears at each frequency (orange), and the impedance the amp drives (blue).`,
+Every number comes from the drivers' datasheet parameters, the Thiele–Small parameters. **The box** shows it slowed thirty times: a cone pushed by each note, and the air in the box pressed (red) and drawn out (blue). **The response** shows what the microphone hears at each frequency (orange), and the impedance the amp drives (blue).`,
   },
   {
     title: 'Sealed: a spring behind the cones',

@@ -12,7 +12,7 @@ export const TANKS = {
   one: [[4.4e-3, 303, 0.163, 4e-3, 1.5e-3]],
 };
 
-export function spring([D, turns, H, mL, mD], wireD) {
+export function spring([D, turns, H, mL, mD], wireD, across = false) {
   const R = D / 2, r = wireD / 2, eps = 1 / R;
   const L = Math.sqrt((2 * Math.PI * R * turns) ** 2 + H ** 2);
   const g2 = E / RHO, k2 = (r * r * E) / (4 * RHO);
@@ -43,8 +43,10 @@ export function spring([D, turns, H, mL, mD], wireD) {
   // the low-frequency speed along the wire: κε, as Parker and Bilbao define T_D with it (the exact
   // slope of the lower root is less by (r/2R)²/2), and that slope, by a small k
   const c0 = Math.sqrt(k2) * eps, slope = omega(1e-3 * eps) / (1e-3 * eps);
-  // the beads: magnets on the axis turning about their own axis, against the wire's rotation
-  const mb = MAGNET_RHO * Math.PI * (mD / 2) ** 2 * mL, Ib = (mb * (mD / 2) ** 2) / 2;
+  // the beads: magnets turning about the spring's axis, against the wire's rotation. A cylinder of
+  // radius a and length l about its own axis has I = ma²/2; about a diameter through its centre,
+  // I = m(a²/4 + l²/12) (a solid cylinder's moments, from any mechanics text)
+  const ma = mD / 2, mb = MAGNET_RHO * Math.PI * ma * ma * mL, Ib = across ? mb * (ma * ma / 4 + mL * mL / 12) : (mb * ma * ma) / 2;
   const Is = RHO * Math.PI * r * r * L * R * R, mu = Ib / Is;
   return { R, r, L, eps, omega, cg, share, kc, Fc, c0, slope, TD: (2 * L) / c0, mu, fb: c0 / (2 * L) / (Math.PI * mu) };
 }

@@ -73,6 +73,27 @@ Rules of thumb:
 - **Telling the page what happens inside**: `post()` a `Message` (a type and up to 30 numbers) at
   a few hundred a second at most; the page's views get them with `api.on('pedal', (messages) => …)`.
 
+## Showing the physics live
+
+A view shows the physics moving, not only a curve (Jesse, 2026-11-01): what a mechanism does as you
+play. Three ways, by how fast the thing moves:
+
+- **Live**, from the engine's messages (`post()`, above), for what moves at the speed you can watch:
+  a rotor's angle, a tape's motion, a sweep, a load-line trail.
+- **Slow motion**, for what moves at audio rate: `slowMotion(holder, api, { seconds })` in
+  `shared/motion.js` catches each note played at the input (until one is, a test bass note
+  rendered on the page), and the view runs the pedal's own model on it from rest and draws it on a
+  clock running at 1/10 to 1/1000 of real time, with a speed menu, a pause and a replay in the
+  card's title bar. Either run the engine itself on the page (`new Effect(fs)`, reading its state
+  through a web export, as The box does), or play the engine's own modes a sample at a time
+  (`Bank` in `shared/motion.js`, as The springs and The plate do) and test that what they hear is
+  what the engine plays. The input's analyser holds about 0.13 s of a note; say so in the caption.
+- **On a curve**: `markPartials(g, x, y, box, api, gainAt)` (`shared/plot.js`) puts the note's
+  harmonics on a response curve as dots, each as large as it is loud at the input now.
+
+A physical choice the builder makes (where a pickup sits, which way a magnet lies) is a control,
+not a constant, and where it has a place on a view, dragging it there sets it (`api.page.setAll`).
+
 ## Parameters
 
 ```js

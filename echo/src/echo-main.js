@@ -10,7 +10,8 @@ const Effect = wasmEffect(PEDAL);
 const model = await Effect.ready(); // the C++ heads and tape, for the views
 const N = 200, FMIN = 20, FMAX = 20000;
 const FREQS = Float64Array.from({ length: N }, (_, i) => FMIN * (FMAX / FMIN) ** (i / (N - 1)));
-const HEADS = [0.04, 0.08, 0.12];
+const HEAD_IDS = ['head1', 'head2', 'head3'];
+const headsAt = (P) => HEAD_IDS.map((id) => P[id]);
 const db = (v) => 20 * Math.log10(Math.max(1e-9, Math.abs(v)));
 
 // the heads' response at the knob's speed (echo-web.cpp): the FIR as designed
@@ -27,7 +28,7 @@ function curve(P, X, n) {
   model.echo_curve(s.at, n);
   return Array.from(s.f64(n, 8 * (v.length + 1)));
 }
-const headsOn = (P) => HEADS.map((_, j) => P.heads.includes(String(j + 1)));
+const headsOn = (P) => HEAD_IDS.map((_, j) => P.heads.includes(String(j + 1)));
 
 // The heads: what one pass through the tape keeps of each frequency, and what the repeats keep.
 const headsView = {
@@ -45,7 +46,7 @@ const headsView = {
     api.on('pedal', (messages) => { for (const m of messages) if (m.type === 1) state = m.values; });
     const show = () => {
       const v = state ? state[0] : api.P.speed, on = headsOn(api.P);
-      const ds = HEADS.map((d, j) => (on[j] ? `${Math.round(1000 * (state ? state[1 + j] : d / api.P.speed))} ms` : null)).filter(Boolean);
+      const ds = headsAt(api.P).map((d, j) => (on[j] ? `${Math.round(1000 * (state ? state[1 + j] : d / api.P.speed))} ms` : null)).filter(Boolean);
       legend.innerHTML = `<span style="color:var(--accent)">● tape ${(100 * v).toFixed(1)} cm/s</span><span>echoes ${ds.join(', ')}</span>`;
     };
     animate(canvas, () => {
@@ -114,7 +115,100 @@ const tapeView = {
   },
 };
 
+// The tape loop, as it runs: the tape passing the record head and the playback heads, with what the
+// record head left on it (the engine's messages), at the tape's own speed. The heads can be dragged.
+const loopView = {
+  title: 'The tape loop',
+  perform: true,
+  caption: 'the tape as it runs past the heads, from the record head (left) to the third playback head and on, at its own speed: the stripes are the magnetisation the record head left on it, red one way and blue the other, a wavelength on the tape for every cycle of your bass. Each playback head (bright when it is heard) plays the stretch of tape passing it, which the record head wrote its distance over the speed ago; their sum is recorded again, so the repeats come round on the tape too. Drag a head along the tape to move it: its echo moves with it. The heads and the tape are drawn to scale (the bar is 5 cm).',
+  mount(holder, api) {
+    const canvas = document.createElement('canvas');
+    holder.append(canvas);
+    canvas.style.touchAction = 'none';
+    const legend = document.createElement('div');
+    legend.className = 'legend';
+    holder.after(legend);
+    const chunks = []; // [where the record head was at the first value (m), the 24 values]
+    let v = api.P.speed, lastAt = 0, scale = 1e-3, shown = 0, drag = -1, geo = null;
+    api.on('pedal', (messages) => {
+      for (const m of messages) {
+        if (m.type === 1) v = m.values[0];
+        if (m.type === 2) { chunks.push([m.values[0], m.values.slice(2), m.values[1]]); lastAt = performance.now(); }
+      }
+      while (chunks.length > 1 && chunks[chunks.length - 1][0] - chunks[0][0] > 0.3) chunks.shift();
+      if (chunks.length > 1 && chunks[chunks.length - 1][0] < chunks[chunks.length - 2][0]) chunks.splice(0, chunks.length - 1); // reset, or the wrap at 1000 m
+    });
+    const SPAN = 0.22; // m of tape after the record head
+    const xOf = (d) => geo.l + ((geo.r - geo.l) * d) / SPAN;
+    canvas.addEventListener('pointerdown', (e) => {
+      if (!geo) return;
+      const r = canvas.getBoundingClientRect(), X = e.clientX - r.left;
+      const at = headsAt(api.P), j = at.map((d, i) => [i, Math.abs(xOf(d) - X)]).sort((a, b) => a[1] - b[1])[0];
+      if (j[1] > 14) return;
+      drag = j[0]; canvas.setPointerCapture(e.pointerId); e.preventDefault();
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      const r = canvas.getBoundingClientRect(), X = e.clientX - r.left;
+      if (drag < 0) { if (geo) canvas.style.cursor = headsAt(api.P).some((d) => Math.abs(xOf(d) - X) < 14) ? 'ew-resize' : ''; return; }
+      const d = Math.max(0.01, Math.min(0.2, ((X - geo.l) / (geo.r - geo.l)) * SPAN));
+      api.page.setAll({ [HEAD_IDS[drag]]: Math.round(d * 2000) / 2000 });
+    });
+    const end = () => { drag = -1; };
+    canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+    animate(canvas, () => {
+      const { g, w, h } = fit(canvas);
+      g.clearRect(0, 0, w, h);
+      geo = { l: 28, r: w - 12 };
+      const th = Math.max(14, Math.min(70, h * 0.3)), ty = Math.round((h - th) / 2 - 6);
+      // the tape, and on it what was recorded: newest at the record head
+      g.fillStyle = '#3a2a1c'; g.fillRect(geo.l - 20, ty, geo.r - geo.l + 32, th);
+      const fs = api.ctx?.sampleRate ?? 48000;
+      if (chunks.length) {
+        const [X0, vals, n] = chunks[chunks.length - 1];
+        const step = (v * n) / vals.length / fs, now = X0 + step * vals.length + v * Math.min(0.04, (performance.now() - lastAt) / 1000);
+        let big = 1e-4;
+        for (const [, vs] of chunks) for (const q of vs) big = Math.max(big, Math.abs(q));
+        scale = Math.max(big, scale * 0.98);
+        const pts = [];
+        for (const [Xc, vs, nc] of chunks) {
+          const dx = (v * nc) / vs.length / fs;
+          vs.forEach((q, j) => {
+            const d = now - (Xc + j * dx);
+            if (d < 0 || d > SPAN) return;
+            const u = Math.max(-1, Math.min(1, q / scale)), a = 0.75 * Math.abs(u) ** 0.6;
+            g.fillStyle = u > 0 ? `rgba(239,68,68,${a})` : `rgba(96,165,250,${a})`;
+            const X = xOf(d), wpx = ((geo.r - geo.l) * dx) / SPAN;
+            g.fillRect(X - wpx, ty + 2, Math.max(1, wpx + 0.5), th - 4);
+            pts.push([X, u]);
+          });
+        }
+        // and the same as a trace along the tape, so a wave reads as a wave
+        g.strokeStyle = 'rgba(255,246,220,0.85)'; g.lineWidth = 1.2; g.beginPath();
+        pts.sort((a, b) => a[0] - b[0]).forEach(([X, u], i) => { const Y = ty + th / 2 - (th / 2 - 3) * u; i ? g.lineTo(X, Y) : g.moveTo(X, Y); });
+        g.stroke();
+      }
+      // the heads: the record head at 0, the playback heads where they sit
+      const on = headsOn(api.P), at = headsAt(api.P);
+      const head = (X, color, label, sub, active) => {
+        g.fillStyle = color; g.globalAlpha = active ? 1 : 0.45;
+        g.fillRect(X - 5, ty - 18, 10, 16);
+        g.globalAlpha = 1;
+        g.fillStyle = css(active ? '--ink' : '--ink-2'); g.textAlign = 'center'; g.font = '11px system-ui, sans-serif';
+        g.fillText(label, X, ty - 22);
+        if (sub) g.fillText(sub, X, ty + th + 14);
+      };
+      head(xOf(0), css('--accent'), 'rec', '', true);
+      at.forEach((d, j) => head(xOf(d), on[j] ? '#e5e7eb' : '#6b7280', `${j + 1}`, `${Math.round((1000 * d) / v)} ms`, on[j]));
+      // a scale bar
+      g.strokeStyle = css('--ink-2'); g.lineWidth = 1;
+      const sy = h - 8; g.beginPath(); g.moveTo(xOf(0), sy); g.lineTo(xOf(0.05), sy); g.stroke();
+      g.fillStyle = css('--ink-2'); g.textAlign = 'left'; g.fillText('5 cm', xOf(0.05) + 4, sy + 4);
+      if (++shown % 15 === 1) legend.innerHTML = `<span style="color:var(--accent)">● tape ${(100 * v).toFixed(1)} cm/s</span><span>${chunks.length ? 'each stripe a cycle on the tape' : 'start audio and play to record on the tape'}</span>`;
+    });
+  },
+};
+
 const ECHO_SCOPE = 'the voltage at the input (dashed) and the output (solid) as you play, each scaled to fit. Each echo is the note again, a little rounder: the heads take the edges off, and the repeats more.';
 const ECHO_SPECTRUM = 'what goes in (dashed) and what comes out (solid), in dB of volts: the echoes add the note again, its upper harmonics lower than the dry note\'s. The green line is the note you are playing, and the ticks its harmonics.';
 
-createPedal({ PEDAL, worklet: new URL('./echo-worklet.js', import.meta.url), views: [headsView, tapeView, spectrumView({ caption: ECHO_SPECTRUM }), scopeView({ caption: ECHO_SCOPE })] });
+createPedal({ PEDAL, worklet: new URL('./echo-worklet.js', import.meta.url), views: [loopView, headsView, tapeView, spectrumView({ caption: ECHO_SPECTRUM }), scopeView({ caption: ECHO_SCOPE })] });

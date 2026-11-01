@@ -140,6 +140,12 @@ core, with no latency.
 
 ## The views
 
+* **The box**: the cabinet from the side in slow motion (1/10 to 1/1000 of real time): one driver's
+  cone and, ported, the plug of air in the port, moving to the same (magnified) scale, and the air
+  in the box shaded by its pressure. The page runs the engine itself on the last note played (until
+  one is, a note of the test bass) and reads its state each sample (`cabinet_state`): the cone's
+  excursion x, the box's pressure p, and the port's air velocity, summed into how far that air has
+  moved.
 * **The response**: what the microphone hears for a small steady sine at each frequency, and the
   impedance the amp drives, from the coupled equations solved in the frequency domain
   (`cabinet_response`).

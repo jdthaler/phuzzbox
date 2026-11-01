@@ -9,20 +9,23 @@ namespace spring {
 enum Param : int {
   tank = 0,
   wire = 1,
-  mounts = 2,
-  steel = 3,
-  oil = 4,
-  dry = 5,
-  reverb = 6,
-  level = 7,
-  kParamCount = 8
+  beads = 2,
+  mounts = 3,
+  steel = 4,
+  oil = 5,
+  dry = 6,
+  reverb = 7,
+  level = 8,
+  kParamCount = 9
 };
 
 inline const char *const tankChoices[] = {"Leem, three springs", "Olson, two springs", "One spring"};
+inline const char *const beadsChoices[] = {"Along the spring", "Across it"};
 
 inline const phuzzbox::ParamInfo kParams[] = {
   {"tank", "Tank", "The tank", phuzzbox::ParamKind::choice, 0.0, 2.0, 0.0, 0.0, false, "", 1.0, 2, tankChoices, 3},
   {"wire", "Wire diameter", "The tank", phuzzbox::ParamKind::continuous, 0.0002, 0.0006, 0.00035, 0.0, true, "mm", 1000.0, 2},
+  {"beads", "Bead magnets", "The tank", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, beadsChoices, 2},
   {"mounts", "Loss at the mounts", "The tank", phuzzbox::ParamKind::continuous, 0.05, 3.0, 0.4, 0.0, true, "dB", 1.0, 2},
   {"steel", "Steel loss factor", "The tank", phuzzbox::ParamKind::continuous, 0.00001, 0.002, 0.0002, 0.0, true, "× 10⁻⁴", 10000.0, 2},
   {"oil", "Oil damping", "The tank", phuzzbox::ParamKind::continuous, 0.0, 20.0, 0.0, 0.0, false, "/s", 1.0, 1},
@@ -31,12 +34,12 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"level", "Level", "The mix", phuzzbox::ParamKind::continuous, -24.0, 12.0, 0.0, 0.0, false, "dB", 1.0, 1},
 };
 
-inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.0}, {1, 0.00035}, {2, 0.4}, {3, 0.0002}, {4, 0.0}, {5, 1.0}, {6, 0.3}};
-inline const phuzzbox::PresetValue kPreset1[] = {{0, 0.0}, {1, 0.00035}, {2, 0.25}, {3, 0.0001}, {4, 0.0}, {5, 0.8}, {6, 0.8}};
-inline const phuzzbox::PresetValue kPreset2[] = {{0, 1.0}, {1, 0.00035}, {2, 0.4}, {3, 0.0002}, {4, 0.0}, {5, 1.0}, {6, 0.4}};
-inline const phuzzbox::PresetValue kPreset3[] = {{0, 2.0}, {1, 0.00035}, {2, 0.05}, {3, 0.00001}, {4, 0.0}, {5, 0.5}, {6, 1.0}};
-inline const phuzzbox::PresetValue kPreset4[] = {{0, 2.0}, {1, 0.00022}, {2, 0.15}, {3, 0.00005}, {4, 0.0}, {5, 0.6}, {6, 1.0}};
-inline const phuzzbox::PresetValue kPreset5[] = {{0, 0.0}, {1, 0.00035}, {2, 0.4}, {3, 0.0002}, {4, 8.0}, {5, 1.0}, {6, 0.5}};
+inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.0}, {1, 0.00035}, {3, 0.4}, {4, 0.0002}, {5, 0.0}, {6, 1.0}, {7, 0.3}};
+inline const phuzzbox::PresetValue kPreset1[] = {{0, 0.0}, {1, 0.00035}, {3, 0.25}, {4, 0.0001}, {5, 0.0}, {6, 0.8}, {7, 0.8}};
+inline const phuzzbox::PresetValue kPreset2[] = {{0, 1.0}, {1, 0.00035}, {3, 0.4}, {4, 0.0002}, {5, 0.0}, {6, 1.0}, {7, 0.4}};
+inline const phuzzbox::PresetValue kPreset3[] = {{0, 2.0}, {1, 0.00035}, {3, 0.05}, {4, 0.00001}, {5, 0.0}, {6, 0.5}, {7, 1.0}};
+inline const phuzzbox::PresetValue kPreset4[] = {{0, 2.0}, {1, 0.00022}, {3, 0.15}, {4, 0.00005}, {5, 0.0}, {6, 0.6}, {7, 1.0}};
+inline const phuzzbox::PresetValue kPreset5[] = {{0, 0.0}, {1, 0.00035}, {3, 0.4}, {4, 0.0002}, {5, 8.0}, {6, 1.0}, {7, 0.5}};
 inline const phuzzbox::Preset kPresets[] = {
   {"Spring under the bass", kPreset0, 7},
   {"Surf drip", kPreset1, 7},
