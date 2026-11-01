@@ -25,6 +25,14 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    gained triodes and current sources); tested against an independent JavaScript model
    (`test/preamp-circuit.mjs`). The output transformer, which the first plan put here, waits for
    a power-amp pedal, where it belongs.
+   The **Opto Compressor** landed 2026-11-01: an electroluminescent panel lit by a driver that
+   hears the signal after the cell (or before it), and a photocell from rate equations for its
+   free and trapped electrons (Rose 1951), tuned to the LA-2A's published timing (attack 10 ms,
+   half the release in 0.06 s, all of it in 0.5–5 s) and tested against them and an independent
+   model (`test/opto-circuit.mjs`).
+   Queued 2026-11-01, when Jesse asked for the rest of the blueprint: Speaker Cabinet, Envelope
+   Filter, Octave Down, Spring Reverb, Tape Echo, the Pedalboard page, Rotary Speaker, Plate
+   Reverb, Sympathetic Strings, Black Hole, Doppler, in that order.
    For the rig, done ahead of it (2026-10-31): **MIDI pedals**, Web MIDI on every page and a MIDI input on the plugins,
    with learn and the Roland FC-300's factory CCs as defaults (CC 7 volume, CC 1 the pedal's
    expression control, CC 65 the footswitch, CC 66 the tuner's mute); the **Wah** (an inductor

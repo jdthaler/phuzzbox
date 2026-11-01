@@ -449,3 +449,9 @@ body.perform .controls-bar { cursor: default; }
   body.one-screen .groups { grid-template-columns: minmax(0, 1fr); }
   .bar-tools .presets { width: 150px; }
 }
+/* on a phone a long pedal name gives way to the buttons beside it, and the menu stays on screen */
+@media (max-width: 600px) {
+  .pedal-menu, .pedal-menu summary { min-width: 0; }
+  .pedal-menu summary h1 { font-size: 16px; overflow: hidden; text-overflow: ellipsis; }
+  .menu-list { min-width: min(290px, calc(100vw - 24px)); }
+}
