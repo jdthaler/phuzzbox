@@ -1,9 +1,9 @@
 /* the Tube Preamp's enclosure: the tweed of the amp it comes from, a lacquered tan */
 :root { --enclosure: #b08a55; --enclosure-ink: #2a1d10; }
-/* the tubes' view: three plots side by side, stacked when the view is tall and narrow; on a
-   phone, where the views stack at their own heights, tall enough for all three */
+/* the tubes' view: one plot of all three triodes; on a phone, where the views stack at their
+   own heights, a fixed height */
 .card .canvas.tubes { height: 260px; }
 body.one-screen .card .canvas.tubes { flex: 1 1 0; height: auto; min-height: 90px; }
 @media (max-width: 600px), (max-width: 1050px) and (max-height: 500px) {
-  body.one-screen .card .canvas.tubes { flex: none; height: 600px; }
+  body.one-screen .card .canvas.tubes { flex: none; height: 300px; }
 }

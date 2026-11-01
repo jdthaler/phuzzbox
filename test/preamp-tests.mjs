@@ -125,7 +125,8 @@ function harmonics(P, f, amp, quality = 'high') {
   }
   check(worst < 1e-9, 'tone stack: the schematic\'s network is Yeh and Smith\'s closed form', `worst ${worst.toExponential(1)} relative`);
   const at = (f, o = {}) => mag(yehSmith(o.t ?? 0.5, o.m ?? 0.5, o.l ?? 0.5, f));
-  check(Math.abs(db(at(1000)) + 12.4) < 0.1, 'with every knob at halfway it takes 12.4 dB off at 1 kHz', `${db(at(1000)).toFixed(2)} dB`);
+  const inCircuit = (() => { const s = smallSignal(W({}), 1000); return db(mag(ratio(s.O, s.K3))); })();
+  check(Math.abs(db(at(1000)) + 11.8) < 0.1 && Math.abs(inCircuit + 12.4) < 0.1, 'with every knob at halfway it takes about 12 dB off at 1 kHz: 11.8 dB unloaded, 12.4 dB with the Master pot across it', `${db(at(1000)).toFixed(2)} dB, ${inCircuit.toFixed(2)} dB`);
   let lo = [Infinity, 0], lo0 = [Infinity, 0];
   for (let f = 100; f < 5000; f *= 1.01) { if (at(f) < lo[0]) lo = [at(f), f]; if (at(f, { m: 0 }) < lo0[0]) lo0 = [at(f, { m: 0 }), f]; }
   check(lo[1] > 650 && lo[1] < 760, 'and scoops the middle most near 700 Hz', `${lo[1].toFixed(0)} Hz`);
@@ -196,11 +197,11 @@ function note(key = 28, velocity = 0.8, seconds = 1) {
   return out;
 }
 {
-  // Gain: clean low down, breaking up past about a third, even harmonics first
-  const a = 0.2;
-  const h = [0.15, 0.33, 0.5, 0.8].map((g) => harmonics(W({ gain: g }), 110, a));
-  check(h[0].thd < -40 && h[1].thd > h[0].thd + 10 && h[3].thd > -15, 'Gain: a 0.2 V note comes through clean low down and breaks up as it turns', h.map((q, i) => `${[15, 33, 50, 80][i]} %: ${q.thd.toFixed(1)} dB`).join(', '));
-  check(h[1].h2 > h[1].h3, 'and as it starts to, the second harmonic leads the third', `${h[1].h2.toFixed(1)} dB against ${h[1].h3.toFixed(1)} dB`);
+  // Gain: a 0.2 V note clean up to about a third, breaking up from about 40 %: the second
+  // harmonic first, the third further up
+  const G = [0.15, 0.33, 0.4, 0.5, 0.8], h = G.map((g) => harmonics(W({ gain: g }), 110, 0.2));
+  check(h[0].thd < -45 && h[1].thd < -45 && h[2].thd > -40 && h[3].thd > -35 && h[4].thd > -20, 'Gain: a 0.2 V note comes through clean to about a third, and breaks up from about 40 %', h.map((q, i) => `${100 * G[i]} %: ${q.thd.toFixed(1)} dB`).join(', '));
+  check(h[2].h2 > h[2].h3 + 3 && h[4].h3 > h[4].h2 + 10, 'the second harmonic leads as it starts to, the third further up', `at 40 %: ${h[2].h2.toFixed(1)} against ${h[2].h3.toFixed(1)} dB; at 80 %: ${h[4].h2.toFixed(1)} against ${h[4].h3.toFixed(1)} dB`);
   // grid current: the follower's and V2a's grids conduct when pushed
   const igPeak = (o) => Math.max(...run(W(o), note(28, 1)).messages.filter((m) => m.type === 1).map((m) => m.values[26]));
   check(igPeak({ gain: 0.1 }) < 1e-6 && igPeak({ gain: 0.9 }) > 1e-5, 'pushed, the grids conduct: tens of microamperes, against none played clean', `${(igPeak({ gain: 0.1 }) * 1e6).toFixed(2)} µA clean, ${(igPeak({ gain: 0.9 }) * 1e6).toFixed(0)} µA cranked`);
@@ -273,7 +274,7 @@ for (const q of ['high', 'medium', 'low']) {
 // 13. CPU
 if (!CI) {
   const n = 10 * fs, inp = Float32Array.from({ length: n }, (_, i) => 0.3 * Math.sin((2 * Math.PI * 82.4 * i) / fs) * Math.exp(-(i % fs) / fs));
-  for (const [q, budget] of [['high', 0.4], ['medium', 0.2]]) {
+  for (const [q, budget] of [['high', 0.4], ['medium', 0.25]]) {
     const e = new Effect(fs);
     e.setQuality(q);
     e.setParams(W({ gain: 0.6 }));

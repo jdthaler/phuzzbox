@@ -131,7 +131,7 @@ class Circuit {
   int nU, nK, nI, nX, nN, nO;      // unknown nodes, voltage sources, inputs (and current sources), states, ports, outputs
   std::vector<int> col;            // node → its unknown's index, or −1 − its source's index
   std::vector<int> xa, xb, na, nb, oa; // the reactive parts', the junctions' and the outputs' nodes
-  std::vector<double> gX;          // the reactive parts' companion conductances
+  std::vector<double> gX, gOld;    // the reactive parts' companion conductances (and before update())
   std::vector<int> sign;           // +1 capacitor, −1 inductor
   Mat Y, Yk, S, work;              // nodal matrix, its known-node part, its inverse, space to invert
   Mat SxT, SnT, SY;                // S N_xU', S N_nU', S Y_K

@@ -8,7 +8,7 @@ all in the middle. The supply has its dropper and its filter capacitor, so the r
 little when you dig in. The input is the tube's 1 MΩ grid leak, so your pickup sees what it would
 see plugged into the amp.
 
-Part of [Phuzzbox](../README.md).
+Part of [PhuzzBox](../README.md).
 
 | Input | |
 |---|---|
@@ -59,7 +59,7 @@ At the operating point, with the RSD-1 tube (the default):
 
 Kuehnel computes V2a at −1.2 V, 181 V and about 1.4 mA. For a small signal the first stage gains
 66 (36 dB), the second 45 (33 dB), the follower 0.98; the tone stack with every knob at halfway
-takes 12.4 dB off at 1 kHz.
+takes about 12 dB off at 1 kHz.
 
 ## The triodes
 
@@ -95,10 +95,12 @@ plates sit higher and the preamp has about 5 dB less gain.
 ### How it distorts
 
 Gain sets how much of V1a's output reaches V2a's grid, which rests 1.15 V below its cathode.
+A 0.2 V note comes through clean (its harmonics 50 dB down) with Gain up to about a third.
 Swing it more than that above and the grid conducts: its current, through the 270 kΩ stopper and
 the pot, holds the grid near its cathode, and the plate's swing flattens on the way down. Swing
 it a few volts below and the tube cuts off: the plate rises to the rail through its 100 kΩ, and
-the swing flattens on the way up. The two sides are not alike, so the even harmonics come first.
+the swing flattens on the way up. The two sides are not alike, so the even harmonics come first: from about 40 % the second
+harmonic leads, and further up, where the tube cuts off as well, the third takes over.
 The cathode follower adds its own: its grid rests only 0.48 V below its cathode, so a large swing
 from V2a pulls the follower's grid into conduction, which loads V2a's plate. That is the
 Bassman's thick, compressed break-up, and the **The tubes** view shows each tube's trail running
@@ -107,12 +109,13 @@ into those edges.
 ## The tone stack
 
 The stack (Yeh and Smith's analysis of the Bassman's) is a passive network: three capacitors and
-four resistances, three of them pots. Yeh and Smith solve it as a third-order transfer function,
+four resistances, three of them pots. Yeh and Smith solve it, unloaded, as a third-order transfer function,
 
   H(s) = (b1 s + b2 s² + b3 s³) / (1 + a1 s + a2 s² + a3 s³)
 
 whose coefficients are polynomials in the three pots' settings. With every knob at halfway, it
-takes 12.4 dB off at 1 kHz and scoops the middle most, near 700 Hz. From halfway:
+takes about 12 dB off at 1 kHz (11.8 dB unloaded, 12.4 dB here with the Master pot across its
+output) and scoops the middle most, near 700 Hz. From halfway:
 
 - **Bass** (1 MΩ, audio taper): full up lifts 60 Hz by about 4 dB; all the way down takes about
   8 dB off.
@@ -145,7 +148,7 @@ preamp about 3 dB quieter.
 
 ## Solving it
 
-The circuit is a netlist for Phuzzbox's nodal DK solver (`native/core/include/phuzzbox/dk.h`;
+The circuit is a netlist for PhuzzBox's nodal DK solver (`native/core/include/phuzzbox/dk.h`;
 Yeh, Abel, Vladimirescu and Smith 2010; Holters and Zölzer 2011), as the Wah is. Every capacitor
 and the coil become, by the trapezoidal rule, a conductance and a current carried from the last
 sample; the linear network (twenty nodes) is solved once, again whenever a knob moves; and each

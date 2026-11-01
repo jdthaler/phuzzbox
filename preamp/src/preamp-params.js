@@ -5,7 +5,7 @@ import { bass, recorded } from '../../buffer/src/buffer-params.js';
 
 const pedal = [
   { id: 'gain', label: 'Gain', min: 0, max: 1, def: 0.3, unit: '%', scale: 100, decimals: 0, perform: true,
-    hint: 'The amp\'s Volume: a 1 MΩ audio pot between the two gain stages, so it sets how hard the second triode is driven. Low, both stages stay on the straight part of their curves and the bass comes through clean and warm; past about a third, the second triode\'s grid is pushed past its cathode on the peaks and below cut-off in the troughs, and the notes break up, softly at first.' },
+    hint: 'The amp\'s Volume: a 1 MΩ audio pot between the two gain stages, so it sets how hard the second triode is driven. Low, both stages stay on the straight part of their curves and a firm note comes through clean and warm. From about 40 %, the second triode\'s grid is pushed past its cathode on the peaks and the notes thicken, the second harmonic first; further up it cuts off in the troughs too, and the third harmonic takes over.' },
   { id: 'bass', label: 'Bass', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'The tone stack\'s 1 MΩ audio pot. From halfway, full up lifts 60 Hz by about 4 dB, and all the way down takes about 8 dB off it. The stack is passive: turning a knob up only takes away less.' },
   { id: 'middle', label: 'Middle', min: 0, max: 1, def: 0.5, unit: '%', scale: 100, decimals: 0, perform: true,

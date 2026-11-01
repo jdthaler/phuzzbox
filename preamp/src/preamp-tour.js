@@ -11,7 +11,7 @@ export const TOUR = tour('preamp', [
 
   Ik = G (ln(1 + e^(C (Va/µ + Vg))) / C)^γ
 
-The grid counts about µ ≈ 100 times as much as the plate, which is where the gain comes from. **The tubes** shows each triode's curves with its load line: the first stage rests at 217 V and 1.06 mA, the second at 186 V and 1.38 mA. Played gently, each trail stays on the straight middle of its line: the first stage gains 66, the second 45, and nothing clips.`,
+The grid counts about µ ≈ 100 times as much as the plate, which is where the gain comes from. **The tubes** shows the 12AX7's curves with each stage's load line, in its own colour: the first stage rests at 217 V and 1.06 mA, the second at 186 V and 1.38 mA. Played gently, each trail stays on the straight middle of its line: the first stage gains 66, the second 45, and nothing clips.`,
   },
   {
     title: 'Turning up the Gain',
@@ -36,7 +36,7 @@ So when V2a swings hard, the follower's grid conducts too, and loads V2a's plate
     views: ['The tone stack', 'Spectrum'],
     preset: 'Edge of break-up',
     play: [riff({ times: 3 }), sweep('middle', 1, 0, { at: 1, dur: 5 }), sweep('bass', 0.5, 1, { at: 7, dur: 3 })],
-    text: `The tone stack is three capacitors and three pots, passive: with every knob at halfway it takes 12.4 dB off at 1 kHz, and scoops the middle most, near 700 Hz. Watch the dashed curve.
+    text: `The tone stack is three capacitors and three pots, passive: with every knob at halfway it takes about 12 dB off at 1 kHz, and scoops the middle most, near 700 Hz. Watch the dashed curve.
 
 **Middle** goes from full up to all the way down: the scoop deepens to about 22 dB near 900 Hz, the famous scooped sound. Then **Bass** goes up, which lifts 60 Hz by about 4 dB. No knob adds anything: each only takes away less. The gain the tubes made before the stack is what lets it.`,
   },

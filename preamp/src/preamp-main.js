@@ -14,6 +14,7 @@ const STAGES = [
   { name: 'V2a, second gain stage', r: 100e3 + 820 },
   { name: 'V2b, cathode follower', r: 100e3 },
 ];
+const COLOURS = ['--accent', '--accent-2', '--good']; // each stage's colour in the tubes' view
 const N = 240, FREQS = Float64Array.from({ length: N }, (_, i) => 20 * 1000 ** (i / (N - 1)));
 const db = (x) => 20 * Math.log10(x);
 
@@ -51,7 +52,7 @@ const mA = (a) => `${(a * 1e3).toFixed(2)} mA`, V = (x) => `${x.toFixed(1).repla
 // it goes as you play.
 const tubeView = {
   title: 'The tubes',
-  caption: 'each triode\'s plate current against the voltage across it, at grid voltages of 0, −1, −2, −3 and −4 V from its cathode (thin), with the line its resistors allow (dashed) and the operating point (ring). Play, and the trail runs up and down its load line: past the 0 V curve the grid is conducting, at the bottom the tube is cut off.',
+  caption: 'the 12AX7\'s plate current against the voltage across it, at grid voltages of 0, −1, −2, −3 and −4 V from its cathode (thin), with each stage\'s load line (dashed) and operating point (ring), in its own colour: V1a orange, V2a blue, V2b green. Play, and the trail runs up and down its load line: past the 0 V curve the grid is conducting, at the bottom the tube is cut off.',
   mount(holder, api) {
     holder.classList.add('tubes');
     const canvas = document.createElement('canvas');
@@ -68,40 +69,51 @@ const tubeView = {
       const vs = Array.from({ length: 80 }, (_, i) => (vmax * (i + 0.5)) / 80);
       curves = { vs, ia: plateCurves(P, vs, VG) };
       imax = 1.2 * (op.node.D / STAGES[2].r);
-      legend.innerHTML = op.tubes.map((t, k) => `<span>${STAGES[k].name.split(',')[0]}: ${V(t.va)} across it, ${mA(t.ia)}, grid ${V(t.vg)}</span>`).join('') + `<span>rail ${V(op.node.D)}</span>`;
+      legend.innerHTML = op.tubes.map((t, k) => `<span style="color:var(${COLOURS[k]})">● ${STAGES[k].name.split(',')[0]}: ${V(t.va)} across it, ${mA(t.ia)}, grid ${V(t.vg)}</span>`).join('') + `<span>rail ${V(op.node.D)}</span>`;
       draw();
     };
     const draw = () => {
       if (!op) return;
       const { g, w, h } = fit(canvas);
       g.clearRect(0, 0, w, h);
-      const stacked = h > 0.6 * w, pw = stacked ? w : w / 3, ph = stacked ? h / 3 : h;
+      // one plot: the three triodes are the same tube, and their load lines all but coincide
+      // (each about 100 kΩ from the same rail), so each stage is a colour on the same picture
+      const box = { l: 46, r: w - 34, t: 10, b: h - 32 };
+      const X = (v) => box.l + ((box.r - box.l) * Math.max(0, Math.min(v, vmax))) / vmax;
+      const Y = (i) => box.b - ((box.b - box.t) * Math.max(0, Math.min(i, imax))) / imax;
+      g.strokeStyle = css('--grid'); g.fillStyle = css('--ink-2'); g.lineWidth = 1; g.font = '11px system-ui, sans-serif';
+      g.strokeRect(box.l, box.t, box.r - box.l, box.b - box.t);
+      g.textAlign = 'center'; g.fillText('V_plate − V_cathode (V)', (box.l + box.r) / 2, box.b + 26);
+      for (let v = 0; v <= vmax; v += 100) g.fillText(String(v), X(v), box.b + 12);
+      g.textAlign = 'right';
+      for (let i = 0; i <= imax * 1e3; i += 1) g.fillText(String(i), box.l - 4, Y(i * 1e-3) + 4);
+      g.save(); g.translate(12, (box.t + box.b) / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillText('I_plate (mA)', 0, 0); g.restore();
+      // each grid curve, labelled where it leaves the plot
+      g.strokeStyle = css('--ink-2');
+      curves.ia.forEach((ia, c) => {
+        g.save(); g.beginPath(); g.rect(box.l, box.t, box.r - box.l, box.b - box.t); g.clip();
+        g.beginPath(); ia.forEach((i, j) => (j ? g.lineTo(X(curves.vs[j]), Y(i)) : g.moveTo(X(curves.vs[j]), Y(i)))); g.stroke();
+        g.restore();
+        let j = ia.findIndex((i) => i > imax); if (j < 0) j = ia.length - 1;
+        const x = X(curves.vs[j]), y = Y(ia[j]);
+        g.textAlign = 'left';
+        if (j === ia.length - 1) g.fillText(`${VG[c]} V`.replace('-', '−'), box.r + 3, y + 4);
+        else { g.textAlign = 'center'; if (x < box.r - 12) g.fillText(`${VG[c]}`.replace('-', '−'), x, box.t + 10); }
+      });
+      // each stage's DC load line: the rail through its plate and cathode resistors
+      g.save(); g.beginPath(); g.rect(box.l, box.t, box.r - box.l, box.b - box.t); g.clip();
+      g.setLineDash([5, 4]);
+      [0, 1, 2].forEach((k) => { g.strokeStyle = css(COLOURS[k]); g.globalAlpha = 0.6; g.beginPath(); g.moveTo(X(op.node.D), Y(0)); g.lineTo(X(0), Y(op.node.D / STAGES[k].r)); g.stroke(); });
+      g.setLineDash([]); g.globalAlpha = 1;
       [0, 1, 2].forEach((k) => {
-        const ox = stacked ? 0 : k * pw, oy = stacked ? k * ph : 0;
-        const box = { l: ox + 46, r: ox + pw - 10, t: oy + 16, b: oy + ph - 32 };
-        const X = (v) => box.l + ((box.r - box.l) * Math.max(0, Math.min(v, vmax))) / vmax;
-        const Y = (i) => box.b - ((box.b - box.t) * Math.max(0, Math.min(i, imax))) / imax;
-        g.strokeStyle = css('--grid'); g.fillStyle = css('--ink-2'); g.lineWidth = 1; g.font = '11px system-ui, sans-serif';
-        g.strokeRect(box.l, box.t, box.r - box.l, box.b - box.t);
-        g.textAlign = 'left'; g.fillText(STAGES[k].name, box.l + 6, box.t + 13);
-        g.textAlign = 'center'; g.fillText('V_plate − V_cathode (V)', (box.l + box.r) / 2, box.b + 26);
-        for (let v = 0; v <= vmax; v += 100) g.fillText(String(v), X(v), box.b + 11);
-        g.textAlign = 'right'; g.fillText((imax * 1e3).toFixed(1), box.l - 4, box.t + 8); g.fillText('0', box.l - 4, box.b);
-        g.save(); g.translate(ox + 10, (box.t + box.b) / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillText('I_plate (mA)', 0, 0); g.restore();
-        g.save();
-        g.beginPath(); g.rect(box.l, box.t, box.r - box.l, box.b - box.t); g.clip();
-        g.strokeStyle = css('--ink-2'); g.lineWidth = 1;
-        for (const ia of curves.ia) { g.beginPath(); ia.forEach((i, j) => (j ? g.lineTo(X(curves.vs[j]), Y(i)) : g.moveTo(X(curves.vs[j]), Y(i)))); g.stroke(); }
-        // the DC load line: the rail through the stage's resistances (its plate and cathode resistors)
-        g.strokeStyle = css('--accent-2'); g.setLineDash([5, 4]); g.beginPath(); g.moveTo(X(op.node.D), Y(0)); g.lineTo(X(0), Y(op.node.D / STAGES[k].r)); g.stroke(); g.setLineDash([]);
         const t = trail[k];
-        g.fillStyle = css('--accent');
+        g.fillStyle = css(COLOURS[k]);
         t.forEach(([v, i], j) => { g.globalAlpha = 0.15 + (0.85 * j) / t.length; g.fillRect(X(v) - 1.5, Y(i) - 1.5, 3, 3); });
         g.globalAlpha = 1;
         const q = op.tubes[k];
-        g.strokeStyle = css('--accent'); g.lineWidth = 2; g.beginPath(); g.arc(X(q.va), Y(q.ia), 5, 0, 2 * Math.PI); g.stroke();
-        g.restore();
+        g.strokeStyle = css(COLOURS[k]); g.lineWidth = 2; g.beginPath(); g.arc(X(q.va), Y(q.ia), 5, 0, 2 * Math.PI); g.stroke(); g.lineWidth = 1;
       });
+      g.restore();
     };
     api.on('params', update);
     api.on('pedal', (messages) => {

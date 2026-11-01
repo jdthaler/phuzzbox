@@ -103,7 +103,7 @@ Circuit::Circuit(const Netlist &n, double fs) : net(n), fs(fs), T(1 / fs) {
   for (size_t k = 0; k < net.inductors.size(); k++) sign[net.capacitors.size() + k] = -1;
   z.assign(nX, 0); vx.assign(nX, 0); vn.assign(nN, 0); in.assign(nN, 0); p.assign(nN, 0); r.assign(nN, 0);
   Jd.assign((size_t)nN * nN, 0); Jm.assign((size_t)nN * nN, 0); dv.assign(nN, 0);
-  dcV.assign(net.nodes + 1, 0); iDC.assign(nN, 0); uStep.assign(nI, 0); vPrev.assign(nN, 0); xa.assign(nX, 0); xb.assign(nX, 0);
+  dcV.assign(net.nodes + 1, 0); iDC.assign(nN, 0); uStep.assign(nI, 0); vPrev.assign(nN, 0); gOld.assign(nX, 0); xa.assign(nX, 0); xb.assign(nX, 0);
   na.assign(nN, 0); nb.assign(nN, 0); oa.assign(nO, 0);
   for (int k = 0; k < nX; k++) {
     const Netlist::Two &t = k < (int)net.capacitors.size() ? net.capacitors[k] : net.inductors[k - net.capacitors.size()];
@@ -231,7 +231,11 @@ void Circuit::build(bool dc) {
 
 void Circuit::update() {
   if (!dirty) return;
+  // a capacitor or inductor whose value changes keeps its voltage and its current: its carried
+  // current z = g v + i (for a capacitor; −(g v + i) for an inductor) moves with its conductance
+  for (int k = 0; k < nX; k++) gOld[k] = gX[k];
   build(false);
+  for (int k = 0; k < nX; k++) z[k] += sign[k] * (gX[k] - gOld[k]) * vx[k];
   dirty = false;
 }
 
@@ -367,6 +371,7 @@ bool Circuit::operatingPoint(const double *u) {
   for (int k = 0; k < nX; k++) {
     const double v = dcV[xa[k]] - dcV[xb[k]];
     z[k] = k < nc ? gX[k] * v : -GSHORT * v;
+    vx[k] = v;
   }
   return ok;
 }
