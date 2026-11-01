@@ -214,6 +214,9 @@ button.info::after { content: ""; position: absolute; inset: -5px; border-radius
 .string.guitar.s2 button::after { background: repeating-linear-gradient(90deg, #e6e6e6 0 1px, #a5a5a5 1px 2px); }
 .frets[data-strings="6"] .string button { height: 21px; }
 .string button:active, .string button.down { background: radial-gradient(circle, var(--accent) 0 5px, rgb(251 146 60 / 0.35) 6px, transparent 13px); }
+/* a fretless bass: no fret wires, only the lines where they would be, and the dots */
+.frets.fretless .string button:not(.open) { border-right: 1px solid rgb(236 227 201 / 0.28); box-shadow: none; }
+.frets.fretless .string button:not(.open):hover { border-color: rgb(236 227 201 / 0.28); }
 
 /* ---- controls: faders, toggle switches -------------------------------------------------------- */
 .controls { margin-top: 16px; }
@@ -448,6 +451,8 @@ body.one-screen .dock { margin: 0; position: relative; z-index: 4; background: v
 .tour-slot:empty { display: none; }
 .bass-bar.bar { border-bottom: 0; padding-top: 5px; padding-bottom: 5px; gap: 8px; }
 .bass-bar .spacer { flex: 1; }
+.bass-bar .slide-mode { flex: none; font-size: 12px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink-2); white-space: nowrap; }
+.bass-bar .slide-mode[aria-pressed="true"] { color: var(--ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .bass-hint { font-size: 12px; color: var(--ink-2); min-width: 0; }
 .bass:not(.hint-open) .bass-hint { display: none; }
 .bass .frets { margin: 0 14px 12px; }
@@ -1392,7 +1397,7 @@ const __m7 = (() => {
 //   section: the physics it is made of (SECTIONS), which groups it on the landing page and in the
 //   menu, in the order PEDALS lists them
 
-const PHUZZBOX_VERSION = '0.3.0';
+const PHUZZBOX_VERSION = '0.4.0';
 // the site's credits link to the source; the only link to GitHub on the site (Jesse, 2026-11-01):
 // everything a reader needs is on the site itself, in How it works
 const SOURCE = 'https://github.com/jdthaler/phuzzbox';

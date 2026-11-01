@@ -114,7 +114,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const key = `phuzzbox.${PEDAL.id}`;
   // the player's instrument, bass or guitar (shared/instruments.js): each keeps its own settings
   const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: store.get('phuzzbox.channel', 0), mute: false,
-    instrument: instrument(store.get(INSTRUMENT_KEY, 'bass')).id };
+    instrument: instrument(store.get(INSTRUMENT_KEY, 'bass')).id, fretless: store.get('phuzzbox.fretless', false) === true };
   const ownDefaults = () => instrumentDefaults(PEDAL, defaults(PEDAL.groups), state.instrument);
   const saveP = () => store.set(paramsKey(PEDAL.id, state.instrument), P);
   const P = {};
@@ -219,7 +219,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const fretGrid = h('div', { class: 'frets' });
   const fretOf = new Map(); // a computer key's code (and Shift) → its fret, to light it
   const fretOfKey = new Map(); // a note's fret, on the highest string that plays it (for the riff and the tours)
-  const codeKey = new Map(); // a computer key's code (and Shift) → the note it plays
+  const codeKey = new Map(); // a computer key's code (and Shift) → the string and fret it plays
   const keyCode = (code, shift) => `${shift ? '⇧' : ''}${code}`;
   const bassLabel = h('span', { class: 'toggles-label' });
   const bassHint = h('span', { class: 'bass-hint' });
@@ -231,6 +231,16 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     return b;
   });
   const instSwitch = h('div', { class: 'mode instrument', role: 'group', 'aria-label': 'Instrument' }, ...instBtns);
+  // fretted, a slide steps through the frets; fretless (a slide bar on a guitar), it glides
+  const slideBtn = h('button', { type: 'button', class: 'ghost slide-mode', 'aria-pressed': String(state.fretless) });
+  slideBtn.addEventListener('click', () => { setFretless(!state.fretless); slideBtn.blur(); });
+  function setFretless(on) {
+    state.fretless = on;
+    store.set('phuzzbox.fretless', on);
+    slideBtn.setAttribute('aria-pressed', String(on));
+    fretGrid.classList.toggle('fretless', on && instrument(state.instrument).open.length <= 4);
+    send({ type: 'fretless', on });
+  }
   function buildFrets() {
     const I = instrument(state.instrument), n = I.open.length;
     fretGrid.replaceChildren(); fretOf.clear(); fretOfKey.clear(); codeKey.clear();
@@ -245,12 +255,21 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
         const keys = [plain && plain[f].replace(/^Key|^Digit/, ''), shifted && `⇧${shifted[f].replace(/^Key|^Digit/, '')}`].filter(Boolean).join(' or ');
         const inlay = s === Math.floor((n - 1) / 2) && [3, 5, 7, 9].includes(f);
         const b = h('button', { type: 'button', class: `${f === 0 ? 'open' : ''}${inlay ? ' inlay' : ''}`, 'aria-label': `${I.strings[s]} string, fret ${f}`, title: keys });
-        b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture?.(e.pointerId); b.classList.add('down'); play(k, 0.75); });
-        const up = () => { b.classList.remove('down'); stop(k); };
+        // a finger on the fretboard: down plucks (or slides there, if the string is already held),
+        // dragging along the string slides, up lifts it
+        b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture?.(e.pointerId); press(`p${e.pointerId}`, s, f, 0.75, b); });
+        b.addEventListener('pointermove', (e) => {
+          const id = `p${e.pointerId}`, at = touching.get(id);
+          if (!at || !(e.buttons & 1) && e.pointerType === 'mouse') return;
+          const cells = row.querySelectorAll('button'), first = cells[0].getBoundingClientRect();
+          const to = Math.max(0, Math.min(cells.length - 1, (e.clientX - first.left) / first.width - 0.5));
+          if (Math.abs(to - at.f) > 0.02) move(id, to, cells[Math.round(to)]);
+        });
+        const up = (e) => lift(`p${e.pointerId}`);
         b.addEventListener('pointerup', up);
         b.addEventListener('pointercancel', up);
-        if (plain) { fretOf.set(keyCode(plain[f], false), b); codeKey.set(keyCode(plain[f], false), k); }
-        if (shifted) { fretOf.set(keyCode(shifted[f], true), b); codeKey.set(keyCode(shifted[f], true), k); }
+        if (plain) { fretOf.set(keyCode(plain[f], false), b); codeKey.set(keyCode(plain[f], false), { s, f }); }
+        if (shifted) { fretOf.set(keyCode(shifted[f], true), b); codeKey.set(keyCode(shifted[f], true), { s, f }); }
         if (!fretOfKey.has(k)) fretOfKey.set(k, b);
         row.append(b);
       }
@@ -260,15 +279,20 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     bassAbout.title = `How the ${I.test.toLowerCase()} works`;
     bassAbout.setAttribute('aria-label', bassAbout.title);
     bassHint.textContent = n > 4
-      ? 'a guitar made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers; Shift for the D, G, B and high E), open to the ninth fret'
-      : 'a bass made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers), open to the ninth fret';
+      ? 'a guitar made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers; Shift for the D, G, B and high E), open to the ninth fret. Hold a key and press another on the same row, or drag along a string, to slide'
+      : 'a bass made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers), open to the ninth fret. Hold a key and press another on the same row, or drag along a string, to slide';
+    slideBtn.textContent = n > 4 ? 'Slide bar' : 'Fretless';
+    slideBtn.title = n > 4
+      ? 'A slide bar on the strings: a slide glides through every pitch between the notes, rather than stepping fret by fret'
+      : 'A fretless bass: a slide glides through every pitch between the notes, rather than stepping fret by fret';
+    fretGrid.classList.toggle('fretless', state.fretless && n <= 4);
     for (const b of instBtns) b.setAttribute('aria-pressed', String(b.dataset.instrument === I.id));
   }
   const bassFold = h('button', { type: 'button', class: 'fold', 'aria-controls': 'frets' });
   bassFold.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6"/></svg>';
   fretGrid.id = 'frets';
   const bass = h('section', { class: 'bass', 'aria-label': 'Test instrument' },
-    h('div', { class: 'bar bass-bar' }, bassLabel, bassAbout, instSwitch, bassHint,
+    h('div', { class: 'bar bass-bar' }, bassLabel, bassAbout, instSwitch, slideBtn, bassHint,
       h('span', { class: 'spacer' }), riffBtn, bassFold),
     fretGrid);
   buildFrets();
@@ -415,7 +439,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     instSel.value = I.id;
     if (I.id === state.instrument) return;
     if (riff) toggleRiff();
-    for (const [code, was] of held) { was.fret?.classList.remove('down'); stop(was.k); held.delete(code); }
+    for (const id of [...touching.keys()]) lift(id);
     state.instrument = I.id;
     store.set(INSTRUMENT_KEY, I.id);
     loadP();
@@ -488,6 +512,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       send({ type: 'fullScale', volts: state.fullScale });
       send({ type: 'source', which: state.source });
       send({ type: 'instrument', which: state.instrument });
+      send({ type: 'fretless', on: state.fretless });
       send({ type: 'mute', on: state.mute });
       tHz.textContent = 'Play a note';
       startBtn.textContent = 'Audio on';
@@ -628,7 +653,6 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   }, 100);
 
   // ---- the test bass: on screen only while it is the input
-  const held = new Map(); // a computer key's code → the note it plays and its fret
   function showBass() {
     const on = state.source === 'bass';
     if (!on && riff) toggleRiff();
@@ -642,6 +666,40 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     send({ type: 'note', key: k, velocity: v });
   }
   const stop = (k) => send({ type: 'noteOff', key: k });
+  // the fingers on the strings, from the keys and the fretboard alike: each a string, the fret it
+  // is at (fractional while dragging) and the fret it lights. A string sounds its newest finger;
+  // a finger put down on a string already held slides there, and lifting the one sounding slides
+  // back to the one still down (or mutes the string, if none is)
+  const SLIDE = 0.15; // s: a slide between two keys
+  const touching = new Map(); // id (a key's code, or the pointer) → { s, f, cell }
+  const newest = (s) => [...touching.values()].filter((t) => t.s === s).pop();
+  async function press(id, s, f, v, cell) {
+    if (touching.has(id)) return;
+    const held = newest(s);
+    touching.set(id, { s, f, cell });
+    cell?.classList.add('down');
+    if (!ctx) await start();
+    if (state.source !== 'bass') { sourceSel.value = 'bass'; await setSource('bass'); }
+    if (held) send({ type: 'slide', string: s, fret: f, seconds: SLIDE });
+    else send({ type: 'pluck', string: s, fret: f, velocity: v });
+  }
+  function move(id, f, cell) {
+    const t = touching.get(id);
+    if (!t) return;
+    t.f = f;
+    if (cell !== t.cell) { t.cell?.classList.remove('down'); t.cell = cell; cell?.classList.add('down'); }
+    if (newest(t.s) === t) send({ type: 'slide', string: t.s, fret: f, seconds: 0.03 });
+  }
+  function lift(id) {
+    const t = touching.get(id);
+    if (!t) return;
+    const sounding = newest(t.s) === t;
+    touching.delete(id);
+    t.cell?.classList.remove('down');
+    if (!sounding) return;
+    const back = newest(t.s);
+    send(back ? { type: 'slide', string: t.s, fret: back.f, seconds: SLIDE } : { type: 'lift', string: t.s });
+  }
   let riff = null;
   function toggleRiff() {
     if (riff) { clearTimeout(riff); riff = null; riffBtn.textContent = 'Play a riff'; return; }
@@ -660,8 +718,8 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   addEventListener('keydown', (e) => {
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target.closest?.('input, select, textarea, [role=slider]')) return;
-    const c = keyCode(e.code, e.shiftKey && state.instrument === 'guitar'), k = codeKey.get(c);
-    if (k !== undefined && state.source === 'bass') { e.preventDefault(); held.set(e.code, { k, fret: fretOf.get(c) }); held.get(e.code).fret?.classList.add('down'); play(k, 0.75); }
+    const c = keyCode(e.code, e.shiftKey && state.instrument === 'guitar'), at = codeKey.get(c);
+    if (at && state.source === 'bass') { e.preventDefault(); press(e.code, at.s, at.f, 0.75, fretOf.get(c)); }
     else if (e.code === 'Space') {
       // Space is the footswitch, except on a button, menu or link reached with the keyboard
       // (:focus-visible), which Space presses as usual; one clicked with the mouse keeps focus
@@ -671,8 +729,8 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       e.preventDefault(); setBypass(!state.bypass);
     }
   });
-  // the note a key started, whatever Shift does meanwhile
-  addEventListener('keyup', (e) => { const was = held.get(e.code); if (was && held.delete(e.code)) { was.fret?.classList.remove('down'); stop(was.k); } });
+  // the finger a key put down, whatever Shift does meanwhile
+  addEventListener('keyup', (e) => lift(e.code));
 
   // ---- what a guided tour (shared/tour.js) drives: the settings, the footswitch, the source,
   // the test bass (its frets lit as it plays), the views and the controls a step changes
