@@ -142,6 +142,13 @@ Phuzz (no junction capacitances), the Tube Preamp (its tubes pass nothing back b
 picofarads: a switch would be a mute) and the Buffer (no circuit of its own) say in their READMEs why
 they have none. A new pedal decides the same way (`docs/PEDAL_GUIDE.md`).
 
+Decided 2026-11-01 (Jesse): **semantic versions as Forte's.** PhuzzBox and each pedal have their
+own version, moved only at a release: a change leaves a note in `changes/`, and
+`tools/release.mjs` gathers the notes into `CHANGELOG.md` and bumps the versions. Each pedal's
+contract with saved songs (`native/pedals/<slug>/<slug>-contract.json`) is checked on every pull
+request, a warning below 1.0 and a major version from it. The five releases before this all
+carried 0.1.0; the changelog's first entry records them.
+
 Decided 2026-11-01 (Jesse): one menu at the top left, as Forte's, with the home page and every
 pedal in it (`shared/nav.js`); the pedals grouped by the physics they are made of (`SECTIONS` in
 `shared/registry.js`: circuits, light and photocells, vibrating steel, paper and air, motion and

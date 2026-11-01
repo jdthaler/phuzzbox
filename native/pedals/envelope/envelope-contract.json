@@ -1,0 +1,23 @@
+{"slug": "envelope",
+ "params": [
+  {"id":"mode","kind":"choice","options":["lp","bp","hp"],"def":"bp"},
+  {"id":"reso","kind":"continuous","min":0.5,"max":15,"step":0,"log":true,"def":5},
+  {"id":"rangeC","kind":"continuous","min":1e-8,"max":2.2e-7,"step":0,"log":true,"def":4.7e-8},
+  {"id":"sens","kind":"continuous","min":0,"max":40,"step":0,"log":false,"def":20},
+  {"id":"direction","kind":"choice","options":["up","down"],"def":"up"},
+  {"id":"attack","kind":"continuous","min":0.001,"max":0.1,"step":0,"log":true,"def":0.01},
+  {"id":"decay","kind":"continuous","min":0.02,"max":2,"step":0,"log":true,"def":0.15},
+  {"id":"lifetime","kind":"continuous","min":0.003,"max":0.2,"step":0,"log":true,"def":0.015},
+  {"id":"trapTime","kind":"continuous","min":0.1,"max":5,"step":0,"log":true,"def":0.5},
+  {"id":"litR","kind":"continuous","min":1000,"max":20000,"step":0,"log":true,"def":5000},
+  {"id":"blend","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"Quack (band-pass)","values":{"mode":"bp","reso":5,"rangeC":4.7e-8,"sens":20,"direction":"up","attack":0.01,"decay":0.15,"blend":0.2}},
+  {"name":"Synth bass (low-pass)","values":{"mode":"lp","reso":6,"rangeC":4.7e-8,"sens":22,"direction":"up","attack":0.005,"decay":0.2,"blend":0}},
+  {"name":"Gentle bloom","values":{"mode":"lp","reso":1.5,"rangeC":4.7e-8,"sens":16,"direction":"up","attack":0.03,"decay":0.4,"blend":0.3}},
+  {"name":"Downward","values":{"mode":"bp","reso":5,"rangeC":4.7e-8,"sens":20,"direction":"down","attack":0.005,"decay":0.25,"blend":0.2}},
+  {"name":"Squelch","values":{"mode":"bp","reso":12,"rangeC":3.3e-8,"sens":28,"direction":"up","attack":0.003,"decay":0.12,"blend":0.15}},
+  {"name":"Slow cells","values":{"mode":"bp","reso":5,"rangeC":4.7e-8,"sens":20,"direction":"up","attack":0.005,"decay":0.05,"lifetime":0.1,"trapTime":2,"blend":0.2}}
+ ]}

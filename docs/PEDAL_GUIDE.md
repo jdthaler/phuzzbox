@@ -41,11 +41,12 @@ to a page that doesn't bring its own, and a pedal with something to say about th
 plots against frequency marks the note being played with `markNote(g, x, box, api.note)`
 (`shared/plot.js`). Every page is dark, with the hardware drawn as hardware (`shared/pedal.css`).
 
-Add the pedal to `shared/registry.js` (`ready: true`, `version`, a unique four-letter
+Add the pedal to `shared/registry.js` (`ready: true`, `version: '0.1.0'`, a unique four-letter
 `plugin.code`, its `enclosure` colours as its `style.css` has them, and the `section` of physics it
 is made of, from `SECTIONS`: that groups it on the landing page and in every page's menu) and to
-`native/CMakeLists.txt`. The landing page draws its face from its descriptor (`shared/face.js`), so
-it needs nothing else there.
+`native/CMakeLists.txt`, and add a note to `changes/` with a `### <Name> (new)` section, which
+becomes its first `CHANGELOG.md` entry when it is released. The landing page draws its face from
+its descriptor (`shared/face.js`), so it needs nothing else there.
 
 ## The effect contract
 
@@ -156,3 +157,19 @@ A plain Node script printing `ok`/`FAIL` lines (`test/harness.mjs`). Load the ef
 against independent physics; the engine against the model; each hint; identity or unity where
 the physics says so; silence, NaN recovery, latency and tail; presets in range; CPU (named
 `CPU: …`, skipped on CI).
+
+## Versions
+
+Each pedal has its own semantic version, kept in `shared/registry.js`; PhuzzBox has one
+(`PHUZZBOX_VERSION` and `package.json`) for `shared/`, the landing page, the Pedalboard, the test
+bass, `tools/` and the app. The plugins carry the pedal's (`<slug>-info.cmake`), the app
+PhuzzBox's. Versions change only when `main` is released to `live` (`CLAUDE.md`). A change adds a
+note to `changes/` instead (`changes/README.md`): MINOR for new features or changes to the sound
+or the parameters, PATCH for fixes that leave the intended sound alone, MAJOR (from 1.0) when
+songs saved with the plugins break. `tools/release.mjs` turns the notes into `CHANGELOG.md`
+entries and bumps the versions.
+
+What a saved song relies on, each parameter's id, kind, range, step, scaling and default, the
+choices' options and the presets in order, is listed in `native/pedals/<slug>/<slug>-contract.json`,
+generated with the parameter tables. `node tools/contract.mjs` says what a change breaks; adding
+parameters, options at the end and presets at the end breaks nothing.

@@ -1,0 +1,15 @@
+{"slug": "plate",
+ "params": [
+  {"id":"decay","kind":"continuous","min":0.6,"max":10,"step":0,"log":true,"def":3},
+  {"id":"reverb","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.35},
+  {"id":"dry","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":1},
+  {"id":"top","kind":"continuous","min":2000,"max":8000,"step":0,"log":true,"def":5000},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0}
+ ],
+ "presets": [
+  {"name":"Studio plate","values":{"decay":2.5,"reverb":0.35,"dry":1}},
+  {"name":"Short and tight","values":{"decay":0.8,"reverb":0.4,"dry":1}},
+  {"name":"Long and dark","values":{"decay":8,"reverb":0.3,"dry":1}},
+  {"name":"All plate","values":{"decay":3,"reverb":1,"dry":0}},
+  {"name":"Light on the computer","values":{"top":2500}}
+ ]}
