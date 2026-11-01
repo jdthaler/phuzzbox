@@ -21,7 +21,8 @@ import { PEDAL as ENVELOPE } from '../../envelope/src/envelope-pedal.js';
 import { PEDAL as OCTAVE } from '../../octave/src/octave-pedal.js';
 import { PEDAL as SPRING } from '../../spring/src/spring-pedal.js';
 import { PEDAL as ECHO } from '../../echo/src/echo-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO].map((d) => [d.id, d]));
+import { PEDAL as ROTARY } from '../../rotary/src/rotary-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

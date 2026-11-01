@@ -16,11 +16,12 @@ namespace envelope { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace octave { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace spring { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace echo { const phuzzbox::PedalInfo &pedalInfo(); }
+namespace rotary { const phuzzbox::PedalInfo &pedalInfo(); }
 
 namespace phuzzbox::app {
 
 const std::vector<const PedalInfo *> &pedals() {
-  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo(), &preamp::pedalInfo(), &opto::pedalInfo(), &cabinet::pedalInfo(), &envelope::pedalInfo(), &octave::pedalInfo(), &spring::pedalInfo(), &echo::pedalInfo()};
+  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo(), &preamp::pedalInfo(), &opto::pedalInfo(), &cabinet::pedalInfo(), &envelope::pedalInfo(), &octave::pedalInfo(), &spring::pedalInfo(), &echo::pedalInfo(), &rotary::pedalInfo()};
   return all;
 }
 

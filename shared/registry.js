@@ -59,6 +59,11 @@ export const PEDALS = [
     after: 'the multi-head tape echoes of the 1970s',
     blurb: 'A loop of tape past a record head and three playback heads: every repeat recorded again, darker and more saturated, wavering with the capstan.',
   },
+  {
+    id: 'rotary', name: 'Rotary Speaker', version: '0.1.0', ready: true, plugin: { code: 'Rtry' },
+    after: 'the rotating-horn organ speakers of the 1960s',
+    blurb: 'A horn and a drum spinning past two microphones: the pitch rises as each comes toward you and falls as it goes, heard at the retarded time.',
+  },
 ];
 
 export const byId = (id) => PEDALS.find((p) => p.id === id);

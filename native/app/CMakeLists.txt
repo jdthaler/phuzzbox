@@ -4,7 +4,7 @@
 # the audio engine and the pedals, for the tests
 add_library(phuzz_app_engine STATIC engine.cpp pedals.cpp)
 target_include_directories(phuzz_app_engine PUBLIC .)
-target_link_libraries(phuzz_app_engine PUBLIC phuzzbox_core phuzz_buffer phuzz_wah phuzz_phuzz phuzz_preamp phuzz_opto phuzz_cabinet phuzz_envelope phuzz_octave phuzz_spring phuzz_echo)
+target_link_libraries(phuzz_app_engine PUBLIC phuzzbox_core phuzz_buffer phuzz_wah phuzz_phuzz phuzz_preamp phuzz_opto phuzz_cabinet phuzz_envelope phuzz_octave phuzz_spring phuzz_echo phuzz_rotary)
 
 if (NOT PHUZZ_APP OR NOT PHUZZ_PLUGINS)
   return()
