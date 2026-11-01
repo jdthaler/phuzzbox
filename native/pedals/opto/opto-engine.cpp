@@ -33,7 +33,10 @@ void Engine::process(const float *in, float *L, float *R, int count) {
     // the driver hears the attenuated signal (feedback) or the input (feed-forward); the
     // panel's phosphor follows its emission; the cell's electrons follow the light
     light += (emission(M, drive(M, M.feedForward ? x : va)) - light) * glow;
+    if (light < 1e-30) light = 0; // in the dark the glow decays toward denormals: call it out
     cellStep(M, light, n, m, dt);
+    if (n < 1e-30) n = 0;
+    if (m < 1e-30) m = 0;
     const double y = makeup * ((1 - mix) * va + mix * x);
     L[i] = R[i] = (float)y;
     if (messages) {

@@ -234,6 +234,18 @@ function notes(list) {
 
 // 11. CPU
 if (!CI) {
+  // the silence after a note costs what silence from rest does: the cell's glow and electrons
+  // decay without running into denormals
+  const quiet = (pre) => {
+    const e = new Effect(fs); e.setParams(W({}));
+    const L = new Float32Array(fs), R = new Float32Array(fs);
+    if (pre) { e.process(burst(0.5, 1, 0), L, R); for (let k = 0; k < 8; k++) e.process(new Float32Array(fs), L, R); }
+    const t0 = performance.now(); for (let k = 0; k < 4; k++) e.process(new Float32Array(fs), L, R); const ms = performance.now() - t0;
+    e.destroy(); return ms / 4;
+  };
+  quiet(false);
+  const after = quiet(true), rest = quiet(false);
+  check(after < 2 * rest + 1, 'CPU: the silence after a note costs what silence from rest does (no denormals)', `${after.toFixed(1)} ms a second after a note, ${rest.toFixed(1)} ms from rest`);
   const n = 10 * fs, inp = Float32Array.from({ length: n }, (_, i) => 0.3 * Math.sin((2 * Math.PI * 82.4 * i) / fs) * Math.exp(-(i % fs) / fs));
   const e = new Effect(fs);
   e.setParams(W({}));
