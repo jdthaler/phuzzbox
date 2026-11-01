@@ -11,6 +11,75 @@ Versions change only when `main` is released to `live`, the branch the site is p
 each pull request into `main` leaves a note in `changes/` (`changes/README.md`), and
 `node tools/release.mjs` gathers them into one entry here, bumping each version once.
 
+## 2026-11-01 — the physics live in the views, and fixed physics made movable; the plugins' own window; your own presets and shareable links; a test guitar, and every pedal set for a guitar; versions, release notes and a changelog, as Forte's
+
+### PhuzzBox 0.2.0
+- **Slow motion:** views can replay each note you play (or, until you do, a test bass note) through the pedal's own model at 1/10 to 1/1000 of real time, with a speed menu, a pause and a replay in the card's title bar (`shared/motion.js`).
+- **Harmonics on a curve:** a response curve can carry the note's harmonics as dots, each as large as it is loud at the input (`markPartials` in `shared/plot.js`).
+- **The plugins' window:** in MainStage, Logic or any host, a pedal's plugin opens the app's face as
+  its own window, in a web view (Forte's editor): the knobs, footswitch, Volume, meters and tuner,
+  with the host's parameters behind them. A knob turned in the window is recorded by the host, an
+  automation lane or a MIDI pedal moves the knob in the window, and the song keeps the window's
+  layout.
+- **Your own presets, as on Forte:** the Presets menu on every pedal's page has *Save these
+  settings…*, which keeps them under a name in this browser, *Copy a link to these settings*, a
+  link that opens the page playing them, and *Your presets and files…*, the list (play, link,
+  save to a file, delete) and opening a preset file. A link carries only what differs from the
+  defaults; a preset file names the pedal and its version, so a later version can read it.
+- **Test guitar:** the test bass's sibling, six strings of a 10–46 set on a 25.5-inch scale, a pick and a single coil, with its own How it works.
+- **Instrument:** Bass or Guitar, in the Rig and beside the fretboard. It sets the test instrument (six strings on screen, Shift for the top four), the riff, the tuner's range (60–1400 Hz for a guitar) and each pedal's settings, which each instrument keeps apart.
+- The guided tours play the test bass, and a guitarist's page comes back when one ends.
+- The Pedalboard starts a guitar's pickup from the test guitar's.
+- **Versions that move:** PhuzzBox and each pedal keep their own semantic version, as Forte and
+  its instruments do. A change leaves a note in `changes/`; a release gathers the notes into
+  `CHANGELOG.md` and bumps each version named once (`node tools/release.mjs`), and the plugins and
+  the app carry the new versions.
+- The front page shows each pedal's version on its tile, beside PhuzzBox's at the foot.
+- **Saved songs are guarded:** each pedal's parameters and presets are listed in
+  `native/pedals/<id>/<id>-contract.json`, generated from its descriptor, and `tools/contract.mjs`
+  says what a change would break in a song saved with the plugins. The `tests` workflow warns
+  about a break now and, from a pedal's 1.0 on, will ask for a major version.
+
+### Buffer 0.2.0
+- **The pickup's response:** the note being played and its harmonics on the curve.
+- Set for a guitar, the pickup starts as the test guitar's single coil (2.5 H, 6 kΩ).
+
+### Phuzz 0.2.0
+- Set for a guitar, the pickup it loads starts as the test guitar's single coil.
+
+### Wah 0.2.0
+- **The sweep:** the note being played and its harmonics on the curve, so the peak can be seen lifting them.
+- Set for a guitar, the sweep capacitor starts at the 10 nF it was built with, and the pickup (for the Wah backwards) as the test guitar's.
+
+### Tube Preamp 0.2.0
+- Set for a guitar, the pickup starts as the test guitar's single coil.
+
+### Cabinet 0.2.0
+- **The box:** a new view, the cone, the port's air and the box's pressure in slow motion.
+- **Guitar cabinets:** 1 × 12, 2 × 12 and 4 × 12 layouts, and a **Guitar 4 × 12 closed back** preset of Eminence Legend 1258s from their datasheet, where a page set for a guitar starts. Linear travel (Xmax) now goes down to 0.3 mm.
+
+### Envelope Filter 0.2.0
+- **The filter:** the note's harmonics ride the curve as dots.
+- Set for a guitar, the range capacitors start at 15 nF, a guitar's range (317 Hz to 4.8 kHz).
+
+### Octave Down 0.2.0
+- Set for a guitar, the tracking filter starts at 150 Hz, which follows the test guitar's open strings.
+
+### Spring Reverb 0.2.0
+- **The springs:** a new view of the tank's springs in slow motion, the twist from each note running from bead to bead, from the engine's own modes.
+- **Bead magnets:** a control for which way the beads' magnets lie, along the springs (as before) or across them, five times harder to turn and a darker tank.
+
+### Tape Echo 0.2.0
+- **The tape loop:** a new view of the tape running past the heads with what the record head wrote on it.
+- **Head 1 to Head 3:** where each playback head sits, 1 to 20 cm after the record head, dragged on The tape loop.
+
+### Plate Reverb 0.2.0
+- **The plate:** now in slow motion, every mode the engine plays summed into the plate's motion, the ripples spreading from the driver.
+- **Where they sit:** the driver and both pickups are controls (across and up the plate), dragged on The plate. The transducers' gain stays the one for the default places.
+
+### Black Hole 0.2.0
+- **The test masses:** a new view, a ring of free-falling masses stretched and squeezed by the hole's wave in slow motion.
+
 ## 2026-11-01 — the first releases
 
 Until versions were kept, five releases went to `live` at 0.1.0 without bumping anything. This
