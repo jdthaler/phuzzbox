@@ -33,7 +33,10 @@ The page lays itself out (`shared/layout.js`, after Forte's): the pedal at the l
 with a toggle for each view, a Controls bar with a toggle for each group, the test bass below. A
 view's `title` names its toggle and its `caption` waits behind ⓘ; `perform: true` shows it at first
 (by default the first two are). A view draws to fill its card, whatever shape it is given, and
-redraws on resize. A spectrum marks the note being played with `markNote(g, x, box, api.note)`
+redraws on resize. Every page has a Scope and a Spectrum (`shared/views.js`): the shell adds them
+to a page that doesn't bring its own, and a pedal with something to say about them passes
+`scopeView({ caption })` or `spectrumView({ caption })` among its views. A view of its own that
+plots against frequency marks the note being played with `markNote(g, x, box, api.note)`
 (`shared/plot.js`). Every page is dark, with the hardware drawn as hardware (`shared/pedal.css`).
 
 Add the pedal to `shared/registry.js` (`ready: true`, `version`, a unique four-letter
@@ -101,7 +104,7 @@ export const TOUR = tour('phuzz', [
 ]);
 ```
 
-A step names its views by their titles (and `Tuner`), a preset by name, parameters by id; it
+A step names its views by their titles (and `Tuner`, `Scope`, `Spectrum`), a preset by name, parameters by id; it
 starts engaged unless `bypass: true`, and keeps the player's own bass (the descriptor's `keep`).
 `play` holds notes (`note('E1', { at, dur, vel })`, `run`, `riff()` for the page's riff),
 `{ at, set: { … } }` and `sweep(id, from, to, { at, dur, log })` to turn a knob partway, and
