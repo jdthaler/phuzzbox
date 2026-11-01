@@ -1,7 +1,7 @@
 # Speaker Cabinet
 
 A bass cabinet heard by a microphone: an 8 × 10, a 4 × 10, a 2 × 10 or a 1 × 15, sealed or
-ported, modelled from its drivers' Thiele–Small parameters. The amp's volts drive a voice coil in a
+ported, or for a guitar a 4 × 12, 2 × 12 or 1 × 12 of guitar drivers, modelled from its drivers' Thiele–Small parameters. The amp's volts drive a voice coil in a
 magnet's gap. The coil pushes a cone on its suspension, and the cone pushes on the air in the box
 and, through a port, on the air in the port. The microphone, 1 m away, hears what all that air
 does. Nothing is a recorded response: the low end, the bump at the box's resonance, the darker top
@@ -55,6 +55,12 @@ and cone. They turn into masses, springs and a motor:
 So the 10-inch has a 40.2 g cone on a 3.21 N/mm suspension and a 13.0 T·m motor. The values are
 typical of bass drivers of each size, not one maker's.
 
+A guitar's 12-inch driver is another animal, and its values are one maker's, Eminence's for its
+Legend 1258 (an 8 Ω guitar driver): F_s 94 Hz, Q_es 1.18, Q_ms 6.15, V_as 32.5 L, R_e 7.44 Ω,
+L_e 0.7 mH, S_d 506.7 cm² and X_max 0.48 mm. A light cone on a stiff suspension with a weak motor:
+it is barely damped (Q_ts 0.99), rolls off a guitar's low E rather than reaching under it, and has
+a tenth of a bass driver's travel.
+
 ## Sealed and ported
 
 Sealed, the box's air is a second spring behind the cone. Thiele and Small's closed box is a
@@ -73,6 +79,11 @@ The 4 × 10 ported preset's two 10 cm ports, 9 cm long, in 140 L tune it to 45.3
 port does the work: the impedance dips between two peaks and the cones barely move. Below it, the
 port's air no longer pushes back, the cones flap freely and the sound falls toward 24 dB an
 octave. A low B (31 Hz) moves the cones 6.15 mm per volt, against 1.05 mm at the tuning.
+
+The **Guitar 4 × 12 closed back** preset, which a page set for a guitar starts from, puts four
+Legend 1258s in about 120 L, sealed, wired two in series by two in parallel (8 Ω), on a tube
+amp's 4 Ω: α = 4 × 32.5/120 = 1.08, so f_c = 135.7 Hz and Q_tc = 1.43, a bump an octave above
+the low E that is much of a guitar cabinet's thump.
 
 ## Reference efficiency
 
@@ -129,7 +140,8 @@ core, with no latency.
 * **Microphone sensitivity**: the microphone's volts per pascal, the pedal's output level. A
   dynamic microphone gives about 2 mV/Pa, a condenser about 20.
 * **Drivers**: 1 × 15, 2 × 10 in parallel, 4 × 10 (two in series, two strings), 8 × 10 (two in
-  series, four strings).
+  series, four strings); for a guitar 1 × 12, 2 × 12 in parallel and 4 × 12 (two in series, two
+  strings). The size is a name: the cone is the driver's S_d.
 * **Box** and **Box volume**: sealed or ported, and the air inside, shared by all the drivers.
 * **Ports**, **Port diameter**, **Port length**: one to four round ports.
 * **The drivers**: the Thiele–Small parameters above, and X_max.
@@ -196,6 +208,8 @@ core, with no latency.
 * Small, R. H. (1972). "Closed-Box Loudspeaker Systems, Part 1: Analysis." *Journal of the Audio
   Engineering Society* 20. [AES E-Library](https://aes2.org/publications/elibrary-page/?id=2022).
   The closed box as a second-order high-pass filter, f_c and Q_tc.
+* Eminence Speaker, *Legend 1258* datasheet, [eminence.com](https://eminence.com/products/legend_1258).
+  The guitar driver's Thiele–Small parameters.
 * Klippel, W. (2006). "Tutorial: Loudspeaker Nonlinearities: Causes, Parameters, Symptoms."
   *Journal of the Audio Engineering Society* 54.
   [AES E-Library](https://aes2.org/publications/elibrary-page/?id=13881). The force factor Bl(x)

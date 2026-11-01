@@ -21,6 +21,14 @@ native/pedals/<slug>/<slug>-params.h    generated from the descriptor (tools/gen
 test/<slug>-tests.mjs
 ```
 
+Every descriptor says what changes for a **guitar** (`guitar`, shared/instruments.js): the values
+its parameters take on a page set for a guitar where the defaults (a bass's) won't do, or `{}` when
+nothing does. A pedal that models the pickup takes `GUITAR_PICKUP` (the test guitar's single coil);
+one built for a bass's range takes the guitar's (the Wah's 10 nF, the Envelope Filter's 15 nF,
+the Octave Down's 150 Hz). The page keeps each instrument's settings apart
+(`phuzzbox.<id>.params` and `phuzzbox.<id>.guitar.params`); `test/guitar-tests.mjs` checks every
+pedal's values and what they do on the test guitar.
+
 A descriptor may name its `expression` parameter (the Wah's `position`): a MIDI expression pedal
 (CC 1) moves it by default on the page and in the plugins. Every page also has the MIDI pedals card
 (`shared/midi-panel.js`), and every plugin a MIDI input with Bypass and Volume pedal parameters

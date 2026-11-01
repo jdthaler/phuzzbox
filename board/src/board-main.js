@@ -11,6 +11,7 @@ import { BOARDS } from './board-params.js';
 import { BOARD_PEDALS, ENCLOSURES } from './board-pedals.js';
 import { wire, jacks, BASS, SOURCE, LOAD, inputImpedance } from './board-jacks.js';
 import { MAX_SLOTS, PEAKS } from './board-chain.js';
+import { INSTRUMENT_KEY, paramsKey, instrumentDefaults } from '../../shared/instruments.js';
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
@@ -27,8 +28,11 @@ const h = (tag, attrs = {}, ...kids) => {
 const KEY = 'phuzzbox.board.chain';
 let uids = 0;
 const uid = () => `${Date.now().toString(36)}-${(uids++).toString(36)}`;
-// a pedal comes onto the board as you left it on its own page
-const ownSettings = (id) => ({ ...defaults(BOARD_PEDALS[id].groups), ...store.get(`phuzzbox.${id}.params`, {}) });
+// a pedal comes onto the board as you left it on its own page, for the instrument you play
+const ownSettings = (id) => {
+  const inst = store.get(INSTRUMENT_KEY, 'bass'), D = BOARD_PEDALS[id];
+  return { ...instrumentDefaults(D, defaults(D.groups), inst), ...store.get(paramsKey(id, inst), {}) };
+};
 const slotOf = (id, preset) => ({ uid: uid(), id, P: { ...ownSettings(id), ...(preset ? BOARD_PEDALS[id].presets[preset] : {}) }, bypass: false });
 const boardOf = (name) => BOARDS[name].map(([id, preset]) => slotOf(id, preset));
 // what the board sets on a pedal, so its card leaves it out

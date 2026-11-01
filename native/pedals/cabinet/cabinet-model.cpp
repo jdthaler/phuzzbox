@@ -10,7 +10,7 @@ namespace cabinet {
 
 Model model(const double *P) {
   Model M;
-  static constexpr int N[] = {1, 2, 4, 8}, S[] = {1, 1, 2, 2};
+  static constexpr int N[] = {1, 2, 4, 8, 1, 2, 4}, S[] = {1, 1, 2, 2, 1, 1, 2}; // the layouts, as the descriptor's choices
   const int k = (int)P[layout], s = S[k], par = N[k] / S[k];
   M.n = N[k];
   M.perVolt = 1.0 / s;

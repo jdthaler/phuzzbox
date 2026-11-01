@@ -20,8 +20,9 @@
 import { params, defaults, fmt, toUnit, fromUnit } from './params.js';
 import { midiPanel } from './midi-panel.js';
 import { fetchBytes } from './wasm.js';
-import { TESTBASS_URL, RIFF, RIFF_BPM } from './testbass.js';
-import { tune, Tuner, OPEN_STRINGS } from './tuner.js';
+import { TESTBASS_URL, RIFF_BPM } from './testbass.js';
+import { tune, Tuner } from './tuner.js';
+import { INSTRUMENTS, instrument, RIFFS, INSTRUMENT_KEY, paramsKey, instrumentDefaults } from './instruments.js';
 import { howItWorks } from './notes.js';
 import { scopeView, spectrumView } from './views.js';
 import { byId, PEDALS, PHUZZBOX_VERSION, SOURCE } from './registry.js';
@@ -43,16 +44,18 @@ const h = (tag, attrs = {}, ...kids) => {
   return e;
 };
 
-// The bass's fretboard on the computer keys: each row of letters a string, as tablature has them
-// (the bottom row the low E), from the open string up nine frets.
+// The fretboard on the computer keys: each row of letters a string, as tablature has them (the
+// bottom row the low E), from the open string up nine frets. A guitar has six strings and a
+// keyboard four rows, so with the guitar Shift moves the rows up two strings.
 const ROWS = [
   ['KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period', 'Slash'],
   ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyG', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'],
   ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyP'],
   ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'],
 ];
-const OPEN = [28, 33, 38, 43];
-const STRING_NAMES = ['E', 'A', 'D', 'G'];
+// what the page calls the player's instrument in a control's label or a group's name ('Your bass',
+// 'Cable from the bass'), for a guitar
+const say = (text, inst) => (inst === 'guitar' ? text.replace(/\b(your|the) bass\b/gi, (m, w) => `${w} guitar`) : text);
 
 // a knob: drag up or right to turn it, Shift for fine, a double tap for its default, arrows too.
 // get() is its value, put(v) sets it (the Pedalboard's pedals have knobs of their own)
@@ -101,11 +104,20 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const reg = byId(PEDAL.id) ?? {};
   const all = params(PEDAL.groups);
   const key = `phuzzbox.${PEDAL.id}`;
-  const P = { ...defaults(PEDAL.groups), ...store.get(`${key}.params`, {}) };
-  for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
-  const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: 0, mute: false };
-  const listeners = { params: [], audio: [], pedal: [] };
-  const api = { P, PEDAL, note: null, ctx: null, analyser: null, input: null, fullScale: () => state.fullScale, on: (ev, fn) => listeners[ev].push(fn), send: (m) => send(m) };
+  // the player's instrument, bass or guitar (shared/instruments.js): each keeps its own settings
+  const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: 0, mute: false,
+    instrument: instrument(store.get(INSTRUMENT_KEY, 'bass')).id };
+  const ownDefaults = () => instrumentDefaults(PEDAL, defaults(PEDAL.groups), state.instrument);
+  const saveP = () => store.set(paramsKey(PEDAL.id, state.instrument), P);
+  const P = {};
+  const loadP = () => {
+    for (const k of Object.keys(P)) delete P[k];
+    Object.assign(P, ownDefaults(), store.get(paramsKey(PEDAL.id, state.instrument), {}));
+    for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
+  };
+  loadP();
+  const listeners = { params: [], audio: [], pedal: [], instrument: [] };
+  const api = { P, PEDAL, note: null, instrument: () => state.instrument, ctx: null, analyser: null, input: null, fullScale: () => state.fullScale, on: (ev, fn) => listeners[ev].push(fn), send: (m) => send(m) };
   let ctx = null, node = null, volume = null, micSource = null, micStream = null, tunerAnalyser = null, splitter = null;
   const send = (m) => node?.port.postMessage(m);
   const emit = (ev) => listeners[ev].forEach((fn) => fn(api));
@@ -117,8 +129,8 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const app = document.getElementById('app');
   const status = h('span', { class: 'status' });
   const startBtn = h('button', { class: 'primary start', type: 'button', onclick: () => start() }, 'Start audio');
-  const sourceSel = h('select', { 'aria-label': 'Input', title: 'What plays into the pedal: the test bass, or your interface\'s input', onchange: () => setSource(sourceSel.value) },
-    h('option', { value: 'bass' }, 'Test bass (keys)'));
+  const sourceSel = h('select', { 'aria-label': 'Input', title: 'What plays into the pedal: the test bass or guitar, or your interface\'s input', onchange: () => setSource(sourceSel.value) },
+    h('option', { value: 'bass' }, `${instrument(state.instrument).test} (keys)`));
   const chanSel = h('select', { 'aria-label': 'Input channel', class: 'chan', onchange: () => { state.channel = +chanSel.value; connectMic(); } },
     h('option', { value: 0 }, 'In 1'), h('option', { value: 1 }, 'In 2'));
   const latency = h('span', { class: 'pill', title: 'The browser\'s estimate of the delay from input to output' }, 'latency –');
@@ -201,35 +213,64 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     v.mount(holder, api);
   });
 
-  // the test bass, pinned below while it is the input
+  // the test bass or guitar, pinned below while it is the input
   const riffBtn = h('button', { type: 'button', class: 'ghost', onclick: () => toggleRiff() }, 'Play a riff');
   const fretGrid = h('div', { class: 'frets' });
-  const fretOf = new Map(); // a computer key's code → its fret, to light it
-  const fretOfKey = new Map(); // a note's fret, on the highest string that plays it (for the tours)
-  for (let s = 3; s >= 0; s--) {
-    const row = h('div', { class: `string s${s}` }, h('span', { class: 'sname' }, STRING_NAMES[s]));
-    for (let f = 0; f < 10; f++) {
-      const k = OPEN[s] + f;
-      const b = h('button', { type: 'button', class: `${f === 0 ? 'open' : ''}${s === 2 && [3, 5, 7, 9].includes(f) ? ' inlay' : ''}`, 'aria-label': `${STRING_NAMES[s]} string, fret ${f}`, title: ROWS[s][f].replace(/^Key|^Digit/, '') });
-      b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture?.(e.pointerId); b.classList.add('down'); play(k, 0.75); });
-      const up = () => { b.classList.remove('down'); stop(k); };
-      b.addEventListener('pointerup', up);
-      b.addEventListener('pointercancel', up);
-      fretOf.set(ROWS[s][f], b);
-      if (!fretOfKey.has(k)) fretOfKey.set(k, b);
-      row.append(b);
+  const fretOf = new Map(); // a computer key's code (and Shift) → its fret, to light it
+  const fretOfKey = new Map(); // a note's fret, on the highest string that plays it (for the riff and the tours)
+  const codeKey = new Map(); // a computer key's code (and Shift) → the note it plays
+  const keyCode = (code, shift) => `${shift ? '⇧' : ''}${code}`;
+  const bassLabel = h('span', { class: 'toggles-label' });
+  const bassHint = h('span', { class: 'bass-hint' });
+  const bassAbout = h('button', { type: 'button', class: 'info', onclick: () => notes.open(state.instrument === 'guitar' ? 'testguitar' : 'testbass') }, 'i');
+  // the instrument, beside the fretboard too: the same choice as the Rig's
+  const instBtns = Object.values(INSTRUMENTS).map((i) => {
+    const b = h('button', { type: 'button', 'aria-pressed': 'false', 'data-instrument': i.id, title: `Play ${i.name.toLowerCase()}: the test ${i.name.toLowerCase()}, the tuner's range and each pedal's settings for it` }, i.name);
+    b.addEventListener('click', () => { setInstrument(i.id); b.blur(); });
+    return b;
+  });
+  const instSwitch = h('div', { class: 'mode instrument', role: 'group', 'aria-label': 'Instrument' }, ...instBtns);
+  function buildFrets() {
+    const I = instrument(state.instrument), n = I.open.length;
+    fretGrid.replaceChildren(); fretOf.clear(); fretOfKey.clear(); codeKey.clear();
+    fretGrid.dataset.strings = n;
+    for (let s = n - 1; s >= 0; s--) {
+      const row = h('div', { class: `string s${s}${n > 4 ? ' guitar' : ''}` }, h('span', { class: 'sname' }, I.strings[s]));
+      // the computer keys' row for this string: without Shift the bottom four strings, with it (a
+      // guitar's) the top four
+      const plain = s < 4 ? ROWS[s] : null, shifted = n > 4 && s >= 2 ? ROWS[s - 2] : null;
+      for (let f = 0; f < 10; f++) {
+        const k = I.open[s] + f;
+        const keys = [plain && plain[f].replace(/^Key|^Digit/, ''), shifted && `⇧${shifted[f].replace(/^Key|^Digit/, '')}`].filter(Boolean).join(' or ');
+        const inlay = s === Math.floor((n - 1) / 2) && [3, 5, 7, 9].includes(f);
+        const b = h('button', { type: 'button', class: `${f === 0 ? 'open' : ''}${inlay ? ' inlay' : ''}`, 'aria-label': `${I.strings[s]} string, fret ${f}`, title: keys });
+        b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture?.(e.pointerId); b.classList.add('down'); play(k, 0.75); });
+        const up = () => { b.classList.remove('down'); stop(k); };
+        b.addEventListener('pointerup', up);
+        b.addEventListener('pointercancel', up);
+        if (plain) { fretOf.set(keyCode(plain[f], false), b); codeKey.set(keyCode(plain[f], false), k); }
+        if (shifted) { fretOf.set(keyCode(shifted[f], true), b); codeKey.set(keyCode(shifted[f], true), k); }
+        if (!fretOfKey.has(k)) fretOfKey.set(k, b);
+        row.append(b);
+      }
+      fretGrid.append(row);
     }
-    fretGrid.append(row);
+    bassLabel.textContent = I.test;
+    bassAbout.title = `How the ${I.test.toLowerCase()} works`;
+    bassAbout.setAttribute('aria-label', bassAbout.title);
+    bassHint.textContent = n > 4
+      ? 'a guitar made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers; Shift for the D, G, B and high E), open to the ninth fret'
+      : 'a bass made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers), open to the ninth fret';
+    for (const b of instBtns) b.setAttribute('aria-pressed', String(b.dataset.instrument === I.id));
   }
   const bassFold = h('button', { type: 'button', class: 'fold', 'aria-controls': 'frets' });
   bassFold.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6"/></svg>';
   fretGrid.id = 'frets';
-  const bass = h('section', { class: 'bass', 'aria-label': 'Test bass' },
-    h('div', { class: 'bar bass-bar' }, h('span', { class: 'toggles-label' }, 'Test bass'),
-      about('testbass', 'test bass'),
-      h('span', { class: 'bass-hint' }, 'a bass made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers), open to the ninth fret'),
+  const bass = h('section', { class: 'bass', 'aria-label': 'Test instrument' },
+    h('div', { class: 'bar bass-bar' }, bassLabel, bassAbout, instSwitch, bassHint,
       h('span', { class: 'spacer' }), riffBtn, bassFold),
     fretGrid);
+  buildFrets();
   const setBassOpen = (open) => {
     store.set('phuzzbox.bassOpen', open);
     fretGrid.hidden = !open;
@@ -276,7 +317,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const rows = [];
   const groupList = [], groupBoxes = [];
   for (const g of PEDAL.groups) {
-    const box = h('fieldset', { class: 'group' }, h('legend', {}, g.name));
+    const box = h('fieldset', { class: 'group' }, h('legend', { 'data-say': g.name }, say(g.name, state.instrument)));
     for (const p of g.params) {
       const val = h('output', {});
       let input;
@@ -292,7 +333,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       }
       const row = h('div', { class: 'row', 'data-param': p.id });
       const more = p.hint ? info(`About ${p.label}`, () => row, 'hint-open') : null;
-      row.append(h('label', { for: `p-${p.id}` }, p.label), more, input, val, p.hint ? h('p', { class: 'hint' }, p.hint) : null);
+      row.append(h('label', { for: `p-${p.id}`, 'data-say': p.label }, say(p.label, state.instrument)), more, input, val, p.hint ? h('p', { class: 'hint' }, p.hint) : null);
       rows.push({ p, row, input, val });
       box.append(row);
     }
@@ -301,10 +342,15 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     empty.hidden = true;
     box.append(empty);
     groupBoxes.push({ empty, rows: rows.slice(rows.length - g.params.length) });
-    groupList.push({ key: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: g.name, el: box });
+    groupList.push({ key: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: say(g.name, state.instrument), say: g.name, el: box });
   }
   // the rig: what turns the browser's numbers into volts at the input jack
+  const instSel = h('select', { id: 'p-instrument', onchange: () => setInstrument(instSel.value) },
+    ...Object.values(INSTRUMENTS).map((i) => h('option', { value: i.id }, i.name)));
+  instSel.value = state.instrument;
   const rig = h('fieldset', { class: 'group rig' }, h('legend', {}, 'Rig'),
+    h('div', { class: 'row', title: 'What you play: the tuner\'s range, the test instrument, and the pedals\' pickup and the ranges they were built for. Each instrument keeps its own settings.' },
+      h('label', { for: 'p-instrument' }, 'Instrument'), instSel),
     h('div', { class: 'row' }, h('label', {}, 'Audio interface'), ifaceSel, gainLabel),
     h('div', { class: 'row', title: 'How many volts at the input jack make a full-scale signal in the browser: from your interface and its gain, or typed in. Set it so the test bass and your bass read alike on the In meter; it matters for the pedals that distort.' },
       h('label', { for: 'p-fullscale' }, 'Full scale'), h('span', { class: 'inline' }, fsInput, ' V')),
@@ -340,15 +386,15 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   }
   function set(id, v, quiet) {
     P[id] = v;
-    store.set(`${key}.params`, P);
+    saveP();
     send({ type: 'params', P: { ...P } });
     if (!quiet) refresh();
     emit('params');
   }
   function applyPreset(name) {
-    if (name === '__defaults') Object.assign(P, defaults(PEDAL.groups));
+    if (name === '__defaults') Object.assign(P, ownDefaults());
     else Object.assign(P, PEDAL.presets[name]);
-    store.set(`${key}.params`, P);
+    saveP();
     send({ type: 'params', P: { ...P } });
     refresh();
     emit('params');
@@ -358,6 +404,28 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     state.volume = g;
     store.set('phuzzbox.volume', g);
     if (volume) volume.gain.setTargetAtTime(g, ctx.currentTime, 0.01);
+  }
+  // bass or guitar: the test instrument, the tuner's range, and this pedal's settings for it (each
+  // instrument keeps its own; a guitar's start from the descriptor's `guitar` values)
+  function setInstrument(id) {
+    const I = instrument(id);
+    instSel.value = I.id;
+    if (I.id === state.instrument) return;
+    if (riff) toggleRiff();
+    for (const [code, was] of held) { was.fret?.classList.remove('down'); stop(was.k); held.delete(code); }
+    state.instrument = I.id;
+    store.set(INSTRUMENT_KEY, I.id);
+    loadP();
+    send({ type: 'instrument', which: I.id });
+    send({ type: 'params', P: { ...P } });
+    sourceSel.options[0].textContent = `${I.test} (keys)`;
+    for (const el of app.querySelectorAll('[data-say]')) el.textContent = say(el.dataset.say, I.id);
+    for (const g of groupList) if (g.toggle && g.say) g.toggle.textContent = say(g.say, I.id);
+    buildFrets();
+    refresh();
+    emit('params');
+    emit('instrument');
+    layout.arrange();
   }
   function setBypass(on) {
     state.bypass = on;
@@ -416,6 +484,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       send({ type: 'bypass', on: state.bypass });
       send({ type: 'fullScale', volts: state.fullScale });
       send({ type: 'source', which: state.source });
+      send({ type: 'instrument', which: state.instrument });
       send({ type: 'mute', on: state.mute });
       tHz.textContent = 'Play a note';
       startBtn.textContent = 'Audio on';
@@ -538,7 +607,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   setInterval(() => {
     if (!tunerAnalyser || document.hidden) return;
     tunerAnalyser.getFloatTimeDomainData(buf);
-    const n = tuning.push(tune(buf, ctx.sampleRate), ctx.currentTime);
+    const n = tuning.push(tune(buf, ctx.sampleRate, instrument(state.instrument).tuner), ctx.currentTime);
     api.note = n; // for the views: the spectra mark the note being played (shared/plot.js markNote)
     tunerCard.classList.toggle('idle', !n);
     tunerCard.classList.toggle('stale', !!n && !n.live);
@@ -547,12 +616,12 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     tNote.textContent = n.letter; tOct.textContent = n.octave;
     tCents.textContent = `${n.cents >= 0.05 ? '+' : n.cents <= -0.05 ? '−' : '±'}${Math.abs(n.cents).toFixed(1)}¢`;
     tHz.textContent = `${n.f.toFixed(2)} Hz, in tune at ${n.target.toFixed(2)}`;
-    tString.textContent = OPEN_STRINGS.includes(n.key) ? `open ${n.letter} string` : '';
+    tString.textContent = instrument(state.instrument).tunerOpen.includes(n.key) ? `open ${n.letter} string` : '';
     tNeedle.style.left = `${50 + Math.max(-50, Math.min(50, n.cents))}%`;
   }, 100);
 
   // ---- the test bass: on screen only while it is the input
-  const held = new Set();
+  const held = new Map(); // a computer key's code → the note it plays and its fret
   function showBass() {
     const on = state.source === 'bass';
     if (!on && riff) toggleRiff();
@@ -573,7 +642,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     let i = 0;
     const beat = 60 / RIFF_BPM;
     const next = () => {
-      const [k, b] = RIFF[i % RIFF.length];
+      const R = RIFFS[state.instrument], [k, b] = R[i % R.length];
       // each note lights its fret while it sounds, so the riff can be followed on the board
       if (k) { fretOfKey.get(k)?.classList.add('down'); play(k, 0.6 + 0.2 * ((i % 4) === 0)); setTimeout(() => { fretOfKey.get(k)?.classList.remove('down'); stop(k); }, 1000 * b * beat * 0.85); }
       i++;
@@ -581,12 +650,11 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     };
     next();
   }
-  const codeKey = new Map(ROWS.flatMap((row, s) => row.map((c, f) => [c, OPEN[s] + f])));
   addEventListener('keydown', (e) => {
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target.closest?.('input, select, textarea, [role=slider]')) return;
-    const k = codeKey.get(e.code);
-    if (k !== undefined && state.source === 'bass') { e.preventDefault(); held.add(e.code); fretOf.get(e.code)?.classList.add('down'); play(k, 0.75); }
+    const c = keyCode(e.code, e.shiftKey && state.instrument === 'guitar'), k = codeKey.get(c);
+    if (k !== undefined && state.source === 'bass') { e.preventDefault(); held.set(e.code, { k, fret: fretOf.get(c) }); held.get(e.code).fret?.classList.add('down'); play(k, 0.75); }
     else if (e.code === 'Space') {
       // Space is the footswitch, except on a button, menu or link reached with the keyboard
       // (:focus-visible), which Space presses as usual; one clicked with the mouse keeps focus
@@ -596,7 +664,8 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       e.preventDefault(); setBypass(!state.bypass);
     }
   });
-  addEventListener('keyup', (e) => { const k = codeKey.get(e.code); if (k !== undefined && held.delete(e.code)) { fretOf.get(e.code)?.classList.remove('down'); stop(k); } });
+  // the note a key started, whatever Shift does meanwhile
+  addEventListener('keyup', (e) => { const was = held.get(e.code); if (was && held.delete(e.code)) { was.fret?.classList.remove('down'); stop(was.k); } });
 
   // ---- what a guided tour (shared/tour.js) drives: the settings, the footswitch, the source,
   // the test bass (its frets lit as it plays), the views and the controls a step changes
@@ -609,14 +678,16 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     get: () => ({ ...P }),
     setAll(want) {
       Object.assign(P, want);
-      store.set(`${key}.params`, P);
+      saveP();
       send({ type: 'params', P: { ...P } });
       refresh();
       emit('params');
     },
-    defaults: () => defaults(PEDAL.groups),
+    defaults: () => ownDefaults(),
     bypassed: () => state.bypass, setBypass,
     muted: () => state.mute, setMute,
+    // bass or guitar (the tours are written for the bass, and play it)
+    instrument: () => state.instrument, setInstrument,
     // the tour plays the test bass; the source the player chose comes back when it ends
     source: () => sourceSel.value,
     useBass() { if (state.source !== 'bass') { sourceSel.value = 'bass'; state.source = 'bass'; send({ type: 'source', which: 'bass' }); showBass(); } },

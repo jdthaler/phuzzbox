@@ -1,7 +1,7 @@
 // tuner.js — the pitch of the input, for the page's tuner. Two steps:
 //
 // 1. detectPitch: the period, by normalised autocorrelation with parabolic interpolation over a
-//    bass's range (30–500 Hz; the method the tests use, tools/audio-util.mjs). It finds the
+//    bass's range (30–500 Hz) or a guitar's (60–1400 Hz; the method the tests use, tools/audio-util.mjs). It finds the
 //    period of the whole waveform, so it is right about the note even when the fundamental is weak.
 // 2. refine: the fundamental's own frequency, the peak of a Hann-windowed Fourier transform near
 //    that estimate. A real string is stiff: its partials run sharp, f_n = n f₁ √(1 + Bn²), and
@@ -72,13 +72,15 @@ export function refine(x, fs, f, span = 0.03) {
 
 // The fundamental of a block: the period for the note, then the fundamental's own peak. The
 // period needs only to land within the peak search's ±3 %, so it is found on the newest `coarse`
-// samples averaged down to about 12 kHz (a bass's fundamentals are below 500 Hz), sixteen times
+// samples averaged down to about 12 kHz (a bass's fundamentals are below 500 Hz, a guitar's 1400), sixteen times
 // less work than at full rate; the peak search uses every sample.
-export function tune(x, fs, { coarse = 8192 } = {}) {
+// fmin and fmax bound the note (a bass's 30–500 Hz by default; a guitar's 60–1400 Hz:
+// shared/instruments.js).
+export function tune(x, fs, { coarse = 8192, fmin = 30, fmax = 500 } = {}) {
   const D = Math.max(1, Math.floor(fs / 12000)), src = x.length > coarse ? x.subarray(x.length - coarse) : x;
   const y = new Float32Array(Math.floor(src.length / D));
   for (let i = 0; i < y.length; i++) { let s = 0; for (let j = 0; j < D; j++) s += src[i * D + j]; y[i] = s / D; }
-  const f = detectPitch(y, fs / D), part = f ? sounding(x, fs) : null;
+  const f = detectPitch(y, fs / D, fmin, fmax), part = f ? sounding(x, fs) : null;
   return part ? refine(part, fs, f) : 0;
 }
 // The part of a block since the note began: a block that starts in the silence before a pluck

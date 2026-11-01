@@ -105,6 +105,14 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    For every pedal, done 2026-11-01: **How it works** as Forte's (the README in a dialog, with
    contents and tabs for the test bass's and the new tuner's notes) and a **physics tour** of
    each pedal (`shared/tour.js`), checked by `test/tour-tests.mjs`; a new pedal brings its tour.
+   The **test guitar** and guitar support, at Jesse's ask (2026-11-01): the test bass's model with
+   a 10–46 set on a 25.5-inch scale, a pick and a single coil (`testguitar/README.md`); an
+   **Instrument** choice on every page (the Rig, and beside the fretboard) that sets the test
+   instrument, the tuner's range (60–1400 Hz for a guitar) and each pedal's `guitar` values (the
+   pickup; the Wah's 10 nF, the Envelope Filter's 15 nF, the Octave Down's 150 Hz, a 4 × 12 of
+   Eminence Legend 1258s for the Cabinet), each instrument keeping its own settings. The tours stay
+   on the bass. Not yet: the Mac app and the plugins have no Instrument choice (a guitarist sets
+   the pickup by hand, or picks the Cabinet's guitar preset).
 4. **Time and space**: spring reverb (Forte's springs), plate reverb, tape echo, rotary speaker.
 5. **The rest**: envelope filter, octave down, sympathetic strings, black hole, Doppler; a
    hardware pedal (Electrosmith Daisy Seed) if wanted.

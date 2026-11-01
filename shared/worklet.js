@@ -10,7 +10,7 @@
 // to floats by the same calibration, so a pedal at unity leaves the level alone.
 //
 // Messages in: { type: 'params', P }, { type: 'bypass', on }, { type: 'source', which: 'input' |
-// 'bass' }, { type: 'fullScale', volts }, { type: 'note', key, velocity }, { type: 'noteOff', key },
+// 'bass' }, { type: 'instrument', which: 'bass' | 'guitar' } (the test instrument), { type: 'fullScale', volts }, { type: 'note', key, velocity }, { type: 'noteOff', key },
 // { type: 'quality', level }, { type: 'mute', on } (silence the output, as a tuner pedal does;
 // the tuner still hears the input), { type: 'measure' } (the loopback test: below).
 //
@@ -67,6 +67,7 @@ export function registerEffect(make) {
           case 'fullScale': this.fullScale = m.volts; break;
           case 'note': this.bass.note(m.key, m.velocity ?? 0.7); break;
           case 'noteOff': this.bass.noteOff(m.key); break;
+          case 'instrument': this.bass.use(m.which); break;
           case 'quality': this.effect.setQuality(m.level); break;
           case 'mute': this.mute = !!m.on; break;
           case 'measure': this.measure = { t: 0, floor: 0, sentAt: -1 }; break;

@@ -8,5 +8,6 @@ export const PEDAL = {
   name: 'Tape Echo',
   description: 'A tape loop past a record head and three playback heads: echoes from distance over speed, coloured by the tape\'s magnetisation and the heads\' losses',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
+  guitar: {}, // the same for a guitar as for a bass
   wasm: { binary: () => new URL('../wasm/echo.wasm', import.meta.url).href },
 };

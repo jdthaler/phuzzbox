@@ -53,6 +53,14 @@ Ten readings a second. The needle shows the median of the last three, so a singl
 turns green. When the signal stops, the last note stays on screen for 1.5 s, dimmed, then clears.
 The open strings of four-, five- and six-string basses (B0 E1 A1 D2 G2 C3) are named as such.
 
+## A guitar
+
+Set for a guitar (the Rig's **Instrument**), the tuner looks for notes from 60 to 1400 Hz, from
+drop C's low C (65 Hz) to the high E's 24th fret (1319 Hz), where a bass's range stops at 500 Hz.
+It names the open strings of six- and seven-string guitars (B1 E2 A2 D3 G3 B3 E4). The method is
+the same; a guitar's thinner strings are less stiff (the low E's B is about 1.4 × 10⁻⁴), so its
+period and its first partial are closer.
+
 ## How well it reads
 
 The tests (`test/tuner-tests.mjs`) check it against tones whose frequencies are known in closed
@@ -60,6 +68,8 @@ form: harmonic series on every open string from B0 to C3, detuned by −14 to +3
 tenth of a cent; a low E with its fundamental 20 dB under the octave still reads E1; the stiff
 low E above reads its first partial to a hundredth of a cent where its period is 23 cents sharp;
 and the test bass's open strings read in tune to a fifth of a cent from the pluck to the decay.
+Set for a guitar, it reads harmonic series from C2 to E6 to a tenth of a cent, and the test
+guitar's open strings and its high E's 12th fret in tune to a fifth of a cent.
 Silence and white noise read no note.
 
 ## What is simplified

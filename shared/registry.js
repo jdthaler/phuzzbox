@@ -36,7 +36,7 @@ export const PEDALS = [
   },
   {
     id: 'cabinet', name: 'Cabinet', version: '0.1.0', ready: true, plugin: { code: 'Cabn' },
-    after: '8×10 and 1×15 bass cabinets',
+    after: '8×10 and 1×15 bass cabinets, and a guitar 4×12',
     blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.',
   },
   {

@@ -27,13 +27,13 @@ enum Param : int {
   kParamCount = 17
 };
 
-inline const char *const layoutChoices[] = {"1 × 15″", "2 × 10″, in parallel", "4 × 10″, 2 series × 2 parallel", "8 × 10″, 2 series × 4 parallel"};
+inline const char *const layoutChoices[] = {"1 × 15″", "2 × 10″, in parallel", "4 × 10″, 2 series × 2 parallel", "8 × 10″, 2 series × 4 parallel", "1 × 12″", "2 × 12″, in parallel", "4 × 12″, 2 series × 2 parallel"};
 inline const char *const boxChoices[] = {"Sealed", "Ported"};
 
 inline const phuzzbox::ParamInfo kParams[] = {
   {"drive", "Power amp gain", "The cabinet", phuzzbox::ParamKind::continuous, 10.0, 46.0, 32.0, 0.0, false, "dB", 1.0, 1},
   {"mic", "Microphone sensitivity", "The cabinet", phuzzbox::ParamKind::continuous, 0.001, 0.1, 0.015, 0.0, true, "mV/Pa", 1000.0, 1},
-  {"layout", "Drivers", "The cabinet", phuzzbox::ParamKind::choice, 0.0, 3.0, 3.0, 0.0, false, "", 1.0, 2, layoutChoices, 4},
+  {"layout", "Drivers", "The cabinet", phuzzbox::ParamKind::choice, 0.0, 6.0, 3.0, 0.0, false, "", 1.0, 2, layoutChoices, 7},
   {"box", "Box", "The cabinet", phuzzbox::ParamKind::choice, 0.0, 1.0, 0.0, 0.0, false, "", 1.0, 2, boxChoices, 2},
   {"volume", "Box volume", "The cabinet", phuzzbox::ParamKind::continuous, 0.02, 0.4, 0.2, 0.0, true, "L", 1000.0, 0},
   {"ports", "Ports", "The port", phuzzbox::ParamKind::continuous, 1.0, 4.0, 2.0, 1.0, false, "", 1.0, 0},
@@ -46,7 +46,7 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"re", "Coil resistance (Re)", "The drivers", phuzzbox::ParamKind::continuous, 2.0, 16.0, 5.6, 0.0, false, "Ω", 1.0, 1},
   {"le", "Coil inductance (Le)", "The drivers", phuzzbox::ParamKind::continuous, 0.0001, 0.005, 0.0008, 0.0, true, "mH", 1000.0, 2},
   {"sd", "Cone area (Sd)", "The drivers", phuzzbox::ParamKind::continuous, 0.005, 0.1, 0.035, 0.0, true, "cm²", 10000.0, 0},
-  {"xmax", "Linear travel (Xmax)", "The drivers", phuzzbox::ParamKind::continuous, 0.001, 0.02, 0.004, 0.0, true, "mm", 1000.0, 1},
+  {"xmax", "Linear travel (Xmax)", "The drivers", phuzzbox::ParamKind::continuous, 0.0003, 0.02, 0.004, 0.0, true, "mm", 1000.0, 1},
   {"ampR", "Amp output impedance", "The amp", phuzzbox::ParamKind::continuous, 0.01, 20.0, 0.05, 0.0, true, "Ω", 1.0, 2},
 };
 
@@ -57,6 +57,7 @@ inline const phuzzbox::PresetValue kPreset3[] = {{8, 38.0}, {9, 0.4}, {10, 6.0},
 inline const phuzzbox::PresetValue kPreset4[] = {{8, 38.0}, {9, 0.4}, {10, 6.0}, {11, 0.18}, {12, 5.4}, {13, 0.0015}, {14, 0.0855}, {15, 0.006}, {2, 0.0}, {3, 0.0}, {4, 0.12}, {16, 0.05}, {0, 32.0}, {1, 0.04}};
 inline const phuzzbox::PresetValue kPreset5[] = {{8, 45.0}, {9, 0.375}, {10, 5.0}, {11, 0.054}, {12, 5.6}, {13, 0.0008}, {14, 0.035}, {15, 0.004}, {2, 3.0}, {3, 0.0}, {4, 0.2}, {16, 4.0}, {0, 32.0}, {1, 0.015}};
 inline const phuzzbox::PresetValue kPreset6[] = {{8, 45.0}, {9, 0.375}, {10, 5.0}, {11, 0.054}, {12, 5.6}, {13, 0.0008}, {14, 0.035}, {15, 0.004}, {2, 3.0}, {3, 0.0}, {4, 0.2}, {16, 0.05}, {0, 44.0}, {1, 0.004}};
+inline const phuzzbox::PresetValue kPreset7[] = {{8, 94.0}, {9, 1.18}, {10, 6.15}, {11, 0.0325}, {12, 7.44}, {13, 0.0007}, {14, 0.05067}, {15, 0.00048}, {2, 6.0}, {3, 0.0}, {4, 0.12}, {16, 4.0}, {0, 32.0}, {1, 0.015}};
 inline const phuzzbox::Preset kPresets[] = {
   {"8 × 10 sealed", kPreset0, 14},
   {"4 × 10 ported", kPreset1, 17},
@@ -65,8 +66,9 @@ inline const phuzzbox::Preset kPresets[] = {
   {"1 × 15 sealed", kPreset4, 14},
   {"8 × 10 on a tube amp", kPreset5, 14},
   {"8 × 10, pushed hard", kPreset6, 14},
+  {"Guitar 4 × 12 closed back", kPreset7, 14},
 };
-inline constexpr int kPresetCount = 7;
+inline constexpr int kPresetCount = 8;
 inline constexpr int kExpression = -1;
 
 } // namespace cabinet
