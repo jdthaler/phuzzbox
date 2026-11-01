@@ -6,7 +6,7 @@
 //   section: the physics it is made of (SECTIONS), which groups it on the landing page and in the
 //   menu, in the order PEDALS lists them
 
-export const PHUZZBOX_VERSION = '0.2.0';
+export const PHUZZBOX_VERSION = '0.3.0';
 // the site's credits link to the source; the only link to GitHub on the site (Jesse, 2026-11-01):
 // everything a reader needs is on the site itself, in How it works
 export const SOURCE = 'https://github.com/jdthaler/phuzzbox';
