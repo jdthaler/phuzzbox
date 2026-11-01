@@ -1,4 +1,4 @@
-# Phuzzbox's native code: the pedals' physics in C++, built as plugins (CLAP, and through
+# PhuzzBox's native code: the pedals' physics in C++, built as plugins (CLAP, and through
 # clap-wrapper VST3, AU v2 and a standalone app) and as WebAssembly for the website. The layout
 # and build follow Forte's (github.com/jdthaler/forte, native/). Configure with a preset:
 # cmake --preset linux.
@@ -24,7 +24,7 @@ else()
 endif()
 option(PHUZZ_PLUGINS "Build the plugins (CLAP, VST3, AU v2, standalone)" ${phuzz_plugins_default})
 option(PHUZZ_TESTS "Build the native unit tests (CTest)" ON)
-option(PHUZZ_APP "Build the Phuzzbox app (needs the plugins' dependencies, and WebKitGTK on Linux)" ${phuzz_plugins_default})
+option(PHUZZ_APP "Build the PhuzzBox app (needs the plugins' dependencies, and WebKitGTK on Linux)" ${phuzz_plugins_default})
 
 # The repository root: the web build writes its WebAssembly next to each pedal's page.
 get_filename_component(PHUZZ_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)

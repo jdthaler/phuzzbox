@@ -6,7 +6,7 @@ cents, against a reference A4 you can set (440 Hz unless you change it). It is n
 listens to the input before the pedal, so a fuzz or a wah doesn't move the needle. **Mute while
 tuning** silences the output, as a tuner pedal does, and the tuner still hears the input.
 
-Part of [Phuzzbox](../README.md).
+Part of [PhuzzBox](../README.md).
 
 ## The physics
 

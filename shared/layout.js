@@ -1,7 +1,7 @@
 // layout.js — the layout of every pedal page, after Forte's (github.com/jdthaler/forte,
 // shared/layout.js): the page fills the screen, with nothing to scroll but the panels themselves.
 //
-//   header    Phuzzbox, the pedal's name (the menu of pedals), How it works; audio on the right
+//   header    PhuzzBox, the pedal's name (the menu of pedals), How it works; audio on the right
 //   rack      the pedal itself, on the left, the height of the page (a toggle in the views' bar)
 //   views     a bar, then the views turned on, sharing the room in rows. The bar has a toggle for
 //             each (the pedal, the tuner and the page's views), then Discover | Perform and a

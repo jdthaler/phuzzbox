@@ -404,7 +404,7 @@ bool entryInit(const PedalInfo &info) {
   descriptor.clap_version = CLAP_VERSION;
   descriptor.id = pluginId.c_str();
   descriptor.name = info.name;
-  descriptor.vendor = "Phuzzbox";
+  descriptor.vendor = "PhuzzBox";
   descriptor.url = "https://phuzzbox.jthaler.net";
   descriptor.manual_url = "";
   descriptor.support_url = "";
