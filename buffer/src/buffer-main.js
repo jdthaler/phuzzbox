@@ -1,7 +1,7 @@
 // buffer-main.js — the Buffer's page: the shell (shared/shell.js) and its views.
 
 import { createPedal } from '../../shared/shell.js';
-import { fit, css, freqAxes, animate } from '../../shared/plot.js';
+import { fit, css, freqAxes, animate, markNote } from '../../shared/plot.js';
 import { scratch, wasmEffect } from '../../shared/wasm.js';
 import { PEDAL } from './buffer-pedal.js';
 
@@ -60,7 +60,7 @@ const circuitView = {
 // The live spectrum of what comes out, with the circuit's curve over it.
 const spectrumView = {
   title: 'Spectrum',
-  caption: 'the output as it plays (play the test bass or your own): the treble falls where the solid curve above falls.',
+  caption: 'the output as it plays (play the test bass or your own): the treble falls where the solid curve above falls. The green line is the note you are playing, as the tuner hears it at the input, and the ticks along the top its harmonics.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -71,6 +71,7 @@ const spectrumView = {
       const { x, y, box } = freqAxes(g, w, h, { dbMin: -100, dbMax: -10 });
       const a = api.analyser;
       if (!a) { g.fillStyle = css('--ink-2'); g.textAlign = 'center'; g.fillText('Start audio, then play', (box.l + box.r) / 2, (box.t + box.b) / 2); return; }
+      markNote(g, x, box, api.note);
       data ??= new Float32Array(a.frequencyBinCount);
       a.getFloatFrequencyData(data);
       const fs = api.ctx.sampleRate, bin = fs / a.fftSize;
