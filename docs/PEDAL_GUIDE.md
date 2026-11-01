@@ -50,8 +50,11 @@ plots against frequency marks the note being played with `markNote(g, x, box, ap
 (`shared/plot.js`). Every page is dark, with the hardware drawn as hardware (`shared/pedal.css`).
 
 Add the pedal to `shared/registry.js` (`ready: true`, `version: '0.1.0'`, a unique four-letter
-`plugin.code`) and to `native/CMakeLists.txt`, and add a note to `changes/` with a
-`### <Name> (new)` section, which becomes its first `CHANGELOG.md` entry when it is released.
+`plugin.code`, its `enclosure` colours as its `style.css` has them, and the `section` of physics it
+is made of, from `SECTIONS`: that groups it on the landing page and in every page's menu) and to
+`native/CMakeLists.txt`, and add a note to `changes/` with a `### <Name> (new)` section, which
+becomes its first `CHANGELOG.md` entry when it is released. The landing page draws its face from
+its descriptor (`shared/face.js`), so it needs nothing else there.
 
 ## The effect contract
 

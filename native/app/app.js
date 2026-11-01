@@ -13,6 +13,7 @@ import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
 import { midiPanel } from '../../shared/midi-panel.js';
 import { createLayout } from '../../shared/layout.js';
+import { PEDALS, SECTIONS } from '../../shared/registry.js';
 // every pedal the app plays, as native/app/pedals.cpp lists them (test/native-tests.mjs checks)
 import { PEDAL as BUFFER } from '../../buffer/src/buffer-pedal.js';
 import { PEDAL as PHUZZ } from '../../phuzz/src/phuzz-pedal.js';
@@ -65,8 +66,13 @@ async function main(info, carry = {}) {
   const app = document.getElementById('app');
   app.replaceChildren();
   const status = h('span', { class: 'status' });
+  // the pedals the program plays, grouped by their physics as the site's menu has them
+  const playable = (info.pedals ?? []).filter((d) => DESCRIPTORS[d.slug]);
+  const sectionOf = (slug) => PEDALS.find((p) => p.id === slug)?.section;
   const pedalSel = h('select', { 'aria-label': 'Pedal', class: 'pedal-pick', title: 'The pedal to play; each keeps its own settings' },
-    ...(info.pedals ?? []).filter((d) => DESCRIPTORS[d.slug]).map((d) => h('option', { value: d.slug }, d.name)));
+    ...SECTIONS.map((s) => [s, playable.filter((d) => sectionOf(d.slug) === s.id)]).filter(([, list]) => list.length)
+      .map(([s, list]) => h('optgroup', { label: s.title }, ...list.map((d) => h('option', { value: d.slug }, d.name)))),
+    ...playable.filter((d) => !SECTIONS.some((s) => s.id === sectionOf(d.slug))).map((d) => h('option', { value: d.slug }, d.name)));
   pedalSel.value = PEDAL.id;
   pedalSel.addEventListener('change', async () => {
     pedalSel.disabled = true;
@@ -250,7 +256,7 @@ async function main(info, carry = {}) {
   };
   createLayout({ id: PEDAL.id, h, store: layoutStore, app, header, share: 0.36,
     rack: h('aside', { class: 'rack', 'data-view': 'Pedal' }, face),
-    views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true }],
+    views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }],
     // a plugin's audio and MIDI are the host's (its MIDI pedals are mapped in the plugin: the FC-300's numbers)
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
     presets: presetSel,

@@ -11,6 +11,21 @@ Versions change only when `main` is released to `live`, the branch the site is p
 each pull request into `main` leaves a note in `changes/` (`changes/README.md`), and
 `node tools/release.mjs` gathers them into one entry here, bumping each version once.
 
+## 2026-11-01 — slides on the test bass and guitar
+
+### PhuzzBox 0.4.0
+- **Slides:** the test bass and guitar slide between notes. Drag along a string on the fretboard, or hold a key and press another on the same row (the note slides there in 0.15 s, and back when that key lets go). The note keeps each mode's displacement as its stopped length changes (the adiabatic invariant), so a note slid up an octave is the open string's pluck heard at the 12th fret.
+- **Fretless / Slide bar:** a switch beside the fretboard. Fretted, a slide steps through each fret's equal-tempered pitch; fretless (a slide bar on the guitar), it glides through every pitch between.
+
+## 2026-11-01 — one menu, the pedals drawn and grouped by their physics
+
+### PhuzzBox 0.3.0
+- **One menu**, as Forte's: PhuzzBox and the pedal's name in one dropdown at the top left, opening on the landing page, every pedal grouped by the physics it is made of (circuits, light and photocells, vibrating steel, paper and air, motion and delay, gravity), and the Pedalboard.
+- **The landing page draws every pedal as itself** (its enclosure, its knobs where you left them, its footswitch), on boards by its physics, with a row of links to each.
+- **The audio carries over:** a pedal opened from the menu keeps the input, its channel and the output, and starts its sound if the last one was playing (in Chrome and Edge at once; elsewhere at the first tap or key).
+- **The tuner sits under the pedal**, at the left with its controls; its button now reads Mute.
+- The app's pedal menu is grouped by physics too, and its tuner sits under the pedal.
+
 ## 2026-11-01 — the physics live in the views, and fixed physics made movable; the plugins' own window; your own presets and shareable links; a test guitar, and every pedal set for a guitar; versions, release notes and a changelog, as Forte's
 
 ### PhuzzBox 0.2.0

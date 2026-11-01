@@ -43,24 +43,30 @@ double inharmonicity(const StringSpec &s, double length) {
 
 static double sinc(double x) { return std::abs(x) < 1e-9 ? 1 : std::sin(x) / x; }
 
-std::vector<Partial> partials(const Settings &S, int string, int fret, double fs) {
+double stoppedLength(const Settings &S, double fret) { return S.scale / std::pow(2.0, fret / 12.0); }
+
+Mode mode(const Settings &S, int string, double len, int n) {
   const StringSpec &s = S.spec[string];
-  const double len = S.scale / std::pow(2.0, fret / 12.0);
   const double B = inharmonicity(s, len);
-  // tuned so that the first partial is the note: f₁ = f₀ √(1 + B)
-  const double target = s.f * std::pow(2.0, fret / 12.0), f0 = target / std::sqrt(1 + B);
-  const double xp = std::clamp(S.pluckAt, 0.005, len - 0.005), xu = std::min(S.pickupAt, len);
+  // tuned so that the first partial is the note: f₁ = f₀ √(1 + B), the note f_open ℓ_scale / ℓ
+  const double f0 = s.f * S.scale / len / std::sqrt(1 + B), f = n * f0 * std::sqrt(1 + B * n * n);
+  const double k = n * PI / len, xu = std::min(S.pickupAt, len);
+  // the pickup hears the mode's velocity (its displacement times ω) over its aperture
+  return {f, S.b1 + S.b3 * f * f, TAU * f * std::sin(k * xu) * sinc(k * S.aperture / 2)};
+}
+
+std::vector<Partial> partials(const Settings &S, int string, int fret, double fs) {
+  const double len = stoppedLength(S, fret);
+  const double xp = std::clamp(S.pluckAt, 0.005, len - 0.005);
   const double fmax = std::min(0.45 * fs, 10000.0);
   std::vector<Partial> out;
   for (int n = 1; n <= kMaxModes; n++) {
-    const double f = n * f0 * std::sqrt(1 + B * n * n);
-    if (f > fmax) break;
+    const Mode m = mode(S, string, len, n);
+    if (m.f > fmax) break;
     const double k = n * PI / len;
     // a unit-height triangle from rest at xp: its n-th mode's displacement, smoothed by the finger
     const double a = 2 * len * len / (n * n * PI * PI * xp * (len - xp)) * std::sin(k * xp) * sinc(k * S.finger / 2);
-    // the pickup hears the mode's velocity (amplitude a·ω) over its aperture
-    const double heard = std::sin(k * xu) * sinc(k * S.aperture / 2);
-    out.push_back({f, S.b1 + S.b3 * f * f, a * TAU * f * heard});
+    out.push_back({m.f, m.sigma, a * m.heard});
   }
   return out;
 }
@@ -68,7 +74,9 @@ std::vector<Partial> partials(const Settings &S, int string, int fret, double fs
 Instrument::Instrument(double fs, Kind kind) : fs(fs) { use(kind); }
 
 void Instrument::use(Kind kind) {
+  const bool fretless = settings.fretless;
   settings = kind == Kind::guitar ? guitarSettings() : bassSettings();
+  settings.fretless = fretless;
   for (Voice &V : voices) { V.n = 0; V.key = -1; V.muted = false; }
   next.fill(0);
   applySettings();
@@ -82,26 +90,63 @@ void Instrument::applySettings() {
 
 void Instrument::pluck(int string, int fret, double velocity) {
   if (string < 0 || string >= settings.strings) return;
+  fret = std::clamp(fret, 0, 24);
   mute(string); // the finger stops what was ringing as it plucks again
   const int v = string * 2 + next[string];
   next[string] ^= 1;
   Voice &V = voices[v];
-  const std::vector<Partial> ps = partials(settings, string, fret, fs);
+  const double len = stoppedLength(settings, fret);
+  const double xp = std::clamp(settings.pluckAt, 0.005, len - 0.005);
+  const double fmax = std::min(0.45 * fs, 10000.0);
   const double height = settings.pull * std::clamp(velocity, 0.0, 1.0); // m: a firm finger pulls a bass string 2 mm
-  V.n = (int)ps.size();
+  V.n = 0;
+  while (V.n < kMaxModes && mode(settings, string, len, V.n + 1).f <= fmax) V.n++;
   V.muted = false;
   V.key = settings.spec[string].key + fret;
-  const double T = 1 / fs;
+  V.string = string;
+  V.at = V.from = V.to = fret;
+  V.sliding = false;
+  retune(V, fret);
   for (int i = 0; i < V.n; i++) {
-    const Partial &p = ps[i];
-    const double r = std::exp(-p.sigma * T), w = TAU * p.f * T, rm = std::exp(-std::max(p.sigma, settings.muted) * T);
-    V.cr[i] = r * std::cos(w); V.ci[i] = r * std::sin(w);
-    V.cmr[i] = rm * std::cos(w); V.cmi[i] = rm * std::sin(w);
-    // the mode starts from rest at full displacement, so its velocity goes as −sin(ωt): a phasor
-    // of the mode's heard amplitude starting at angle 0, whose imaginary part the output takes
-    V.re[i] = settings.volts * height * p.amp;
+    const int n = i + 1;
+    const double k = n * PI / len;
+    // the mode starts from rest at full displacement: a phasor of its amplitude (a unit-height
+    // triangle from rest at xp, smoothed by the finger) at angle 0; the output takes −gain × its
+    // imaginary part, the velocity the pickup hears
+    const double a = 2 * len * len / (n * n * PI * PI * xp * (len - xp)) * std::sin(k * xp) * sinc(k * settings.finger / 2);
+    V.re[i] = settings.volts * height * a;
     V.im[i] = 0;
   }
+}
+
+// A string whose stopped length changes slowly keeps each mode's action, its energy over its
+// frequency. A mode's energy is ½ (μℓ/2) ω² A², so the action goes as ℓ ω A²; ℓω is nearly
+// constant (exactly, for a flexible string), so the displacement A carries through a slide
+// unchanged, and only the frequencies, the decay rates and what the pickup hears move.
+void Instrument::retune(Voice &V, double pitch) {
+  V.pitch = pitch;
+  const double len = stoppedLength(settings, pitch), T = 1 / fs, fmax = 0.49 * fs;
+  for (int i = 0; i < V.n; i++) {
+    const Mode m = mode(settings, V.string, len, i + 1);
+    const double f = std::min(m.f, fmax);
+    const double r = std::exp(-m.sigma * T), w = TAU * f * T, rm = std::exp(-std::max(m.sigma, settings.muted) * T);
+    V.cr[i] = r * std::cos(w); V.ci[i] = r * std::sin(w);
+    V.cmr[i] = rm * std::cos(w); V.cmi[i] = rm * std::sin(w);
+    if (V.muted) { V.cr[i] = V.cmr[i]; V.ci[i] = V.cmi[i]; }
+    V.gain[i] = m.f < fmax ? m.heard : 0; // a mode slid above the Nyquist frequency is no longer heard
+  }
+}
+
+void Instrument::slide(int string, double fret, double seconds) {
+  if (string < 0 || string >= settings.strings) return;
+  Voice &V = voices[string * 2 + (next[string] ^ 1)]; // the last plucked on this string
+  if (!V.n || V.muted) return;
+  V.from = V.at;
+  V.to = std::clamp(fret, 0.0, 24.0);
+  V.t = 0;
+  V.dur = std::max(1L, (long)std::lround(seconds * fs));
+  V.sliding = true;
+  V.key = settings.spec[string].key + (int)std::lround(V.to);
 }
 
 void Instrument::mute(int string) {
@@ -137,25 +182,42 @@ void Instrument::noteOff(int key) {
 }
 
 void Instrument::process(float *out, int n) {
-  for (int j = 0; j < n; j++) {
-    double e = 0;
+  constexpr int kStep = 16; // a sliding finger moves every 16 samples (a third of a millisecond)
+  for (int j0 = 0; j0 < n; j0 += kStep) {
+    const int m = std::min(kStep, n - j0);
     for (Voice &V : voices) {
-      for (int i = 0; i < V.n; i++) {
-        const double re = V.re[i] * V.cr[i] - V.im[i] * V.ci[i];
-        const double im = V.re[i] * V.ci[i] + V.im[i] * V.cr[i];
-        V.re[i] = re;
-        V.im[i] = im;
-        e -= im;
-      }
+      if (!V.sliding || !V.n) continue;
+      V.t = std::min(V.dur, V.t + m);
+      // at a steady speed along the neck: the finger's distance from the nut, ℓ_s(1 − 2^(−fret/12)),
+      // moves linearly in time
+      const double u = (double)V.t / V.dur, d0 = 1 - std::pow(2.0, -V.from / 12), d1 = 1 - std::pow(2.0, -V.to / 12);
+      V.at = -12 * std::log2(1 - (d0 + u * (d1 - d0)));
+      if (V.t >= V.dur) { V.at = V.to; V.sliding = false; }
+      // fretted, the string is stopped by the fret nearest the finger (it crosses to the next one
+      // halfway between); fretless or under a slide bar, at the finger itself
+      const double pitch = settings.fretless ? V.at : std::round(V.at);
+      if (pitch != V.pitch) retune(V, pitch);
     }
-    out[j] = (float)circuit.run(e);
+    for (int j = j0; j < j0 + m; j++) {
+      double e = 0;
+      for (Voice &V : voices) {
+        for (int i = 0; i < V.n; i++) {
+          const double re = V.re[i] * V.cr[i] - V.im[i] * V.ci[i];
+          const double im = V.re[i] * V.ci[i] + V.im[i] * V.cr[i];
+          V.re[i] = re;
+          V.im[i] = im;
+          e -= V.gain[i] * im;
+        }
+      }
+      out[j] = (float)circuit.run(e);
+    }
   }
   // a voice whose modes have all died away stops costing anything
   for (Voice &V : voices) {
     if (!V.n) continue;
-    double m = 0;
-    for (int i = 0; i < V.n; i++) m = std::max(m, std::abs(V.re[i]) + std::abs(V.im[i]));
-    if (m < 1e-7) V.n = 0;
+    double mx = 0;
+    for (int i = 0; i < V.n; i++) mx = std::max(mx, std::abs(V.gain[i]) * (std::abs(V.re[i]) + std::abs(V.im[i])));
+    if (mx < 1e-7) { V.n = 0; V.sliding = false; }
   }
 }
 

@@ -2,7 +2,8 @@
 // shared/layout.js): the page fills the screen, with nothing to scroll but the panels themselves.
 //
 //   header    PhuzzBox, the pedal's name (the menu of pedals), How it works; audio on the right
-//   rack      the pedal itself, on the left, the height of the page (a toggle in the views' bar)
+//   rack      the pedal itself, on the left, the height of the page (a toggle in the views' bar),
+//             and under it the views that belong beside the pedal (rack: true; the tuner)
 //   views     a bar, then the views turned on, sharing the room in rows. The bar has a toggle for
 //             each (the pedal, the tuner and the page's views), then Discover | Perform and a
 //             button that folds the views away
@@ -18,7 +19,8 @@
 // bottom. What is turned on is remembered per pedal; the mode and the share for every pedal.
 //
 //   const layout = createLayout({ id, h, store, app, header, rack, views, groups, presets, dock, share })
-//   views  = [{ key, name, card, on }]   (on: shown at first)
+//   views  = [{ key, name, card, on, rack }]   (on: shown at first; rack: under the pedal, in the
+//            rack, rather than in the views' stage; its toggle is in the views' bar all the same)
 //   groups = [{ key, name, el }]
 //   share  = the views' share of the height at first (0.6); store = { get(k, d), set(k, v) }
 //   returns { showViews(names | null), viewNames(), tourSlot, arrange() }
@@ -65,8 +67,12 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
   const viewsEl = h('section', { class: 'views', id: 'views', 'aria-label': 'Views' });
   const stage = h('div', { class: 'view-grid' });
   const noView = h('p', { class: 'no-view', hidden: true }, 'Every view is off: turn one on above.');
-  stage.append(...views.map((v) => v.card), noView);
+  const staged = views.filter((v) => !v.rack);
+  stage.append(...staged.map((v) => v.card), noView);
   viewsEl.append(stage);
+  // the rack's views go just under the pedal's face (the Pedalboard's chain stays below them)
+  const face = rack.querySelector('.pedal') ?? rack.lastElementChild;
+  if (face) face.after(...views.filter((v) => v.rack).map((v) => v.card)); else rack.append(...views.filter((v) => v.rack).map((v) => v.card));
   const pedalView = { key: 'pedal', name: 'Pedal', card: rack, on: true };
   const all = [pedalView, ...views];
   for (const v of all) v.shown = () => (touring && v !== pedalView ? touring.has(v.name.toLowerCase()) : prefs.views[v.key] ?? v.on);
@@ -119,7 +125,7 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, p
     return best;
   }
   function arrange() {
-    const on = views.filter((v) => v.shown()), n = on.length;
+    const on = staged.filter((v) => v.shown()), n = on.length;
     cols = columns(n) ?? cols;
     const rows = Math.ceil(n / Math.max(1, Math.min(cols, n)));
     let i = 0;

@@ -10,7 +10,9 @@
 // to floats by the same calibration, so a pedal at unity leaves the level alone.
 //
 // Messages in: { type: 'params', P }, { type: 'bypass', on }, { type: 'source', which: 'input' |
-// 'bass' }, { type: 'instrument', which: 'bass' | 'guitar' } (the test instrument), { type: 'fullScale', volts }, { type: 'note', key, velocity }, { type: 'noteOff', key },
+// 'bass' }, { type: 'instrument', which: 'bass' | 'guitar' } (the test instrument), { type: 'pluck', string, fret, velocity },
+// { type: 'slide', string, fret, seconds }, { type: 'lift', string } (the finger off: it mutes),
+// { type: 'fretless', on } (slides glide rather than step), { type: 'fullScale', volts }, { type: 'note', key, velocity }, { type: 'noteOff', key },
 // { type: 'quality', level }, { type: 'mute', on } (silence the output, as a tuner pedal does;
 // the tuner still hears the input), { type: 'measure' } (the loopback test: below).
 //
@@ -68,6 +70,10 @@ export function registerEffect(make) {
           case 'note': this.bass.note(m.key, m.velocity ?? 0.7); break;
           case 'noteOff': this.bass.noteOff(m.key); break;
           case 'instrument': this.bass.use(m.which); break;
+          case 'pluck': this.bass.pluck(m.string, m.fret, m.velocity ?? 0.7); break;
+          case 'slide': this.bass.slide(m.string, m.fret, m.seconds ?? 0.15); break;
+          case 'lift': this.bass.mute(m.string); break;
+          case 'fretless': this.bass.set('fretless', m.on ? 1 : 0); break;
           case 'quality': this.effect.setQuality(m.level); break;
           case 'mute': this.mute = !!m.on; break;
           case 'measure': this.measure = { t: 0, floor: 0, sentAt: -1 }; break;
