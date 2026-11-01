@@ -1,8 +1,10 @@
 // shell.js — everything a pedal page shares: the audio graph (the interface's input or the test
 // bass → the pedal's AudioWorklet → volume → a safety curve → the speakers), the pedal's face
-// (knobs for its `perform` controls, the footswitch and its LED), meters, a tuner, the latency,
-// the Controls panel with every parameter, the rig and the presets, the MIDI pedals, the test
-// bass's fretboard, and How it works (the READMEs: shared/notes.js). shared/layout.js lays them out on one
+// (knobs for its `perform` controls, its presets, the footswitch and its LED), meters, a tuner and
+// a metronome beside it, the Controls panel with every parameter and the MIDI pedals, and the rig
+// at the foot of the page: the input and the output, the master volume, the latency and the rig's
+// units before the pedal (shared/rig-panel.js), or the test bass's fretboard while it is the input;
+// and How it works (the READMEs: shared/notes.js). shared/layout.js lays them out on one
 // screen, as Forte does, with a toggle for each view and group of controls. The page brings its
 // descriptor, its worklet module and its views; a guided tour (shared/tour.js) drives the page
 // through `pageReady`.
@@ -32,6 +34,8 @@ import { INTERFACES, byInterface, fullScaleVolts } from './interfaces.js';
 import { registerApp, offerInstall } from './app.js';
 import { safetyCurve, SAFE_SPAN } from './safety.js';
 import { attachPresets } from './user-presets.js';
+import { metronomeCard } from './metronome-card.js';
+import { rigUnits } from './rig-panel.js';
 import { treadleFor } from './treadle.js';
 
 const store = {
@@ -167,9 +171,14 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   const menu = navMenu({ h, here: PEDAL.id, title: PEDAL.name });
   const header = h('header', { class: 'top' },
     h('div', { class: 'brand' }, menu, notesBtn, installBtn),
-    h('div', { class: 'audio' }, startBtn, cpu, sourceSel, chanSel, sinkSel, latency, measureBtn,
-      h('label', { class: 'volume', title: 'The level after the pedal, before the speakers (a MIDI volume pedal moves it too)' }, 'Volume', volInput), status));
+    h('div', { class: 'audio' }, status, startBtn, cpu));
 
+  // the presets, on the pedal itself: a little window in the enclosure
+  const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
+    h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)),
+    h('option', { value: '__defaults' }, 'Default settings'));
+  // your own presets, links and preset files (shared/user-presets.js), on a pedal's own page
+  if (reg.id) api.presets = attachPresets({ PEDAL, version: reg.version, sel: presetSel, get: () => ({ ...P }), set: (v) => api.page.setAll(v), store });
   // the pedal's face
   const led = h('span', { class: 'led', 'aria-hidden': 'true' });
   const foot = h('button', { class: 'footswitch', type: 'button', 'aria-pressed': String(!state.bypass), title: 'Engage or bypass the pedal (Space)', onclick: () => setBypass(!state.bypass) }, h('span', { class: 'sr' }, 'Engage'));
@@ -179,6 +188,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     h('div', { class: 'jacks' }, meterIn.el, meterOut.el),
     knobs,
     h('div', { class: 'name' }, h('span', {}, PEDAL.name), h('small', {}, PEDAL.after ?? reg.after ?? '')),
+    h('div', { class: 'preset-window' }, presetSel),
     h('div', { class: 'switchrow' }, led, foot));
   const rack = h('aside', { class: 'rack', 'data-view': 'Pedal' }, face);
   if (more) rack.append(more(api));
@@ -205,8 +215,11 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     h('div', { class: 't-body' }, h('div', { class: 't-name', role: 'status' }, tNote, tOct), scale, h('div', { class: 't-read' }, tCents, tHz, tString)));
 
   // views
-  // the tuner sits under the pedal, with the controls a player reaches for (shared/layout.js)
-  const viewList = [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }];
+  // the metronome: struck bars on the beat, into the master volume (shared/metronome-card.js)
+  const metronome = metronomeCard({ h, store, about: about('metronome', 'metronome'), audio: async () => { await start(); return { ctx, out: volume }; } });
+  api.metronome = metronome;
+  // the tuner and the metronome sit under the pedal, their toggles in its panel (shared/layout.js)
+  const viewList = [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }, { key: 'metronome', name: 'Metronome', card: metronome.card, on: false, rack: true }];
   // every page has a Scope and a Spectrum (shared/views.js), its own if it brings them
   const has = (t) => views.some((v) => v.title === t);
   views = [...views, ...(has('Spectrum') ? [] : [spectrumView()]), ...(has('Scope') ? [] : [scopeView()])];
@@ -300,31 +313,14 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     fretGrid.classList.toggle('fretless', state.fretless && n <= 4);
     for (const b of instBtns) b.setAttribute('aria-pressed', String(b.dataset.instrument === I.id));
   }
-  const bassFold = h('button', { type: 'button', class: 'fold', 'aria-controls': 'frets' });
-  bassFold.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6"/></svg>';
   fretGrid.id = 'frets';
   const bass = h('section', { class: 'bass', 'aria-label': 'Test instrument' },
     h('div', { class: 'bar bass-bar' }, bassLabel, bassAbout, instSwitch, slideBtn, bassHint,
-      h('span', { class: 'spacer' }), riffBtn, bassFold),
+      h('span', { class: 'spacer' }), riffBtn),
     fretGrid);
   buildFrets();
-  const setBassOpen = (open) => {
-    store.set('phuzzbox.bassOpen', open);
-    fretGrid.hidden = !open;
-    bassFold.setAttribute('aria-expanded', String(open));
-    bassFold.title = open ? 'Fold the fretboard away' : 'Show the fretboard';
-    bassFold.setAttribute('aria-label', bassFold.title);
-  };
-  bassFold.addEventListener('click', () => { setBassOpen(fretGrid.hidden); bassFold.blur(); });
-  setBassOpen(store.get('phuzzbox.bassOpen', true));
-  const dock = h('footer', { class: 'dock' }, bass);
 
-  // the Controls panel: the pedal's groups, the rig, the MIDI pedals
-  const presetSel = h('select', { class: 'presets', 'aria-label': 'Presets', onchange: () => { if (presetSel.value) applyPreset(presetSel.value); presetSel.value = ''; } },
-    h('option', { value: '' }, 'Presets…'), ...Object.keys(PEDAL.presets ?? {}).map((n) => h('option', { value: n }, n)),
-    h('option', { value: '__defaults' }, 'Default settings'));
-  // your own presets, links and preset files (shared/user-presets.js), on a pedal's own page
-  if (reg.id) api.presets = attachPresets({ PEDAL, version: reg.version, sel: presetSel, get: () => ({ ...P }), set: (v) => api.page.setAll(v), store });
+  // the Controls panel: the pedal's groups and the MIDI pedals
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, value: state.fullScale, 'aria-label': 'Volts at full scale' });
   fsInput.addEventListener('change', () => { state.fullScale = Math.max(0.05, +fsInput.value || 1); store.set('phuzzbox.fullScale', state.fullScale); send({ type: 'fullScale', volts: state.fullScale }); });
   // Full scale from the interface's specification and its gain, or typed in
@@ -383,19 +379,41 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     groupBoxes.push({ empty, rows: rows.slice(rows.length - g.params.length) });
     groupList.push({ key: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: say(g.name, state.instrument), say: g.name, el: box });
   }
-  // the rig: what turns the browser's numbers into volts at the input jack
+  // ---- the rig, at the foot of the page: the input and the output, the master volume and the
+  // latency on its bar; under it, while the interface is the input, what turns the browser's numbers
+  // into volts at the input jack and the rig's units before the pedal (shared/rig-panel.js), and
+  // while the test bass or guitar is, its fretboard (it is clean, so it skips the units)
   const instSel = h('select', { id: 'p-instrument', onchange: () => setInstrument(instSel.value) },
     ...Object.values(INSTRUMENTS).map((i) => h('option', { value: i.id }, i.name)));
   instSel.value = state.instrument;
-  const rig = h('fieldset', { class: 'group rig' }, h('legend', {}, 'Rig'),
+  fsInput.id = 'p-fullscale';
+  const iface = h('section', { class: 'rig-iface', 'aria-label': 'Interface' },
+    h('div', { class: 'rig-name' }, 'Interface'),
     h('div', { class: 'row', title: 'What you play: the tuner\'s range, the test instrument, and the pedals\' pickup and the ranges they were built for. Each instrument keeps its own settings.' },
       h('label', { for: 'p-instrument' }, 'Instrument'), instSel),
-    h('div', { class: 'row' }, h('label', {}, 'Audio interface'), ifaceSel, gainLabel),
+    h('div', { class: 'row', title: 'Choose your interface and its gain, and the page works out Full scale from the maker\'s specification.' }, h('label', {}, 'Model'), ifaceSel, gainLabel),
     h('div', { class: 'row', title: 'How many volts at the input jack make a full-scale signal in the browser: from your interface and its gain, or typed in. Set it so the test bass and your bass read alike on the In meter; it matters for the pedals that distort.' },
-      h('label', { for: 'p-fullscale' }, 'Full scale'), h('span', { class: 'inline' }, fsInput, ' V')),
-    h('p', { class: 'rig-note' }, 'Choose your interface and its gain, and the page works out Full scale from the maker\'s specification.'));
-  fsInput.id = 'p-fullscale';
-  groupList.push({ key: 'rig', name: 'Rig', el: rig });
+      h('label', { for: 'p-fullscale' }, 'Full scale'), h('span', { class: 'inline' }, fsInput, ' V')));
+  const units = rigUnits({ h, store, knobFor, send, first: iface });
+  api.rig = units;
+  const outBox = h('label', { class: 'rig-io', hidden: true }, h('span', {}, 'Out'), sinkSel);
+  const rigFold = h('button', { type: 'button', class: 'fold', 'aria-controls': 'rig-body' });
+  rigFold.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6"/></svg>';
+  const rigBody = h('div', { class: 'rig-body', id: 'rig-body' }, bass, units.el);
+  const rigBar = h('div', { class: 'bar rig-bar' }, h('span', { class: 'toggles-label' }, 'Rig'), about('rig', 'rig'),
+    h('label', { class: 'rig-io' }, h('span', {}, 'In'), sourceSel, chanSel), outBox,
+    h('label', { class: 'volume', title: 'The master volume: the level after the pedal and the metronome, before the speakers (a MIDI volume pedal moves it too)' }, 'Master', volInput),
+    latency, measureBtn, h('span', { class: 'spacer' }), rigFold);
+  const setRigOpen = (open) => {
+    store.set('phuzzbox.rigOpen', open);
+    rigBody.hidden = !open;
+    rigFold.setAttribute('aria-expanded', String(open));
+    rigFold.title = open ? 'Fold the rig away, leaving its bar' : 'Show the rig';
+    rigFold.setAttribute('aria-label', rigFold.title);
+    layout?.arrange();
+  };
+  rigFold.addEventListener('click', () => { setRigOpen(rigBody.hidden); rigFold.blur(); });
+  const dock = h('footer', { class: 'dock' }, h('section', { class: 'rig', 'aria-label': 'Rig' }, rigBar, rigBody));
 
   // MIDI foot controllers (shared/midi-panel.js): what each control change moves
   const midi = midiPanel({ PEDAL, h, store, key, ui: {
@@ -406,7 +424,9 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   groupList.push({ key: 'midi', name: 'MIDI pedals', el: midi.el });
   api.midi = midi;
 
-  const layout = createLayout({ id: PEDAL.id, h, store, app, header, rack, views: viewList, groups: groupList, presets: presetSel, dock });
+  let layout = null;
+  setRigOpen(store.get('phuzzbox.rigOpen', store.get('phuzzbox.bassOpen', true)));
+  layout = createLayout({ id: PEDAL.id, h, store, app, header, rack, views: viewList, groups: groupList, dock });
   api.layout = layout;
 
   for (const p of all.filter((q) => q.perform && q.type !== 'select')) knobs.append(controlFor(p, () => P[p.id], (v) => set(p.id, v)));
@@ -536,6 +556,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       send({ type: 'instrument', which: state.instrument });
       send({ type: 'fretless', on: state.fretless });
       send({ type: 'mute', on: state.mute });
+      send({ type: 'rig', R: units.values() });
       tHz.textContent = 'Play a note';
       startBtn.textContent = 'Audio on';
       document.body.classList.add('audio-on');
@@ -563,7 +584,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     const was = sinkSel.value || store.get('phuzzbox.sink', '');
     const sys = outs.find((d) => d.deviceId === 'default');
     sinkSel.replaceChildren(h('option', { value: '', 'data-group': sys?.groupId }, 'System output'), ...outs.filter((d) => d.deviceId !== 'default').map((d) => h('option', { value: d.deviceId, 'data-group': d.groupId }, `→ ${d.label}`)));
-    sinkSel.hidden = false;
+    sinkSel.hidden = false; outBox.hidden = false;
     if ([...sinkSel.options].some((o) => o.value === was)) { sinkSel.value = was; if (was) setSink(was); }
   }
   async function setSink(id) {
@@ -680,6 +701,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     const on = state.source === 'bass';
     if (!on && riff) toggleRiff();
     bass.hidden = !on;
+    units.el.hidden = on;
     document.body.classList.toggle('bass-off', !on);
     layout.arrange();
   }
@@ -805,6 +827,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   };
 
   setBypass(state.bypass);
+  showBass();
   setInterface();
   chanSel.value = state.channel;
   chanSel.hidden = true;

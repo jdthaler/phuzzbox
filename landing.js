@@ -83,4 +83,4 @@ for (const s of sections) {
 
 // the test bass's, the test guitar's, the tuner's, the scope's, the spectrum's and the plugins' notes, in the pedals' dialog
 const notes = howItWorks();
-for (const [key, label] of [['testbass', 'The test bass'], ['testguitar', 'The test guitar'], ['tuner', 'The tuner'], ['scope', 'The scope'], ['spectrum', 'The spectrum'], ['plugins', 'Plugins and the app']]) document.getElementById('also').append(notes.button(key, label));
+for (const [key, label] of [['testbass', 'The test bass'], ['testguitar', 'The test guitar'], ['tuner', 'The tuner'], ['metronome', 'The metronome'], ['rig', 'The rig'], ['scope', 'The scope'], ['spectrum', 'The spectrum'], ['plugins', 'Plugins and the app']]) document.getElementById('also').append(notes.button(key, label));

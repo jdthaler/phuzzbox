@@ -185,6 +185,13 @@ delay, gravity), on the landing page and in the menu, and in the app's pedal men
 draws each pedal as itself (`shared/face.js`); the tuner sits under the pedal at the left; a pedal
 opened from the menu carries on with the audio the last one had (input, channel, output, on).
 
+Decided 2026-11-01 (Jesse): **the rig at the foot of every page.** The input and output, the master
+volume and the latency move from the header to a bar at the foot; under it the test instrument's
+fretboard, or, with your interface, the rig's units before the pedal: Gain, Hum filter, Gate, EQ and
+Compressor (`shared/rig.js`), the same on every page and skipped by the test bass and guitar. The
+pedal is always shown (no Pedal toggle); the tuner and a new **metronome** (struck bars and a
+pendulum, `shared/metronome.js`) are toggled under it; the presets are on the pedal itself.
+
 ## Open
 
 - The site is up at `phuzzbox.jthaler.net` (GitHub Pages from `live`, 2026-10-31).

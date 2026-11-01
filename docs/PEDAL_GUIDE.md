@@ -39,8 +39,11 @@ resistors, capacitors, inductors, sources, diodes and transistors, solved by the
 with Newton on the junctions only; `response(f)` gives its small-signal response for the views and
 tests. The Wah (`native/pedals/wah/wah-model.cpp`) is the example.
 
-The page lays itself out (`shared/layout.js`, after Forte's): the pedal at the left, a Views bar
-with a toggle for each view, a Controls bar with a toggle for each group, the test bass below. A
+The page lays itself out (`shared/layout.js`, after Forte's): the pedal at the left, always there,
+with its presets in a window on the enclosure and the toggles for the tuner and the metronome under
+it; a Views bar with a toggle for each view, a Controls bar with a toggle for each group, and the
+rig at the foot (`shared/rig-panel.js`, `rig/README.md`): the input, the output, the master volume,
+and the fretboard of the test bass or, with your interface, the rig's units before the pedal. A
 view's `title` names its toggle and its `caption` waits behind ⓘ; `perform: true` shows it at first
 (by default the first two are). A view draws to fill its card, whatever shape it is given, and
 redraws on resize. Every page has a Scope and a Spectrum (`shared/views.js`): the shell adds them
