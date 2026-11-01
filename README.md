@@ -87,6 +87,11 @@ with a cable from the interface's output back to its input. Settings are kept in
 `~/Library/Application Support/Phuzzbox/settings.json` (`%APPDATA%\Phuzzbox` on Windows,
 `~/.config/phuzzbox` on Linux).
 
+A MIDI foot controller works in the app as on the pages: the app listens to every MIDI input
+(RtMidi), and its MIDI card maps the control changes with the FC-300's factory numbers to start
+(expression 1 the **Volume**, expression 2 the Wah's rocker, number pedals 1 and 2 the
+footswitch and the tuner's mute), each pedal keeping its own mappings.
+
 CI builds it on every pull request (the `native` workflow's `Phuzzbox-app-macos-15` artifact).
 The app isn't notarised, so after unzipping it, clear the quarantine flag macOS puts on downloads
 (`xattr -dr com.apple.quarantine Phuzzbox.app`), then open it. macOS asks once for the

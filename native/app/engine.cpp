@@ -12,6 +12,7 @@ namespace phuzzbox::app {
 namespace {
 constexpr double kPi = 3.14159265358979323846;
 constexpr double kFade = 0.005; // the footswitch's crossfade, seconds (shared/worklet.js's FADE)
+constexpr double kGlide = 0.01; // the volume's time constant, seconds (shell.js's setTargetAtTime)
 double now() { return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
 template <class T> void raise(std::atomic<T> &a, T x) {
   T was = a.load(std::memory_order_relaxed);
@@ -30,6 +31,7 @@ void Engine::prepare(double rate, int maxFrames) {
   v.assign(maxFrames, 0); L.assign(maxFrames, 0); R.assign(maxFrames, 0);
   dirty = true;
   wet = bypass ? 0 : 1;
+  level = gain;
   busy = span = 0;
 }
 
@@ -119,12 +121,14 @@ void Engine::process(const float *in, int inChannels, float *out, int outChannel
   effect->process(v.data(), L.data(), R.data(), n);
   const double target = bypass ? 0 : 1, step = 1 / (kFade * fs);
   const bool silent = mute;
+  const double g = std::clamp(gain.load(), 0.0, 1.0), glide = 1 - std::exp(-1 / (kGlide * fs));
   for (int i = 0; i < n; i++) {
     if (wet != target) wet = target > wet ? std::min(target, wet + step) : std::max(target, wet - step);
+    level += glide * (g - level);
     float l = (float)(wet * L[i] + (1 - wet) * v[i]), r = (float)(wet * R[i] + (1 - wet) * v[i]);
     if (!std::isfinite(l) || !std::isfinite(r)) { effect->reset(); l = r = 0; }
     peakOut = std::max({peakOut, std::abs(l), std::abs(r)});
-    const float ol = silent ? 0.0f : l / k, orr = silent ? 0.0f : r / k;
+    const float ol = silent ? 0.0f : (float)(level * l / k), orr = silent ? 0.0f : (float)(level * r / k);
     for (int c = 0; c < outChannels; c++) out[i * outChannels + c] = c % 2 ? orr : ol;
   }
   raise(inPeak, peakIn);

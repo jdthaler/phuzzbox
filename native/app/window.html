@@ -423,8 +423,243 @@ function fullScaleVolts(iface, gainDb) {
 return { INTERFACES, byInterface, fullScaleVolts };
 })();
 
-// ---- buffer/src/buffer-params.js
+// ---- shared/midi.js
 const __m5 = (() => {
+const { params } = __m1;
+// midi.js — MIDI foot controllers on a pedal: which control change (CC) moves which control, the
+// FC-300's defaults, MIDI learn, and what a CC's 0–127 means for each kind of control. No browser
+// here (shared/midi-panel.js connects Web MIDI and draws the panel), so the Node tests and the
+// app's window can use it too. The plugins' C++ follows the same rules (phuzzbox/midi.h).
+//
+//   const map = new MidiMap(PEDAL, saved ?? defaultMappings(PEDAL));
+//   map.learn(index);                         the next CC that arrives is that mapping's
+//   const { actions } = map.message([0xB0, 7, 93]);
+//   actions: [{ target: 'volume', value: 0.73 }] — a position 0…1 for a knob or the volume pedal,
+//            a boolean for a switch, an index for a choice, { toggle: true } for a momentary press
+//
+// A mapping: { cc, channel (1–16, or 0 for any), target, mode, invert }. Targets: 'volume' (the
+// page's volume, through a volume pedal's audio taper), 'bypass' (the footswitch: on = engaged),
+// 'mute' (the tuner's mute), or 'param:<id>' for any of the pedal's controls. A switch's mode is
+// 'latch' (a footswitch that sends 127 and 0 on alternate presses: 127 is on) or 'momentary' (127
+// while held, 0 on release: each press toggles).
+
+
+// Roland FC-300 in Control Change mode, as it leaves the factory (its owner's manual, pp. 21–22):
+// expression pedal 1 sends CC 7 and expression pedal 2 CC 1, 0–127; number pedals 1–10 send CC
+// 65–74 and the control pedals CTL 1 and 2 CC 80 and 81, all latching (0–127).
+const FC300 = { exp1: 7, exp2: 1, pedals: [65, 66, 67, 68, 69, 70, 71, 72, 73, 74], ctl: [80, 81] };
+
+const SWITCH_MODES = [['latch', 'latching (127, then 0)'], ['momentary', 'momentary (held)']];
+
+// A volume pedal's pot is audio (log) taper: the share of the track below the wiper at travel x is
+// (81^x − 1)/80, 10 % at half travel, as the usual "A" taper; the signal is that share of itself.
+const audioTaper = (x) => (81 ** Math.min(1, Math.max(0, x)) - 1) / 80;
+
+// Everything a CC can move on this pedal's page.
+function targets(PEDAL) {
+  const list = [
+    { id: 'volume', label: 'Volume pedal', kind: 'continuous' },
+    { id: 'bypass', label: 'Footswitch (engage)', kind: 'switch' },
+    { id: 'mute', label: 'Tuner mute', kind: 'switch' },
+  ];
+  for (const p of params(PEDAL.groups)) {
+    list.push({ id: `param:${p.id}`, label: p.label, kind: p.type === 'checkbox' ? 'switch' : p.type === 'select' ? 'choice' : 'continuous', param: p });
+  }
+  return list;
+}
+
+// The FC-300's pedals on this pedal: expression 1 the volume, expression 2 the pedal's expression
+// control (the Wah's rocker), number pedal 1 the footswitch, number pedal 2 the tuner's mute.
+function defaultMappings(PEDAL) {
+  const m = [{ cc: FC300.exp1, channel: 0, target: 'volume', mode: 'latch', invert: false }];
+  if (PEDAL.expression) m.push({ cc: FC300.exp2, channel: 0, target: `param:${PEDAL.expression}`, mode: 'latch', invert: false });
+  m.push({ cc: FC300.pedals[0], channel: 0, target: 'bypass', mode: 'latch', invert: false });
+  m.push({ cc: FC300.pedals[1], channel: 0, target: 'mute', mode: 'latch', invert: false });
+  return m;
+}
+
+// What a CC value (0–127) does to a target of a kind: a position for a continuous control, on or
+// off for a switch (latching: ≥ 64 is on; momentary: a press, ≥ 64 after < 64, toggles), and the
+// nearest of a choice's options. Returns null when nothing should happen.
+function ccAction(t, m, value, last) {
+  const v = m.invert ? 127 - value : value;
+  if (t.kind === 'continuous') return { target: t.id, value: v / 127 };
+  if (t.kind === 'choice') return { target: t.id, value: Math.round((v / 127) * (t.param.options.length - 1)) };
+  if (m.mode === 'momentary') return v >= 64 && !(last >= 64) ? { target: t.id, toggle: true } : null;
+  return { target: t.id, value: v >= 64 };
+}
+
+class MidiMap {
+  constructor(PEDAL, mappings = defaultMappings(PEDAL)) {
+    this.PEDAL = PEDAL;
+    this.targets = new Map(targets(PEDAL).map((t) => [t.id, t]));
+    this.mappings = mappings.filter((m) => this.targets.has(m.target)).map((m) => ({ channel: 0, mode: 'latch', invert: false, ...m }));
+    this.learning = -1; // the mapping waiting for its CC
+    this.last = new Map(); // `${channel}:${cc}` → the last value, for momentary switches
+  }
+  learn(i) { this.learning = i; }
+  cancelLearn() { this.learning = -1; }
+  add(target = 'volume') { this.mappings.push({ cc: 0, channel: 0, target, mode: 'latch', invert: false }); return this.mappings.length - 1; }
+  remove(i) { this.mappings.splice(i, 1); if (this.learning === i) this.learning = -1; else if (this.learning > i) this.learning--; }
+  reset() { this.mappings = defaultMappings(this.PEDAL); this.learning = -1; }
+
+  // One MIDI message, as bytes. Returns { cc, channel, value, learned, actions } for a control
+  // change, { program, channel, actions: [{ program }] } for a program change, or null.
+  message(data) {
+    const [status, d1 = 0, d2 = 0] = data;
+    const type = status & 0xf0, channel = (status & 0x0f) + 1;
+    if (type === 0xc0) return { program: d1, channel, actions: [{ program: d1 }] };
+    if (type !== 0xb0 || d1 > 119) return null; // 120–127 are channel mode messages
+    const key = `${channel}:${d1}`, last = this.last.get(key);
+    this.last.set(key, d2);
+    let learned = -1;
+    if (this.learning >= 0 && this.learning < this.mappings.length) {
+      // a pedal taught to one control leaves the others it moved
+      this.mappings.forEach((m, i) => { if (i !== this.learning && m.cc === d1 && (m.channel === 0 || m.channel === channel)) m.cc = -1; });
+      this.mappings[this.learning].cc = d1;
+      learned = this.learning;
+      this.learning = -1;
+      this.mappings = this.mappings.filter((m) => m.cc >= 0);
+      learned = Math.min(learned, this.mappings.length - 1);
+    }
+    const actions = [];
+    for (const m of this.mappings) {
+      if (m.cc !== d1 || (m.channel && m.channel !== channel)) continue;
+      const a = ccAction(this.targets.get(m.target), m, d2, last);
+      if (a) actions.push(a);
+    }
+    return { cc: d1, channel, value: d2, learned, actions };
+  }
+}
+
+return { FC300, SWITCH_MODES, audioTaper, targets, defaultMappings, ccAction, MidiMap };
+})();
+
+// ---- shared/midi-panel.js
+const __m4 = (() => {
+const { MidiMap, defaultMappings, targets, audioTaper, SWITCH_MODES } = __m5;
+const { fromUnit } = __m1;
+// midi-panel.js — the MIDI card on a pedal's page: Web MIDI (Chrome and Edge) or the app's own
+// MIDI (window.phuzzMidi(status, d1, d2)), the mappings from control changes to the page's
+// controls (shared/midi.js), MIDI learn, and a monitor of the last message, so you can see a
+// pedal arrive. The shell hands it what the page can do (ui) and puts its element in the page.
+//
+//   const midi = midiPanel({ PEDAL, h, store, key, ui });
+//   ui = { setVolume(gain), bypassed(), setBypass(on), muted(), setMute(on), value(id), set(id, v),
+//          presets: [names], applyPreset(name) }
+
+
+
+function midiPanel({ PEDAL, h, store, key, ui }) {
+  const map = new MidiMap(PEDAL, store.get(`${key}.midi`, null) ?? defaultMappings(PEDAL));
+  const all = targets(PEDAL);
+  const save = () => store.set(`${key}.midi`, map.mappings);
+  let access = null;
+
+  const status = h('span', { class: 'midi-status' }, navigator.requestMIDIAccess ? 'not connected' : 'Web MIDI needs Chrome or Edge');
+  const connectBtn = h('button', { type: 'button', class: 'ghost', hidden: !navigator.requestMIDIAccess, onclick: () => connect() }, 'Connect MIDI');
+  const inSel = h('select', { 'aria-label': 'MIDI input', hidden: true, onchange: () => { store.set('phuzzbox.midiInput', inSel.value); listen(); } });
+  const last = h('span', { class: 'pill midi-last', title: 'The last control change that arrived, on any input' }, 'last: –');
+  const rowsEl = h('div', { class: 'midi-maps' });
+  const addBtn = h('button', { type: 'button', class: 'ghost', onclick: () => { const i = map.add(); save(); draw(); map.learn(i); draw(); } }, '+ Add a pedal');
+  const resetBtn = h('button', { type: 'button', class: 'ghost', title: 'Expression pedal 1 (CC 7) the volume, expression pedal 2 (CC 1) the pedal\'s expression control, number pedal 1 (CC 65) the footswitch, number pedal 2 (CC 66) the tuner\'s mute', onclick: () => { map.reset(); save(); draw(); } }, 'FC-300 defaults');
+  const el = h('section', { class: 'midi', 'aria-label': 'MIDI' },
+    h('div', { class: 'midi-bar' }, h('b', {}, 'MIDI pedals'), status, connectBtn, inSel, last),
+    h('p', { class: 'midi-help' }, 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB), set it to Control Change mode, and press Connect MIDI. Learn, then move a pedal, teaches a row that pedal.'),
+    rowsEl, h('div', { class: 'midi-actions' }, addBtn, resetBtn));
+
+  // ---- the mappings
+  const rowEls = [];
+  function draw() {
+    rowEls.length = 0;
+    rowsEl.replaceChildren(...map.mappings.map((m, i) => {
+      const t = map.targets.get(m.target);
+      const cc = h('input', { type: 'number', min: 0, max: 119, value: m.cc, 'aria-label': 'Control change number' });
+      cc.addEventListener('change', () => { m.cc = Math.max(0, Math.min(119, Math.round(+cc.value) || 0)); cc.value = m.cc; save(); });
+      const ch = h('select', { 'aria-label': 'MIDI channel', onchange: () => { m.channel = +ch.value; save(); } },
+        h('option', { value: 0 }, 'any channel'), ...Array.from({ length: 16 }, (_, k) => h('option', { value: k + 1 }, `channel ${k + 1}`)));
+      ch.value = m.channel;
+      const target = h('select', { 'aria-label': 'What it moves', onchange: () => { m.target = target.value; save(); draw(); } },
+        ...all.map((x) => h('option', { value: x.id }, x.label)));
+      target.value = m.target;
+      const mode = h('select', { 'aria-label': 'Switch type', hidden: t.kind !== 'switch', onchange: () => { m.mode = mode.value; save(); } },
+        ...SWITCH_MODES.map(([v, l]) => h('option', { value: v }, l)));
+      mode.value = m.mode;
+      const inv = h('input', { type: 'checkbox', 'aria-label': 'Reverse the pedal' });
+      inv.checked = !!m.invert;
+      inv.addEventListener('change', () => { m.invert = inv.checked; save(); });
+      const learning = map.learning === i;
+      const learn = h('button', { type: 'button', class: `ghost learn${learning ? ' on' : ''}`, 'aria-pressed': String(learning), onclick: () => { if (map.learning === i) map.cancelLearn(); else map.learn(i); draw(); } }, learning ? 'Move a pedal…' : 'Learn');
+      const del = h('button', { type: 'button', class: 'ghost', 'aria-label': 'Remove this pedal', onclick: () => { map.remove(i); save(); draw(); } }, '✕');
+      const row = h('div', { class: 'mrow' },
+        h('label', { class: 'inline' }, 'CC ', cc), ch, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '→'), target, mode,
+        h('label', { class: 'inline', hidden: t.kind === 'switch' }, inv, 'reverse'), learn, del);
+      rowEls.push(row);
+      return row;
+    }));
+    if (!map.mappings.length) rowsEl.append(h('p', { class: 'midi-help' }, 'No pedals mapped: + Add a pedal, then move it.'));
+  }
+  draw();
+
+  // ---- what a message does
+  function act(a) {
+    if (a.program !== undefined) { const name = ui.presets[a.program]; if (name) ui.applyPreset(name); return; }
+    const on = (now) => (a.toggle ? !now : a.value);
+    if (a.target === 'volume') ui.setVolume(audioTaper(a.value));
+    else if (a.target === 'bypass') ui.setBypass(!on(!ui.bypassed()));
+    else if (a.target === 'mute') ui.setMute(on(ui.muted()));
+    else {
+      const p = map.targets.get(a.target).param;
+      if (p.type === 'checkbox') ui.set(p.id, on(!!ui.value(p.id)));
+      else if (p.type === 'select') ui.set(p.id, p.options[a.value][0]);
+      else ui.set(p.id, fromUnit(p, a.value));
+    }
+  }
+  function feed(data) {
+    const r = map.message(data);
+    if (!r) return;
+    if (r.cc !== undefined) last.textContent = `last: CC ${r.cc} = ${r.value} · ch ${r.channel}`;
+    else last.textContent = `last: program ${r.program + 1} · ch ${r.channel}`;
+    if (r.learned >= 0) { save(); draw(); }
+    for (const a of r.actions) act(a);
+    if (r.cc !== undefined) map.mappings.forEach((m, i) => { if (m.cc === r.cc && rowEls[i]) { rowEls[i].classList.remove('hit'); void rowEls[i].offsetWidth; rowEls[i].classList.add('hit'); } });
+  }
+  // the app's window has no Web MIDI; its program hands the page the bytes
+  window.phuzzMidi = (s, d1, d2) => { status.textContent = 'from the app'; feed([s, d1, d2]); };
+
+  // ---- Web MIDI
+  function listen() {
+    if (!access) return;
+    const inputs = [...access.inputs.values()];
+    const want = store.get('phuzzbox.midiInput', '');
+    inSel.replaceChildren(h('option', { value: '' }, 'every MIDI input'), ...inputs.map((p) => h('option', { value: p.id }, p.name)));
+    inSel.value = inputs.some((p) => p.id === want) ? want : '';
+    inSel.hidden = !inputs.length;
+    for (const p of inputs) p.onmidimessage = !inSel.value || inSel.value === p.id ? (e) => feed(e.data) : null;
+    status.textContent = inputs.length ? `listening to ${inputs.length === 1 ? inputs[0].name : `${inputs.length} inputs`}` : 'connected, but no MIDI input: plug in the interface';
+  }
+  async function connect() {
+    if (!navigator.requestMIDIAccess) return;
+    try {
+      access = await navigator.requestMIDIAccess({ sysex: false });
+      access.onstatechange = () => listen();
+      connectBtn.hidden = true;
+      listen();
+    } catch (err) {
+      status.textContent = `MIDI was not allowed (${err.message})`;
+    }
+  }
+  // connect without asking when the browser already allows it
+  navigator.permissions?.query({ name: 'midi' }).then((s) => { if (s.state === 'granted') connect(); }).catch(() => {});
+
+  return { el, map, feed };
+}
+
+return { midiPanel };
+})();
+
+// ---- buffer/src/buffer-params.js
+const __m7 = (() => {
 
 // buffer-params.js — the Buffer's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -490,8 +725,8 @@ return { bass, recorded, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- buffer/src/buffer-pedal.js
-const __m4 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m5;
+const __m6 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m7;
 // buffer-pedal.js — the Buffer's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -508,8 +743,8 @@ return { PEDAL };
 })();
 
 // ---- phuzz/src/phuzz-params.js
-const __m7 = (() => {
-const { bass, recorded } = __m5;
+const __m9 = (() => {
+const { bass, recorded } = __m7;
 // phuzz-params.js — the Phuzz's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
 
@@ -574,8 +809,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- phuzz/src/phuzz-pedal.js
-const __m6 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m7;
+const __m8 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m9;
 // phuzz-pedal.js — the Phuzz's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -592,7 +827,7 @@ return { PEDAL };
 })();
 
 // ---- wah/src/wah-params.js
-const __m9 = (() => {
+const __m11 = (() => {
 
 // wah-params.js — the Wah's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The parts are the inductor wah's as Holters and Zölzer (DAFx 2011) list them; the sweep
@@ -642,8 +877,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- wah/src/wah-pedal.js
-const __m8 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m9;
+const __m10 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m11;
 // wah-pedal.js — the Wah's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -666,14 +901,17 @@ const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue } = __m1;
 const { Tuner, OPEN_STRINGS } = __m2;
 const { INTERFACES, byInterface, fullScaleVolts } = __m3;
-const { PEDAL: BUFFER } = __m4;
-const { PEDAL: PHUZZ } = __m6;
-const { PEDAL: WAH } = __m8;
+const { midiPanel } = __m4;
+const { PEDAL: BUFFER } = __m6;
+const { PEDAL: PHUZZ } = __m8;
+const { PEDAL: WAH } = __m10;
 // app.js — the Phuzzbox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
 // program's web view as one page, bundled by tools/bundle-app.mjs. The menu in the header picks
-// the pedal: the program swaps it and the window is drawn again for it.
+// the pedal: the program swaps it and the window is drawn again for it. MIDI foot controllers are
+// the site's MIDI card (shared/midi-panel.js), fed by the program's MIDI (window.phuzzMidi).
+
 
 
 
@@ -709,7 +947,7 @@ async function main(info, carry = {}) {
   for (const p of all) if (!(p.id in P)) P[p.id] = p.def;
   // the bass and how it is plugged in are the same whichever pedal it plays
   for (const id of PEDAL.keep ?? []) if (id in carry && all.some((p) => p.id === id)) P[id] = carry[id];
-  const audio = { input: '', output: '', frames: 64, rate: 0, channel: 0, bypass: 0, fullScale: 1, interface: '', gain: 20, ...(S.audio ?? {}) };
+  const audio = { input: '', output: '', frames: 64, rate: 0, channel: 0, bypass: 0, fullScale: 1, interface: '', gain: 20, volume: 1, ...(S.audio ?? {}) };
   const ui = { a4: 440, ...(S.ui ?? {}) };
   let stream = info.stream;
 
@@ -741,6 +979,8 @@ async function main(info, carry = {}) {
   const gainInput = h('input', { type: 'number', min: 0, max: 62, step: 1, 'aria-label': 'Interface gain in decibels' });
   const gainLabel = h('label', { class: 'inline' }, 'gain ', gainInput, ' dB');
   const fsInput = h('input', { type: 'number', min: 0.05, max: 20, step: 0.05, 'aria-label': 'Volts at full scale' });
+  const volInput = h('input', { type: 'range', min: 0, max: 1, step: 0.01, 'aria-label': 'Volume after the pedal' });
+  const volOut = h('output', {});
   const audioCard = h('section', { class: 'card audiocard', 'aria-label': 'Audio' },
     h('div', { class: 'audio-row' }, h('b', {}, 'Audio'),
       h('label', { class: 'inline' }, 'In ', inSel), chanSel,
@@ -749,13 +989,24 @@ async function main(info, carry = {}) {
       measureBtn, measured),
     h('div', { class: 'audio-row' },
       h('span', { class: 'inline', title: 'Choose your interface and type its gain, and Full scale comes from the maker\'s specification' }, ifaceSel, gainLabel),
-      h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale sample' }, 'Full scale ', fsInput, ' V')));
+      h('label', { class: 'inline', title: 'How many volts at the input jack make a full-scale sample' }, 'Full scale ', fsInput, ' V'),
+      h('label', { class: 'inline', title: 'The level after the pedal, as a volume pedal sets it (a MIDI expression pedal moves it)' }, 'Volume ', volInput, volOut)));
   inSel.value = audio.input || info.inputs[0]?.name || '';
   outSel.value = audio.output || info.outputs[0]?.name || '';
   frameSel.value = audio.frames;
   ifaceSel.value = audio.interface;
   gainInput.value = audio.gain;
   fsInput.value = audio.fullScale;
+  volInput.addEventListener('input', () => setVolume(+volInput.value));
+  let volTimer = null;
+  function setVolume(g) {
+    audio.volume = Math.min(1, Math.max(0, g));
+    volInput.value = audio.volume;
+    volOut.textContent = `${Math.round(100 * audio.volume)} %`;
+    call('volume', audio.volume);
+    clearTimeout(volTimer);
+    volTimer = setTimeout(() => call('store', 'audio', audio), 300);
+  }
 
   function fillChannels() {
     const n = info.inputs.find((d) => d.name === inSel.value)?.channels ?? 2;
@@ -853,7 +1104,22 @@ async function main(info, carry = {}) {
   }
   const controls = h('section', { class: 'controls' }, h('div', { class: 'controls-bar' }, h('b', {}, 'Controls'), presetSel), groupsEl);
 
-  app.append(audioCard, h('div', { class: 'stage' }, face, h('section', { class: 'views' }, tunerCard)), controls,
+  // MIDI foot controllers: the site's card, its mappings kept in the settings file for each pedal
+  const midiSaved = { ...(S.midi ?? {}) };
+  const midiStore = {
+    get: (k, d) => (k in midiSaved ? midiSaved[k] : d),
+    set: (k, v) => { midiSaved[k] = v; call('store', 'midi', midiSaved); },
+  };
+  const midi = midiPanel({ PEDAL, h, store: midiStore, key: `phuzzbox.${PEDAL.id}`, ui: {
+    setVolume, bypassed: () => !!audio.bypass, setBypass, muted: () => muted, setMute,
+    value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
+  } });
+  window.phuzzMidi = (status, d1, d2) => midi.feed([status, d1, d2]); // the card's status names the inputs instead
+  const midiStatus = midi.el.querySelector('.midi-status'), midiHelp = midi.el.querySelector('.midi-help');
+  for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
+  midiHelp.textContent = 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and set it to Control Change mode. The app listens to every MIDI input. Learn, then move a pedal, teaches a row that pedal.';
+
+  app.append(audioCard, h('div', { class: 'stage' }, face, h('section', { class: 'views' }, tunerCard)), controls, midi.el,
     h('footer', {}, `${PEDAL.name} ${info.version} · Phuzzbox · physics, not samples. Space is the footswitch.`));
   for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(knob(p));
 
@@ -936,7 +1202,7 @@ async function main(info, carry = {}) {
   onSpace = () => setBypass(!audio.bypass);
 
   // ---- the levels, the tuner and the measurement, ten times a second
-  let t = 0, wasMeasuring = false;
+  let t = 0, wasMeasuring = false, midiPorts = null;
   async function tick() {
     if (me !== drawn) return; // a newer window has its own
     const r = await call('poll');
@@ -945,6 +1211,8 @@ async function main(info, carry = {}) {
     meterIn.set(r.in, r.in / audio.fullScale > 0.98);
     meterOut.set(r.out, r.out / audio.fullScale > 0.98);
     cpu.textContent = `CPU ${(100 * r.cpu).toFixed(1)}%`;
+    const ports = (r.midi ?? []).join(', ');
+    if (ports !== midiPorts) { midiPorts = ports; midiStatus.textContent = ports ? `listening to ${ports}` : 'no MIDI input: plug in the interface'; }
     if (r.measured === -1) wasMeasuring = true;
     else if (wasMeasuring) {
       wasMeasuring = false;
@@ -972,6 +1240,7 @@ async function main(info, carry = {}) {
   if (Object.keys(carry).length) saveParams();
   setBypass(!!audio.bypass);
   setFullScale();
+  setVolume(audio.volume);
   refresh();
   showStream();
   tick();
