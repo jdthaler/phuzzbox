@@ -1,6 +1,6 @@
 {
-  "name": "Phuzzbox",
-  "short_name": "Phuzzbox",
+  "name": "PhuzzBox",
+  "short_name": "PhuzzBox",
   "description": "Effects pedals for bass and other line inputs, built from physics.",
   "id": "./",
   "start_url": "./",

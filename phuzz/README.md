@@ -8,7 +8,7 @@ The battery has an internal resistance, so the rail sags under each note. Its in
 kilohms, so it loads your pickup before any transistor clips, which is why one of these sounds
 different on every bass.
 
-Part of [Phuzzbox](../README.md).
+Part of [PhuzzBox](../README.md).
 
 | Input | |
 |---|---|

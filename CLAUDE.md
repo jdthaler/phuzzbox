@@ -1,4 +1,4 @@
-# Phuzzbox
+# PhuzzBox
 
 Effects pedals for bass and other line inputs, synthesised in the browser and in plugins from
 their physics. A sibling of Forte (github.com/jdthaler/forte, on this Mac at ~/claude/piano):

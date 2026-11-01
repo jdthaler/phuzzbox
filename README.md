@@ -1,4 +1,4 @@
-# Phuzzbox
+# PhuzzBox
 
 **Effects pedals built from physics**, for bass guitar and other line inputs. A sibling of
 [Forte](https://github.com/jdthaler/forte), Forte's keyboards turned inside out: instead of keys
@@ -61,7 +61,7 @@ input* to its impedance. With an interface that isn't listed, type Full scale in
 bass and the test bass read alike on the In meter.
 
 **Install as an app.** In Chrome or Edge, **Install app** (on the landing page, or in the
-browser's address bar) puts Phuzzbox in a window of its own, with its own Dock icon. A service
+browser's address bar) puts PhuzzBox in a window of its own, with its own Dock icon. A service
 worker ([sw.js](sw.js)) keeps a copy of every file it has loaded, so the app opens even with
 `npm run serve` stopped. Open each page once with the server running so that its files are kept.
 
@@ -92,7 +92,7 @@ Your settings stay in your browser.
 
 ## The app
 
-**Phuzzbox.app** (`native/app/`) plays the pedals with no browser and no DAW, one at a time: the
+**PhuzzBox.app** (`native/app/`) plays the pedals with no browser and no DAW, one at a time: the
 menu in its title picks the Buffer, the Phuzz or the Wah, and each keeps its own settings (your
 bass and how it is plugged in go with you from one to the other). It shows the page's face, tuner
 and Controls in a window of its own, built from the same modules; the pages' views stay on the
@@ -101,7 +101,7 @@ choose, 64 samples unless you change it. At 48 kHz the buffers then make a round
 ms, where Chrome's is 15–25 ms. Pick your interface for In and Out, the input your bass is on, and
 the buffer: the smallest that plays without clicks. **Measure latency** times the real round trip
 with a cable from the interface's output back to its input. Settings are kept in
-`~/Library/Application Support/Phuzzbox/settings.json` (`%APPDATA%\Phuzzbox` on Windows,
+`~/Library/Application Support/PhuzzBox/settings.json` (`%APPDATA%\PhuzzBox` on Windows,
 `~/.config/phuzzbox` on Linux).
 
 A MIDI foot controller works in the app as on the pages: the app listens to every MIDI input
@@ -109,9 +109,9 @@ A MIDI foot controller works in the app as on the pages: the app listens to ever
 (expression 1 the **Volume**, expression 2 the Wah's rocker, number pedals 1 and 2 the
 footswitch and the tuner's mute), each pedal keeping its own mappings.
 
-CI builds it on every pull request (the `native` workflow's `Phuzzbox-app-macos-15` artifact).
+CI builds it on every pull request (the `native` workflow's `PhuzzBox-app-macos-15` artifact).
 The app isn't notarised, so after unzipping it, clear the quarantine flag macOS puts on downloads
-(`xattr -dr com.apple.quarantine Phuzzbox.app`), then open it. macOS asks once for the
+(`xattr -dr com.apple.quarantine PhuzzBox.app`), then open it. macOS asks once for the
 microphone: that permission covers the interface's inputs too.
 
 ## Running it locally

@@ -69,7 +69,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
 
   // ---- the page (shared/layout.js arranges it: the header, the pedal beside the views and the
   // controls, the test bass pinned below while it is the input)
-  document.title = `${PEDAL.name} · Phuzzbox`;
+  document.title = `${PEDAL.name} · PhuzzBox`;
   const app = document.getElementById('app');
   const status = h('span', { class: 'status' });
   const startBtn = h('button', { class: 'primary start', type: 'button', onclick: () => start() }, 'Start audio');
@@ -85,7 +85,7 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
   const notesBtn = notes.button();
   // How the tuner works, how the test bass works: their tabs in the notes
   const about = (k, what) => h('button', { type: 'button', class: 'info', 'aria-label': `How the ${what} works`, title: `How the ${what} works`, onclick: () => notes.open(k) }, 'i');
-  const installBtn = h('button', { type: 'button', class: 'ghost', title: 'Install Phuzzbox as an app with its own window, which opens without the browser\'s tabs and works without the server' }, 'Install app');
+  const installBtn = h('button', { type: 'button', class: 'ghost', title: 'Install PhuzzBox as an app with its own window, which opens without the browser\'s tabs and works without the server' }, 'Install app');
   registerApp();
   offerInstall(installBtn);
   // the volume after the pedal, beside the audio: a fader, as on a mixer
@@ -96,10 +96,10 @@ export function createPedal({ PEDAL, worklet, views = [] }) {
     h('summary', { title: 'Choose a pedal' }, h('h1', {}, PEDAL.name), h('span', { class: 'caret', 'aria-hidden': 'true' }, '▾')),
     h('div', { class: 'menu-list' },
       ...PEDALS.filter((p) => p.ready).map((p) => h('a', { href: `../${p.id}/`, 'aria-current': p.id === PEDAL.id ? 'page' : false }, h('b', {}, p.name), h('small', {}, p.after))),
-      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, `Phuzzbox ${PHUZZBOX_VERSION} · physics, not samples`))));
+      h('a', { href: '../', class: 'menu-home' }, h('b', {}, 'All pedals'), h('small', {}, `PhuzzBox ${PHUZZBOX_VERSION} · physics, not samples`))));
   addEventListener('pointerdown', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
   const header = h('header', { class: 'top' },
-    h('div', { class: 'brand' }, h('a', { class: 'home', href: '../', title: 'Every pedal' }, 'Phuzzbox'), menu, notesBtn, installBtn),
+    h('div', { class: 'brand' }, h('a', { class: 'home', href: '../', title: 'Every pedal' }, 'PhuzzBox'), menu, notesBtn, installBtn),
     h('div', { class: 'audio' }, startBtn, cpu, sourceSel, chanSel, sinkSel, latency, measureBtn,
       h('label', { class: 'volume', title: 'The level after the pedal, before the speakers (a MIDI volume pedal moves it too)' }, 'Volume', volInput), status));
 

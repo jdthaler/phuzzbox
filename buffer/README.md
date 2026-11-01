@@ -10,7 +10,7 @@ signal passes untouched; turn **Cable length** up and you hear the top end of a 
 roll off, turn **Input impedance** down and you hear what a low-impedance pedal does to a passive
 bass before it does anything else.
 
-Part of [Phuzzbox](../README.md).
+Part of [PhuzzBox](../README.md).
 
 | Input | |
 |---|---|

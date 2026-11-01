@@ -284,7 +284,7 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
 body.one-screen { height: 100vh; height: 100dvh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
 body.one-screen #app { max-width: none; height: 100%; padding: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 
-/* the header: Phuzzbox, the pedal (its menu), How it works; then the audio */
+/* the header: PhuzzBox, the pedal (its menu), How it works; then the audio */
 body.one-screen header.top { padding: max(8px, env(safe-area-inset-top)) 14px 8px; gap: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); position: relative; z-index: 5; }
 body.one-screen header.top .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
 body.one-screen header.top .home {
