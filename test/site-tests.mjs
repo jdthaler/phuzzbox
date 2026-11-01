@@ -3,7 +3,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { check, done } from './harness.mjs';
-import { PEDALS } from '../shared/registry.js';
+import { PEDALS, SECTIONS } from '../shared/registry.js';
 import { renderMarkdown } from '../shared/markdown.js';
 import { params } from '../shared/params.js';
 
@@ -49,7 +49,7 @@ check(/^## Prior art and references/m.test(readFileSync(`${root}testbass/README.
 // registry.js's SOURCE, and the notes never link a reader to it for information
 {
   const { readdirSync } = await import('node:fs');
-  const files = ['index.html', 'sw.js', ...readdirSync(`${root}shared`).filter((f) => /\.(js|css)$/.test(f)).map((f) => `shared/${f}`),
+  const files = ['index.html', 'landing.js', 'landing.css', 'sw.js', ...readdirSync(`${root}shared`).filter((f) => /\.(js|css)$/.test(f)).map((f) => `shared/${f}`),
     ...ready.flatMap((p) => [`${p.id}/index.html`, ...readdirSync(`${root}${p.id}/src`).filter((f) => f.endsWith('.js')).map((f) => `${p.id}/src/${f}`)])];
   const hits = files.flatMap((f) => readFileSync(`${root}${f}`, 'utf8').split('\n').map((l, i) => [f, i + 1, l]))
     .filter(([, , l]) => /https?:\/\/(www\.)?github\.com/.test(l) && !/^\/\//.test(l.trim()));
@@ -58,4 +58,43 @@ check(/^## Prior art and references/m.test(readFileSync(`${root}testbass/README.
   const notes = readFileSync(`${root}shared/notes.js`, 'utf8');
   check(/function siteLinks/.test(notes) && /github\\?\.com/.test(notes), 'GitHub: the notes turn links to the repository into plain text');
 }
+
+// the pedals by their physics: every pedal in one section, every section with a pedal, and the one
+// menu (shared/nav.js) and the landing page (shared/face.js) drawn from them
+{
+  const ids = new Set(SECTIONS.map((x) => x.id));
+  check(PEDALS.every((p) => ids.has(p.section)), 'every pedal belongs to a section of physics', PEDALS.filter((p) => !ids.has(p.section)).map((p) => p.id).join());
+  check(SECTIONS.every((x) => ready.some((p) => p.section === x.id) && x.title && x.short && x.blurb), 'every section has a title, a blurb and a ready pedal');
+  check(ready.every((p) => Array.isArray(p.enclosure) && p.enclosure.every((c) => /^#[0-9a-f]{6}$/.test(c))), 'every ready pedal has its enclosure\'s colours');
+  // a stand-in for the DOM: elements as plain objects
+  const h = (tag, attrs = {}, ...kids) => { const e = { tag, attrs, kids: kids.flat().filter((k) => k != null), style: { setProperty() {} } }; e.append = (...k) => e.kids.push(...k); return e; };
+  const walk = (e, fn) => { if (e && typeof e === 'object') { fn(e); for (const k of e.kids ?? []) walk(k, fn); } };
+  globalThis.addEventListener ??= () => {};
+  const { navMenu } = await import('../shared/nav.js');
+  const menu = navMenu({ h, here: 'phuzz', title: 'Phuzz' });
+  const links = [], secs = [];
+  walk(menu, (e) => { if (e.tag === 'a' && e.attrs.href && !/^https?:/.test(e.attrs.href)) links.push(e.attrs.href); if (e.attrs?.class === 'menu-sec') secs.push(e.kids[0]); });
+  const want = ['../', ...SECTIONS.flatMap((x) => ready.filter((p) => p.section === x.id).map((p) => `../${p.id}/`)), '../board/'];
+  check(JSON.stringify(links) === JSON.stringify(want), 'the menu opens on the landing page, then every pedal by its physics, then the Pedalboard', links.join(' '));
+  check(JSON.stringify(secs) === JSON.stringify([...SECTIONS.map((x) => x.title), 'The rig']), 'the menu heads each group with its physics', secs.join(', '));
+  let current = 0;
+  walk(menu, (e) => { if (e.attrs?.['aria-current'] === 'page') current++; });
+  check(current === 1, 'the menu marks the pedal you are on');
+  const { miniFace } = await import('../shared/face.js');
+  for (const p of ready) {
+    const { PEDAL } = await import(`${root}${p.id}/src/${p.id}-pedal.js`);
+    const face = miniFace({ h, D: PEDAL, P: Object.fromEntries(params(PEDAL.groups).map((q) => [q.id, q.def])), enclosure: p.enclosure });
+    let knobs = 0;
+    walk(face, (e) => { if (/^knob\b/.test(e.attrs?.class ?? '')) knobs++; });
+    const want = params(PEDAL.groups).filter((q) => q.perform && q.type !== 'select').length;
+    check(knobs === want, `${p.name}: the landing page draws its face with the knobs its page has`, `${knobs} of ${want}`);
+  }
+}
+// the audio carries over from page to page: the input, its channel, the output, and whether it was on
+{
+  const shell = readFileSync(`${root}shared/shell.js`, 'utf8');
+  check(['phuzzbox.input', 'phuzzbox.channel', 'phuzzbox.sink'].every((k) => shell.includes(`'${k}'`)) && /session\.set\('audio', true\)/.test(shell) && /if \(session\.get\('audio', false\)\) resumeAudio\(\)/.test(shell),
+    'a pedal opened from the menu keeps the input, channel and output, and starts if the last one was on');
+}
+
 done();
