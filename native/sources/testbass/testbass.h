@@ -71,8 +71,15 @@ std::vector<Partial> partials(const Settings &S, int string, int fret, double fs
 // A string stopped at a fractional fret (a slide passing through): its length, and each mode's
 // frequency and decay, and what the pickup makes of its displacement (ω × the aperture's view)
 double stoppedLength(const Settings &S, double fret);
+// tension: the string's tension over its tension in tune (a bend raises it)
 struct Mode { double f, sigma, heard; };
-Mode mode(const Settings &S, int string, double length, int n);
+Mode mode(const Settings &S, int string, double length, int n, double tension = 1);
+// A bend: the finger pushes the string, stopped at a (fractional) fret, a distance across the neck
+// (m). The string from the nut to the bridge stretches, by √(a² + δ²) − a + √(ℓ² + δ²) − ℓ with a
+// the nut to the fret and ℓ the fret to the bridge, and its tension rises by E A_core ΔL / L.
+// Returns the tension over the tension in tune, at most kMaxTension.
+constexpr double kMaxTension = 1.5;
+double bendTension(const Settings &S, int string, double fret, double across);
 
 class Instrument {
  public:
@@ -88,6 +95,9 @@ class Instrument {
   // the finger, still pressing, moves along the string to a fret (fractional is fine) over some
   // seconds, at a steady speed along the neck: the last note plucked on that string follows it
   void slide(int string, double fret, double seconds);
+  // the finger pushes the string across the neck (m), bending the last note plucked on it up; the
+  // note follows within a few milliseconds. A note plucked while the string is pushed starts bent.
+  void bend(int string, double across);
   void process(float *out, int n);
 
  private:
@@ -104,11 +114,16 @@ class Instrument {
     double at = 0, from = 0, to = 0, pitch = 0;
     long t = 0, dur = 0;
     bool sliding = false;
+    double across = 0; // how far the string is pushed across the neck (m)
+    std::array<double, kMaxModes> lf{}; // each mode's length × frequency, at its last tuning
   };
-  void retune(Voice &V, double pitch); // the modes of the string stopped at a (fractional) fret
+  // the modes of the string stopped at a (fractional) fret and pushed V.across; keep: carry each
+  // mode's action E/ω (∝ ℓ f A²) from its last tuning, so its displacement goes as 1/√(ℓ f)
+  void retune(Voice &V, double pitch, bool keep = true);
   double fs;
   std::array<Voice, kMaxStrings * 2> voices; // two per string: the last pluck rings out under the next
   std::array<int, kMaxStrings> next{};
+  std::array<double, kMaxStrings> across{}; // where each string is pushed to (m)
   phuzzbox::Biquad circuit;
 };
 using Bass = Instrument;

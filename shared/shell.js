@@ -273,17 +273,22 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
       for (let f = 0; f < 10; f++) {
         const k = I.open[s] + f;
         const keys = [plain && plain[f].replace(/^Key|^Digit/, ''), shifted && `⇧${shifted[f].replace(/^Key|^Digit/, '')}`].filter(Boolean).join(' or ');
-        const inlay = s === Math.floor((n - 1) / 2) && [3, 5, 7, 9].includes(f);
+        // the dots sit between the middle two strings (a bass's D and A, a guitar's G and D): under the row above the middle
+        const inlay = s === n / 2 && [3, 5, 7, 9].includes(f);
         const b = h('button', { type: 'button', class: `${f === 0 ? 'open' : ''}${inlay ? ' inlay' : ''}`, 'aria-label': `${I.strings[s]} string, fret ${f}`, title: keys });
         // a finger on the fretboard: down plucks (or slides there, if the string is already held),
         // dragging along the string slides, up lifts it
-        b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture?.(e.pointerId); press(`p${e.pointerId}`, s, f, 0.75, b); });
+        b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture?.(e.pointerId); press(`p${e.pointerId}`, s, f, 0.75, b, e.clientY); });
+        // along the string, a slide; across it (up or down), a bend: a drag of one string's row
+        // pushes the string one string's spacing across the neck
         b.addEventListener('pointermove', (e) => {
           const id = `p${e.pointerId}`, at = touching.get(id);
           if (!at || !(e.buttons & 1) && e.pointerType === 'mouse') return;
           const cells = row.querySelectorAll('button'), first = cells[0].getBoundingClientRect();
           const to = Math.max(0, Math.min(cells.length - 1, (e.clientX - first.left) / first.width - 0.5));
           if (Math.abs(to - at.f) > 0.02) move(id, to, cells[Math.round(to)]);
+          const dy = Math.max(-1.5, Math.min(1.5, (e.clientY - at.y0) / first.height));
+          if (Math.abs(dy - at.dy) > 0.01) bend(id, dy);
         });
         const up = (e) => lift(`p${e.pointerId}`);
         b.addEventListener('pointerup', up);
@@ -299,8 +304,8 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     bassAbout.title = `How the ${I.test.toLowerCase()} works`;
     bassAbout.setAttribute('aria-label', bassAbout.title);
     bassHint.textContent = n > 4
-      ? 'a guitar made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers; Shift for the D, G, B and high E), open to the ninth fret. Hold a key and press another on the same row, or drag along a string, to slide'
-      : 'a bass made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers), open to the ninth fret. Hold a key and press another on the same row, or drag along a string, to slide';
+      ? 'a guitar made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers; Shift for the D, G, B and high E), open to the ninth fret. Hold a key and press another on the same row, or drag along a string, to slide; drag across it, up or down, to bend'
+      : 'a bass made of physics: the rows of letter keys are its strings (Z row the low E, then A, Q and the numbers), open to the ninth fret. Hold a key and press another on the same row, or drag along a string, to slide; drag across it, up or down, to bend';
     slideBtn.textContent = n > 4 ? 'Slide bar' : 'Fretless';
     slideBtn.title = n > 4
       ? 'A slide bar on the strings: a slide glides through every pitch between the notes, rather than stepping fret by fret'
@@ -506,8 +511,18 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   }
 
   // ---- audio
+  // iPadOS and iOS: an AudioContext made or resumed in a touch that does not count as a gesture (a
+  // pointerdown on a fret, a page that starts its audio as the last one left it) stays suspended
+  // until one that does (a touchend, a click); so every tap and key resumes it. And Web Audio on its
+  // own plays in the 'ambient' session, which the ringer switch silences until a microphone opens:
+  // the test instruments ask for 'playback', an input for 'play-and-record' (Safari 16.4's
+  // navigator.audioSession; elsewhere nothing to do)
+  const audioSession = (type) => { try { if (navigator.audioSession && navigator.audioSession.type !== type) navigator.audioSession.type = type; } catch { /* not this browser's */ } };
+  const unlock = () => { if (ctx && ctx.state !== 'running' && ctx.state !== 'closed') ctx.resume().catch(() => {}); };
+  for (const ev of ['pointerup', 'touchend', 'click', 'keydown']) document.addEventListener(ev, unlock, { capture: true, passive: true });
   async function start() {
     if (ctx) { await ctx.resume(); return; }
+    audioSession(state.source === 'input' ? 'play-and-record' : 'playback');
     startBtn.disabled = true;
     status.textContent = 'starting…';
     try {
@@ -584,9 +599,10 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   // remember: keep the choice for the next page (not when an input that has gone falls back to the bass)
   async function setSource(v, remember = true) {
     if (!ctx) await start();
-    if (v === 'bass') { if (remember) store.set('phuzzbox.input', 'bass'); state.source = 'bass'; send({ type: 'source', which: 'bass' }); chanSel.hidden = true; measureBtn.hidden = true; showBass(); return; }
+    if (v === 'bass') { audioSession('playback'); if (remember) store.set('phuzzbox.input', 'bass'); state.source = 'bass'; send({ type: 'source', which: 'bass' }); chanSel.hidden = true; measureBtn.hidden = true; showBass(); return; }
     try {
       micStream?.getTracks().forEach((t) => t.stop());
+      audioSession('play-and-record');
       micStream = await navigator.mediaDevices.getUserMedia({
         audio: { deviceId: v === 'ask' ? undefined : { exact: v }, echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: { ideal: 2 } },
       });
@@ -690,7 +706,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     layout.arrange();
   }
   async function play(k, v) {
-    if (!ctx) await start();
+    if (!ctx) await start(); else unlock();
     if (state.source !== 'bass') { sourceSel.value = 'bass'; await setSource('bass'); }
     send({ type: 'note', key: k, velocity: v });
   }
@@ -700,23 +716,32 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   // a finger put down on a string already held slides there, and lifting the one sounding slides
   // back to the one still down (or mutes the string, if none is)
   const SLIDE = 0.15; // s: a slide between two keys
-  const touching = new Map(); // id (a key's code, or the pointer) → { s, f, cell }
+  const touching = new Map(); // id (a key's code, or the pointer) → { s, f, cell, y0, dy }: dy, the push across in string spacings
   const newest = (s) => [...touching.values()].filter((t) => t.s === s).pop();
-  async function press(id, s, f, v, cell) {
+  const across = (t) => Math.abs(t.dy) * instrument(state.instrument).spacing;
+  const showBend = (t, dy) => t.cell?.style.setProperty('--bend', `${dy * (t.cell.offsetHeight || 0)}px`);
+  async function press(id, s, f, v, cell, y0 = 0) {
     if (touching.has(id)) return;
     const held = newest(s);
-    touching.set(id, { s, f, cell });
+    touching.set(id, { s, f, cell, y0, dy: 0 });
     cell?.classList.add('down');
-    if (!ctx) await start();
+    if (!ctx) await start(); else unlock();
     if (state.source !== 'bass') { sourceSel.value = 'bass'; await setSource('bass'); }
-    if (held) send({ type: 'slide', string: s, fret: f, seconds: SLIDE });
+    if (held) { send({ type: 'slide', string: s, fret: f, seconds: SLIDE }); if (held.dy) send({ type: 'bend', string: s, across: 0 }); }
     else send({ type: 'pluck', string: s, fret: f, velocity: v });
+  }
+  function bend(id, dy) {
+    const t = touching.get(id);
+    if (!t) return;
+    t.dy = dy;
+    showBend(t, dy);
+    if (newest(t.s) === t) send({ type: 'bend', string: t.s, across: across(t) });
   }
   function move(id, f, cell) {
     const t = touching.get(id);
     if (!t) return;
     t.f = f;
-    if (cell !== t.cell) { t.cell?.classList.remove('down'); t.cell = cell; cell?.classList.add('down'); }
+    if (cell !== t.cell) { t.cell?.classList.remove('down'); showBend(t, 0); t.cell = cell; cell?.classList.add('down'); showBend(t, t.dy); }
     if (newest(t.s) === t) send({ type: 'slide', string: t.s, fret: f, seconds: 0.03 });
   }
   function lift(id) {
@@ -725,9 +750,12 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     const sounding = newest(t.s) === t;
     touching.delete(id);
     t.cell?.classList.remove('down');
+    showBend(t, 0);
     if (!sounding) return;
     const back = newest(t.s);
-    send(back ? { type: 'slide', string: t.s, fret: back.f, seconds: SLIDE } : { type: 'lift', string: t.s });
+    if (back) send({ type: 'slide', string: t.s, fret: back.f, seconds: SLIDE });
+    else send({ type: 'lift', string: t.s });
+    if (t.dy || back?.dy) send({ type: 'bend', string: t.s, across: back ? across(back) : 0 });
   }
   let riff = null;
   function toggleRiff() {

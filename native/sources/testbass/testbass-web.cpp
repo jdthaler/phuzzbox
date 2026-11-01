@@ -23,6 +23,9 @@ PHUZZ_EXPORT void tb_pluck(Handle *h, int string, int fret, double velocity) { h
 PHUZZ_EXPORT void tb_mute(Handle *h, int string) { h->bass.mute(string); }
 // the finger slides along a string to a (fractional) fret over some seconds
 PHUZZ_EXPORT void tb_slide(Handle *h, int string, double fret, double seconds) { h->bass.slide(string, fret, seconds); }
+// the finger pushes a string across the neck (m), bending its note
+PHUZZ_EXPORT void tb_bend(Handle *h, int string, double across) { h->bass.bend(string, across); }
+PHUZZ_EXPORT double tb_bend_tension(Handle *h, int string, double fret, double across) { return testbass::bendTension(h->bass.settings, string, fret, across); }
 PHUZZ_EXPORT int tb_note(Handle *h, int key, double velocity) { return h->bass.note(key, velocity); }
 PHUZZ_EXPORT void tb_note_off(Handle *h, int key) { h->bass.noteOff(key); }
 PHUZZ_EXPORT float *tb_out(Handle *h) { return h->out; }

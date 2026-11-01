@@ -76,6 +76,7 @@ export function registerEffect(make) {
           case 'instrument': this.bass.use(m.which); break;
           case 'pluck': this.bass.pluck(m.string, m.fret, m.velocity ?? 0.7); break;
           case 'slide': this.bass.slide(m.string, m.fret, m.seconds ?? 0.15); break;
+          case 'bend': this.bass.bend(m.string, m.across); break;
           case 'lift': this.bass.mute(m.string); break;
           case 'fretless': this.bass.set('fretless', m.on ? 1 : 0); break;
           case 'quality': this.effect.setQuality(m.level); break;

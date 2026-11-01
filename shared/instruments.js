@@ -12,6 +12,9 @@ export const INSTRUMENTS = {
     // the open strings of four-, five- and six-string basses: B0 E1 A1 D2 G2 C3
     tunerOpen: [23, 28, 33, 38, 43, 48],
     tuner: { fmin: 30, fmax: 500 },
+    // m between strings at the bridge (¾ inch): how far a drag of one string's row on the fretboard
+    // pushes a string across the neck, to bend it
+    spacing: 0.019,
   },
   guitar: {
     id: 'guitar', name: 'Guitar', test: 'Test guitar',
@@ -20,6 +23,7 @@ export const INSTRUMENTS = {
     tunerOpen: [35, 40, 45, 50, 55, 59, 64],
     // drop C's low C (65 Hz) to the high E's 24th fret (1319 Hz)
     tuner: { fmin: 60, fmax: 1400 },
+    spacing: 0.0105, // m between strings at the bridge (2 1/16 inches, E to E)
   },
 };
 export const instrument = (id) => INSTRUMENTS[id] ?? INSTRUMENTS.bass;

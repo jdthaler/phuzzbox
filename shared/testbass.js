@@ -3,7 +3,7 @@
 // them as a signal source.
 //   await TestBass.ready(); const b = new TestBass(48000);           (the bass; 'guitar' for the guitar)
 //   b.note(40, 0.8); b.process(out, n); b.noteOff(40); b.use('guitar');
-//   b.pluck(0, 3); b.slide(0, 7, 0.2); b.set('fretless', 1);
+//   b.pluck(0, 3); b.slide(0, 7, 0.2); b.bend(0, 0.01); b.set('fretless', 1);
 
 import { instantiate, instantiateAsync } from './wasm.js';
 import { RIFFS } from './instruments.js';
@@ -37,6 +37,10 @@ export class TestBass {
   // the finger slides along a string to a fret (fractional is fine) over some seconds, and the last
   // note plucked on it follows: fret by fret, or gliding when set fretless (a slide bar on a guitar)
   slide(string, fret, seconds = 0.15) { x.tb_slide(this.h, string, fret, seconds); }
+  // the finger pushes the string across the neck (m) and the note bends up; 0 lets it back
+  bend(string, across) { x.tb_bend(this.h, string, across); }
+  // the string's tension, over its tension in tune, stopped at a fret and pushed across (m)
+  bendTension(string, fret, across) { return x.tb_bend_tension(this.h, string, fret, across); }
   note(key, velocity = 0.7) { return x.tb_note(this.h, key, velocity); }
   noteOff(key) { x.tb_note_off(this.h, key); }
   set(name, value) { x.tb_set(this.h, TestBass.SETTINGS[name], value); }
