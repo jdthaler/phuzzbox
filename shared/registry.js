@@ -104,6 +104,11 @@ export const PEDALS = [
     blurb: 'A loop of tape past a record head and three playback heads: every repeat recorded again, darker and more saturated, wavering with the capstan.',
   },
   {
+    id: 'bbd', section: 'motion', name: 'Bucket Brigade', version: '0.1.0', ready: true, plugin: { code: 'BBDl' }, enclosure: ['#3b2d5c', '#ece6ff'],
+    after: 'the bucket-brigade chorus, flanger and delay pedals of the late 1970s',
+    blurb: 'A chain of capacitors passing charges along at a clock: sampled, held and smeared on the way, the bass comes out late, and a wavering clock bends its pitch.',
+  },
+  {
     id: 'rotary', section: 'motion', name: 'Rotary Speaker', version: '0.2.0', ready: true, plugin: { code: 'Rtry' }, enclosure: ['#6b3a1e', '#f4e7d6'],
     after: 'the rotating-horn organ speakers of the 1960s',
     blurb: 'A horn and a drum spinning past two microphones: the pitch rises as each comes toward you and falls as it goes, heard at the retarded time.',

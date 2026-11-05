@@ -22,8 +22,9 @@ import { PEDAL as MICHELSON } from '../../michelson/src/michelson-pedal.js';
 import { PEDAL as LAMPVIBE } from '../../lampvibe/src/lampvibe-pedal.js';
 import { PEDAL as CABLE } from '../../cable/src/cable-pedal.js';
 import { PEDAL as RINGMOD } from '../../ringmod/src/ringmod-pedal.js';
+import { PEDAL as BBD } from '../../bbd/src/bbd-pedal.js';
 
-export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD].map((d) => [d.id, d]));
+export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, BBD].map((d) => [d.id, d]));
 
 // each pedal's enclosure and the ink printed on it, as its own page has them (<id>/style.css)
 export const ENCLOSURES = Object.fromEntries(PEDALS.filter((p) => p.enclosure).map((p) => [p.id, p.enclosure]));

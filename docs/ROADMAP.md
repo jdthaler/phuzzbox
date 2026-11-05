@@ -154,6 +154,12 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    the ring's node equations solved independently, the switching function's Fourier series for the
    sidebands, the carrier's leak in the transformers' periodic steady state, and the low cut from
    complex impedances.
+   The **Bucket Brigade** landed 2026-11-05: a bucket-brigade delay, its chain of 512 to 4096
+   capacitors clocked at a phase that runs on at the oversampled rate, with third-order Butterworth
+   filters either side and the charges left behind at each transfer as the negative binomial filter
+   ((1 − ε)/(1 − εz⁻¹))^N. Tested against the filters from their poles, the transfer loss summed term
+   by term, the sampling theorem's aliases, the feedback comb, and the pitch a swinging clock bends,
+   found by counting its cycles.
 
 ## The standalone app
 
