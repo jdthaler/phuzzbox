@@ -140,8 +140,8 @@ of a 1 kHz note keeps its inharmonic products more than 40 dB down at high quali
 - **Sodium lamp, lines in step**, then **Sodium lamp, lines out of step** (145 µm): the same folds,
   then shallow ones, at a third of the contrast.
 - **White light at zero path**, then **White light, out and back** (4000 nm/V): a hard note swings
-  the mirror 2 µm each way, right out of the fringes, so the light flickers only as it passes the
-  middle.
+  the mirror 2 µm each way, out past the phosphor's fringes into the blue chip's faint ones, so the
+  light flickers hard only as the mirror passes the middle.
 - **Loudspeaker mount**: low notes fold more than high ones.
 - **Breezy lab**: 80 nm of drift, and the tone wanders.
 

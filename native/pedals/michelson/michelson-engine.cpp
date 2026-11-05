@@ -19,7 +19,13 @@ void Engine::setQuality(phuzzbox::Quality q) {
   Effect::setQuality(q);
   os.setup(fs, pick(4, 2, 1));
   latencySamples = (int)std::lround(os.delay(fs));
-  if (haveParams) design();
+  if (haveParams) { design(); settle(); }
+}
+
+// the decimator settled on the light now, so that a pedal switched on (or a quality changed) in
+// silence stays silent
+void Engine::settle() {
+  for (int k = 0; k < 512 * os.factor(); k++) os.downsample(lastI);
 }
 
 void Engine::design() {
@@ -49,8 +55,9 @@ void Engine::reset() {
   rng = 0x9e3779b97f4a7c15ull;
   haveSpare = false;
   opdPrev = parts.rest;
-  hp = intensity(parts, parts.rest) * parts.fullScale; // the coupling capacitor charged to the light at rest
   lastI = intensity(parts, parts.rest);
+  settle();
+  hp = lastI * parts.fullScale; // the coupling capacitor charged to the light at rest
   pointAt = points = 0;
 }
 

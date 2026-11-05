@@ -34,6 +34,7 @@ class Engine : public phuzzbox::Effect {
  private:
   double gaussian();     // a normal deviate, for the air (seeded, so a run repeats)
   void design();         // the actuator's and the coupling's coefficients at the current rates
+  void settle();         // the decimator's filters settled on the light now
 
   Parts parts{};
   bool haveParams = false;

@@ -48,6 +48,6 @@ As it does, one line's fringes slip against the other's. At 145 µm they are hal
     play: [note('E1', { dur: 3.5, vel: 0.85 }), note('A1', { at: 3.6, dur: 3, vel: 0.5 })],
     text: `A white LED's light is a mixture of colours, each with its own fringes; they agree only where the two paths are equal. A few micrometres away the colours' fringes fall out of step and wash each other out, so a white-light interferometer has fringes only at zero path, with a faint tail from the LED's blue chip.
 
-Here the stroke is 4000 nm/V: a hard note swings the mirror 2 µm each way, right out of the fringes and back, so the light flickers only as the mirror passes the middle, twice a cycle. The quieter note stays inside them. **The fringe** shows the envelope (dashed) the dots must stay within.`,
+Here the stroke is 4000 nm/V: a hard note swings the mirror 2 µm each way, out past the phosphor's fringes into the blue chip's faint ones and back, so the light flickers hard only as the mirror passes the middle, twice a cycle. The quieter note stays inside them. **The fringe** shows the envelope (dashed) the dots must stay within.`,
   },
 ]);
