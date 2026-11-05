@@ -211,6 +211,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    bands so that octaves don't leak into each other, scaled to the diffuse field's 4π c/V. Tested
    against the images found again by mirroring, the networks' decay and power, each octave's T30
    in the impulse response, and the critical distance in a steady sound.
+   **Rubens' Tube** landed 2026-11-05: a pipe of propane or methane (NIST's properties) closed by a
+   loudspeaker, Gardner, Gee and Dix's driver, and a cap: the pipe's plane-wave modes below its
+   first cross mode with Kirchhoff's losses to the walls, coupled to the cone's mass, suspension and
+   back EMF, all integrated together by the trapezoidal rule; a microphone along the pipe, and a
+   view of the flames by Bernoulli's mean flow. Tested against the pipe as a transmission line in
+   closed form driven by the same speaker, the speaker's damping of the lowest modes, the middle's
+   missing odd modes, and the engine against the model.
 
 ## The standalone app
 

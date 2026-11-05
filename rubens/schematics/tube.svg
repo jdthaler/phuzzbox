@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="300" viewBox="0 0 680 300" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="Rubens' Tube: the bass into an amplifier, the amplifier into a speaker closing one end of a pipe of propane, a cap and a microphone at the other end, holes along the top with flames, and the standing wave inside">
+<title>Rubens' Tube: the bass into an amplifier, the amplifier into a speaker closing one end of a pipe of propane, a cap and a microphone at the other end, holes along the top with flames, and the standing wave inside</title>
+<rect width="680" height="300" rx="10" fill="#151518" stroke="#2b2a30"/>
+<circle cx="52" cy="175" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="43" y="179" text-anchor="end" fill="#ece8e1" font-size="12" font-weight="400">bass</text>
+<path d="M64 151 L108 175 L64 199 L64 151" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="80.72" y="179" text-anchor="middle" fill="#ece8e1" font-size="11" font-weight="400">Drive</text>
+<path d="M108 175 L136 175" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="124" y="158" width="16" height="34" rx="6" fill="none" stroke="#9b958b" stroke-width="1.6"/>
+<path d="M140 158 L160 140" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140 192 L160 210" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M160 140 L160 210" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="136" y="252" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">the speaker: Re, Bl, Mms, Cms</text>
+<path d="M160 140 L620 140" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M160 210 L620 210" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M620 140 L620 210" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="390" y="252" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">L long, radius a, full of propane: modes n c/2L</text>
+<circle cx="614" cy="175" r="3" fill="#ece8e1"/>
+<text x="632" y="172" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">mic</text>
+<path d="M160 147 L167.67 147.71 L175.33 149.84 L183 153.32 L190.67 158.08 L198.33 163.99 L206 170.91 L213.67 178.67 L221.33 187.08 L229 195.93 L236.67 205 L244.33 195.93 L252 187.08 L259.67 178.67 L267.33 170.91 L275 163.99 L282.67 158.08 L290.33 153.32 L298 149.84 L305.67 147.71 L313.33 147 L321 147.71 L328.67 149.84 L336.33 153.32 L344 158.08 L351.67 163.99 L359.33 170.91 L367 178.67 L374.67 187.08 L382.33 195.93 L390 205 L397.67 195.93 L405.33 187.08 L413 178.67 L420.67 170.91 L428.33 163.99 L436 158.08 L443.67 153.32 L451.33 149.84 L459 147.71 L466.67 147 L474.33 147.71 L482 149.84 L489.67 153.32 L497.33 158.08 L505 163.99 L512.67 170.91 L520.33 178.67 L528 187.08 L535.67 195.93 L543.33 205 L551 195.93 L558.67 187.08 L566.33 178.67 L574 170.91 L581.67 163.99 L589.33 158.08 L597 153.32 L604.67 149.84 L612.33 147.71 L620 147" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M170.45 140 L170.45 112.25" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M173.93 119.45 L170.45 112.25 L166.97 119.45" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M191.36 140 L191.36 106.42" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M194.84 113.62 L191.36 106.42 L187.88 113.62" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M212.27 140 L212.27 95.82" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M215.75 103.02 L212.27 95.82 L208.79 103.02" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M233.18 140 L233.18 82.35" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M236.66 89.56 L233.18 82.35 L229.7 89.56" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M254.09 140 L254.09 91.53" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M257.57 98.74 L254.09 91.53 L250.61 98.74" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M275 140 L275 103.33" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M278.48 110.54 L275 103.33 L271.52 110.54" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M295.91 140 L295.91 110.92" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M299.39 118.12 L295.91 110.92 L292.43 118.12" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M316.82 140 L316.82 112.92" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M320.3 120.12 L316.82 112.92 L313.34 120.12" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M337.73 140 L337.73 108.96" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M341.21 116.17 L337.73 108.96 L334.25 116.17" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M358.64 140 L358.64 99.78" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M362.12 106.98 L358.64 99.78 L355.16 106.98" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M379.55 140 L379.55 87.01" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M383.03 94.22 L379.55 87.01 L376.07 94.22" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M400.45 140 L400.45 87.01" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M403.93 94.22 L400.45 87.01 L396.97 94.22" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M421.36 140 L421.36 99.78" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M424.84 106.98 L421.36 99.78 L417.88 106.98" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M442.27 140 L442.27 108.96" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M445.75 116.17 L442.27 108.96 L438.79 116.17" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M463.18 140 L463.18 112.92" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M466.66 120.12 L463.18 112.92 L459.7 120.12" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M484.09 140 L484.09 110.92" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M487.57 118.12 L484.09 110.92 L480.61 118.12" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M505 140 L505 103.33" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M508.48 110.54 L505 103.33 L501.52 110.54" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M525.91 140 L525.91 91.53" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M529.39 98.74 L525.91 91.53 L522.43 98.74" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M546.82 140 L546.82 82.35" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M550.3 89.56 L546.82 82.35 L543.34 89.56" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M567.73 140 L567.73 95.82" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M571.21 103.02 L567.73 95.82 L564.25 103.02" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M588.64 140 L588.64 106.42" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M592.12 113.62 L588.64 106.42 L585.16 113.62" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M609.55 140 L609.55 112.25" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M613.03 119.45 L609.55 112.25 L606.07 119.45" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="390" y="26" text-anchor="middle" fill="#fb923c" font-size="11" font-weight="400">flames over the holes: tallest at the pressure nodes</text>
+</svg>
