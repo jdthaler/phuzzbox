@@ -3,8 +3,8 @@
 // isn't there (the app opened with `npm run serve` stopped, or no network), the copy is used.
 // It lives at the site's root so that its scope covers every page.
 
-const CACHE = 'phuzzbox-31';
-const PAGES = ['./', './index.html', './buffer/', './phuzz/', './wah/', './preamp/', './transformer/', './opto/', './cabinet/', './envelope/', './octave/', './spring/', './openair/', './echo/', './bbd/', './rotary/', './plate/', './sympathetic/', './blackhole/', './lens/', './doppler/', './bandgap/', './michelson/', './lampvibe/', './neon/', './cable/', './ringmod/', './radio/', './tunnel/', './board/', './manifest.webmanifest'];
+const CACHE = 'phuzzbox-32';
+const PAGES = ['./', './index.html', './buffer/', './phuzz/', './wah/', './preamp/', './transformer/', './opto/', './cabinet/', './envelope/', './octave/', './spring/', './openair/', './sabine/', './echo/', './bbd/', './rotary/', './plate/', './sympathetic/', './blackhole/', './lens/', './doppler/', './bandgap/', './michelson/', './lampvibe/', './neon/', './cable/', './ringmod/', './radio/', './tunnel/', './board/', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PAGES)).then(() => self.skipWaiting()));

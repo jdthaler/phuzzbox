@@ -27,6 +27,7 @@ import { PEDAL as ENVELOPE } from '../../envelope/src/envelope-pedal.js';
 import { PEDAL as OCTAVE } from '../../octave/src/octave-pedal.js';
 import { PEDAL as SPRING } from '../../spring/src/spring-pedal.js';
 import { PEDAL as OPENAIR } from '../../openair/src/openair-pedal.js';
+import { PEDAL as SABINE } from '../../sabine/src/sabine-pedal.js';
 import { PEDAL as ECHO } from '../../echo/src/echo-pedal.js';
 import { PEDAL as ROTARY } from '../../rotary/src/rotary-pedal.js';
 import { PEDAL as PLATE } from '../../plate/src/plate-pedal.js';
@@ -43,7 +44,7 @@ import { PEDAL as TUNNEL } from '../../tunnel/src/tunnel-pedal.js';
 import { PEDAL as BBD } from '../../bbd/src/bbd-pedal.js';
 import { PEDAL as NEON } from '../../neon/src/neon-pedal.js';
 import { PEDAL as LENS } from '../../lens/src/lens-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, TRANSFORMER, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, OPENAIR, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, TRANSFORMER, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, OPENAIR, SABINE, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

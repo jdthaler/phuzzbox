@@ -786,6 +786,10 @@ body.one-screen .card .canvas.springs { flex: 1 1 0; height: auto; min-height: 1
 /* Open Air's enclosure: the green of a summer field, its ink the pale of a dry-grass hay meadow */
 :root[data-pedal="openair"] { --enclosure: #3c5a3a; --enclosure-ink: #f2ecd8; }
 
+/* ---- sabine/style.css */
+/* Sabine's Room's enclosure: the dark oak of a lecture hall's panelling, its ink the cream of its plaster */
+:root[data-pedal="sabine"] { --enclosure: #4a3b2c; --enclosure-ink: #efe2c8; }
+
 /* ---- plate/style.css */
 /* the Plate Reverb's enclosure: the grey of a plate's steel frame */
 :root[data-pedal="plate"] { --enclosure: #c9c6bd; --enclosure-ink: #1d1f22; }
@@ -1784,6 +1788,11 @@ const PEDALS = [
     id: 'openair', section: 'vibration', name: 'Open Air', version: '0.1.0', ready: true, plugin: { code: 'OAir' }, enclosure: ['#3c5a3a', '#f2ecd8'],
     after: 'outdoor acoustics: ISO 9613-1\'s absorption of sound by the air, and the ground\'s reflection by Weyl and van der Pol\'s formula',
     blurb: 'Your bass heard across a field: the air soaks up its treble with distance, more when it is dry, and the ground\'s reflection, softer than a mirror, digs a dip into it that moves as you walk away.',
+  },
+  {
+    id: 'sabine', section: 'vibration', name: 'Sabine\'s Room', version: '0.1.0', ready: true, plugin: { code: 'Sabn' }, enclosure: ['#4a3b2c', '#efe2c8'],
+    after: 'Wallace Sabine\'s measurements of reverberation at Harvard (1895–1900), and the image method of Allen and Berkley',
+    blurb: 'Your bass in a room you build: its early reflections by the image method, then its reverberation, dying away octave by octave as Sabine\'s law, in Eyring\'s form, says it must from the room\'s size, its walls and its audience.',
   },
   {
     id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
@@ -2785,8 +2794,74 @@ const PEDAL = {
 return { PEDAL };
 })();
 
-// ---- echo/src/echo-params.js
+// ---- sabine/src/sabine-params.js
 const __m33 = (() => {
+
+// sabine-params.js — Sabine's Room's controls. Values in SI units.
+
+// the surfaces' absorption coefficients at 125, 250, 500, 1000, 2000 and 4000 Hz (Hall, Musical
+// Acoustics, Table 15.1)
+const WALLS = [['concrete', 'Poured concrete'], ['block', 'Painted block'], ['plaster', 'Plaster on lath'], ['glass', 'Plate glass'], ['drapes', 'Velour drapes']];
+const FLOORS = [['wood', 'Wooden floor'], ['carpet', 'Carpet on concrete'], ['concrete', 'Poured concrete']];
+
+const room = [
+  { id: 'length', label: 'Length', min: 4, max: 60, def: 18, log: true, unit: 'm', decimals: 1, perform: true, hint: 'The room\'s length. A longer room rings longer, until the walls along it do most of the absorbing: in the stock room the reverberation time at 1 kHz is 2.0 s at 4 m long, 2.4 s at 9 m, 2.7 s at 36 m.' },
+  { id: 'walls', label: 'Walls', type: 'select', def: 'plaster', options: WALLS, perform: true, hint: 'What the walls and the ceiling are made of. At 500 Hz in the stock room the sound dies away in 3.5 s off poured concrete, 1.9 s off plaster, 0.5 s behind velour drapes.' },
+  { id: 'audience', label: 'Audience', min: 0, max: 100, def: 0, unit: '%', decimals: 0, perform: true, hint: 'How much of the floor an audience covers. People absorb: a full house takes the stock room\'s 2.6 s at 1 kHz down to 0.8 s.' },
+  { id: 'distance', label: 'Distance', min: 1, max: 40, def: 6, log: true, unit: 'm', decimals: 1, perform: true, hint: 'How far you stand from the bass. Past the critical distance, 1.2 m in the stock room at 1 kHz (2.1 m with a full house), you hear more of the room than of the bass: at 6 m the room and the bass together are 14 dB over the bass alone. An expression pedal moves it.' },
+  { id: 'level', label: 'Level', min: -24, max: 24, def: 2.2, unit: 'dB', decimals: 1, perform: true, hint: 'The output. At 0 dB the direct sound is the bass\'s strength a metre away, so at 6 m it comes 16 dB down, and the room adds the rest.' },
+];
+
+const more = [
+  { id: 'width', label: 'Width', min: 3, max: 40, def: 12, log: true, unit: 'm', decimals: 1, hint: 'The room\'s width. At 1 kHz the stock room rings 1.8 s at 3 m wide, 2.8 s at 40 m.' },
+  { id: 'height', label: 'Height', min: 2.5, max: 20, def: 6, log: true, unit: 'm', decimals: 1, hint: 'The room\'s height. A low ceiling keeps the sound near the absorbing floor: at 1 kHz the stock room rings 1.3 s under 2.5 m, 5.1 s under 20 m.' },
+  { id: 'floor', label: 'Floor', type: 'select', def: 'wood', options: FLOORS, hint: 'The floor, where there is no audience. Carpet takes the highs: at 2 kHz the stock room rings 3.0 s over wood, 1.2 s over carpet, 5.3 s over concrete.' },
+  { id: 'humidity', label: 'Humidity', min: 10, max: 90, def: 50, unit: '%', decimals: 0, hint: 'The air\'s relative humidity, at 20 °C. Dry air takes the highs: at 4 kHz the stock room rings 1.1 s at 10 %, 2.7 s at 90 %; in a big concrete hall, 60 by 40 by 20 m, 1.5 s against 6.6 s.' },
+];
+
+const GROUPS = [
+  { name: 'The room', params: room },
+  { name: 'Its shape and its air', params: more },
+];
+
+const stock = { length: 18, walls: 'plaster', audience: 0, distance: 6, level: 2.2, width: 12, height: 6, floor: 'wood', humidity: 50 };
+const PRESETS = {
+  'Empty hall': { ...stock },
+  'Full house': { ...stock, audience: 100, level: 3.9 },
+  'Concrete bunker': { ...stock, length: 12, width: 8, height: 3, walls: 'concrete', floor: 'concrete', distance: 4, level: -10.2 },
+  'Glass atrium': { ...stock, length: 30, width: 20, height: 15, walls: 'glass', floor: 'concrete', distance: 12, level: 8.1 },
+  'Cathedral': { ...stock, length: 60, width: 25, height: 20, walls: 'block', floor: 'concrete', distance: 20, level: 11.2 },
+  'Drawing room': { ...stock, length: 7, width: 5, height: 3, walls: 'drapes', floor: 'carpet', distance: 2.5, level: -6.4 },
+};
+const KEEP = [];
+
+return { WALLS, FLOORS, GROUPS, PRESETS, KEEP };
+})();
+
+// ---- sabine/src/sabine-pedal.js
+const __m32 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m33;
+// sabine-pedal.js — Sabine's Room's descriptor: everything a host needs to run it without its page.
+// Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
+
+const PEDAL = {
+  id: 'sabine',
+  name: 'Sabine\'s Room',
+  description: 'Your bass in a room you build: its early reflections by Allen and Berkley\'s image method, its reverberation dying away octave by octave in Eyring\'s time, from the room\'s size, its walls, its audience and its air',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: nothing changes
+  guitar: {},
+  // the parameter an expression pedal moves (shared/midi.js maps MIDI CC 1 to it unless taught)
+  expression: 'distance',
+  wasm: { binary: () => new URL('../wasm/sabine.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- echo/src/echo-params.js
+const __m35 = (() => {
 
 // echo-params.js — the Tape Echo's controls. Values in SI units; `scale` shows them in friendlier
 // ones. A loop of tape passes a record head and three playback heads; the echoes are the distances
@@ -2853,8 +2928,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- echo/src/echo-pedal.js
-const __m32 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m33;
+const __m34 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m35;
 // echo-pedal.js — the Tape Echo's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2872,7 +2947,7 @@ return { PEDAL };
 })();
 
 // ---- rotary/src/rotary-params.js
-const __m35 = (() => {
+const __m37 = (() => {
 
 // rotary-params.js — the Rotary Speaker's controls. Values in SI units (rotation rates in hertz,
 // shown in rpm; angles in radians, shown in degrees). A horn and a drum spin in a cabinet past two
@@ -2945,8 +3020,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- rotary/src/rotary-pedal.js
-const __m34 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m35;
+const __m36 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m37;
 // rotary-pedal.js — the Rotary Speaker's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2964,7 +3039,7 @@ return { PEDAL };
 })();
 
 // ---- plate/src/plate-params.js
-const __m37 = (() => {
+const __m39 = (() => {
 
 // plate-params.js — the Plate Reverb's controls. Values in SI units. A steel plate, 2 m by 1 m and
 // half a millimetre thick, hung in a frame: a driver shakes it, two contact pickups listen.
@@ -3021,8 +3096,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- plate/src/plate-pedal.js
-const __m36 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m37;
+const __m38 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m39;
 // plate-pedal.js — the Plate Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3040,7 +3115,7 @@ return { PEDAL };
 })();
 
 // ---- sympathetic/src/sympathetic-params.js
-const __m39 = (() => {
+const __m41 = (() => {
 
 // sympathetic-params.js — the Sympathetic Strings' controls. Values in SI units. A frame of steel
 // strings tuned to a scale, all across one bridge; a driver moves the bridge with your bass, and a
@@ -3103,8 +3178,8 @@ return { KEYS, SCALES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- sympathetic/src/sympathetic-pedal.js
-const __m38 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m39;
+const __m40 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m41;
 // sympathetic-pedal.js — the Sympathetic Strings' descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3122,7 +3197,7 @@ return { PEDAL };
 })();
 
 // ---- blackhole/src/blackhole-params.js
-const __m41 = (() => {
+const __m43 = (() => {
 
 // blackhole-params.js — the Black Hole's controls. Values in SI units, and the hole's mass in suns:
 // your bass perturbs a spinning black hole, and you hear it ring in its quasinormal modes.
@@ -3167,8 +3242,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- blackhole/src/blackhole-pedal.js
-const __m40 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m41;
+const __m42 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m43;
 // blackhole-pedal.js — the Black Hole's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3186,7 +3261,7 @@ return { PEDAL };
 })();
 
 // ---- doppler/src/doppler-params.js
-const __m43 = (() => {
+const __m45 = (() => {
 
 // doppler-params.js — the Doppler's controls. Values in SI units: a source plays your bass as it
 // passes you on a straight road, again and again, and you hear it at its retarded time.
@@ -3234,8 +3309,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- doppler/src/doppler-pedal.js
-const __m42 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m43;
+const __m44 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m45;
 // doppler-pedal.js — the Doppler's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3253,7 +3328,7 @@ return { PEDAL };
 })();
 
 // ---- bandgap/src/bandgap-params.js
-const __m45 = (() => {
+const __m47 = (() => {
 
 // bandgap-params.js — the Bandgap's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3315,8 +3390,8 @@ return { DIODES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- bandgap/src/bandgap-pedal.js
-const __m44 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m45;
+const __m46 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m47;
 // bandgap-pedal.js — the Bandgap's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3335,7 +3410,7 @@ return { PEDAL };
 })();
 
 // ---- michelson/src/michelson-params.js
-const __m47 = (() => {
+const __m49 = (() => {
 
 // michelson-params.js — the Michelson Interferometer's controls. Values in SI units; `scale` shows
 // them in friendlier ones.
@@ -3392,8 +3467,8 @@ return { SOURCES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- michelson/src/michelson-pedal.js
-const __m46 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m47;
+const __m48 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m49;
 // michelson-pedal.js — the Michelson Interferometer's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3412,7 +3487,7 @@ return { PEDAL };
 })();
 
 // ---- lampvibe/src/lampvibe-params.js
-const __m49 = (() => {
+const __m51 = (() => {
 
 // lampvibe-params.js — the Lamp Vibe's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -3463,8 +3538,8 @@ return { BULBS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- lampvibe/src/lampvibe-pedal.js
-const __m48 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m49;
+const __m50 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m51;
 // lampvibe-pedal.js — the Lamp Vibe's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3483,7 +3558,7 @@ return { PEDAL };
 })();
 
 // ---- cable/src/cable-params.js
-const __m51 = (() => {
+const __m53 = (() => {
 
 // cable-params.js — the Transatlantic Cable's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -3536,8 +3611,8 @@ return { CABLES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- cable/src/cable-pedal.js
-const __m50 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m51;
+const __m52 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m53;
 // cable-pedal.js — the Transatlantic Cable's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3556,7 +3631,7 @@ return { PEDAL };
 })();
 
 // ---- ringmod/src/ringmod-params.js
-const __m53 = (() => {
+const __m55 = (() => {
 
 // ringmod-params.js — the Ring Modulator's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3612,8 +3687,8 @@ return { DIODES, WAVES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- ringmod/src/ringmod-pedal.js
-const __m52 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m53;
+const __m54 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m55;
 // ringmod-pedal.js — the Ring Modulator's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3634,7 +3709,7 @@ return { PEDAL };
 })();
 
 // ---- radio/src/radio-params.js
-const __m55 = (() => {
+const __m57 = (() => {
 
 // radio-params.js — the Crystal Radio's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3692,8 +3767,8 @@ return { DIODES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- radio/src/radio-pedal.js
-const __m54 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m55;
+const __m56 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m57;
 // radio-pedal.js — the Crystal Radio's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3714,7 +3789,7 @@ return { PEDAL };
 })();
 
 // ---- tunnel/src/tunnel-params.js
-const __m57 = (() => {
+const __m59 = (() => {
 
 // tunnel-params.js — the Tunnel Diode's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3763,8 +3838,8 @@ return { CIRCUITS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- tunnel/src/tunnel-pedal.js
-const __m56 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m57;
+const __m58 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m59;
 // tunnel-pedal.js — the Tunnel Diode's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3785,7 +3860,7 @@ return { PEDAL };
 })();
 
 // ---- bbd/src/bbd-params.js
-const __m59 = (() => {
+const __m61 = (() => {
 
 // bbd-params.js — the Bucket Brigade's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3838,8 +3913,8 @@ return { CHIPS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- bbd/src/bbd-pedal.js
-const __m58 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m59;
+const __m60 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m61;
 // bbd-pedal.js — the Bucket Brigade's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3859,7 +3934,7 @@ return { PEDAL };
 })();
 
 // ---- neon/src/neon-params.js
-const __m61 = (() => {
+const __m63 = (() => {
 
 // neon-params.js — the Neon Tremolo's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -3914,8 +3989,8 @@ return { GASES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- neon/src/neon-pedal.js
-const __m60 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m61;
+const __m62 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m63;
 // neon-pedal.js — the Neon Tremolo's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3935,7 +4010,7 @@ return { PEDAL };
 })();
 
 // ---- lens/src/lens-params.js
-const __m63 = (() => {
+const __m65 = (() => {
 
 // lens-params.js — the Gravitational Lens's controls. Values in SI units, and the lens's mass in
 // suns: your bass, a wave from far behind a point mass, bent round it on its way to you.
@@ -3977,8 +4052,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- lens/src/lens-pedal.js
-const __m62 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m63;
+const __m64 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m65;
 // lens-pedal.js — the Gravitational Lens's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -4017,22 +4092,23 @@ const { PEDAL: ENVELOPE } = __m24;
 const { PEDAL: OCTAVE } = __m26;
 const { PEDAL: SPRING } = __m28;
 const { PEDAL: OPENAIR } = __m30;
-const { PEDAL: ECHO } = __m32;
-const { PEDAL: ROTARY } = __m34;
-const { PEDAL: PLATE } = __m36;
-const { PEDAL: SYMPATHETIC } = __m38;
-const { PEDAL: BLACKHOLE } = __m40;
-const { PEDAL: DOPPLER } = __m42;
-const { PEDAL: BANDGAP } = __m44;
-const { PEDAL: MICHELSON } = __m46;
-const { PEDAL: LAMPVIBE } = __m48;
-const { PEDAL: CABLE } = __m50;
-const { PEDAL: RINGMOD } = __m52;
-const { PEDAL: RADIO } = __m54;
-const { PEDAL: TUNNEL } = __m56;
-const { PEDAL: BBD } = __m58;
-const { PEDAL: NEON } = __m60;
-const { PEDAL: LENS } = __m62;
+const { PEDAL: SABINE } = __m32;
+const { PEDAL: ECHO } = __m34;
+const { PEDAL: ROTARY } = __m36;
+const { PEDAL: PLATE } = __m38;
+const { PEDAL: SYMPATHETIC } = __m40;
+const { PEDAL: BLACKHOLE } = __m42;
+const { PEDAL: DOPPLER } = __m44;
+const { PEDAL: BANDGAP } = __m46;
+const { PEDAL: MICHELSON } = __m48;
+const { PEDAL: LAMPVIBE } = __m50;
+const { PEDAL: CABLE } = __m52;
+const { PEDAL: RINGMOD } = __m54;
+const { PEDAL: RADIO } = __m56;
+const { PEDAL: TUNNEL } = __m58;
+const { PEDAL: BBD } = __m60;
+const { PEDAL: NEON } = __m62;
+const { PEDAL: LENS } = __m64;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -4078,7 +4154,8 @@ const { PEDAL: LENS } = __m62;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, TRANSFORMER, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, OPENAIR, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, TRANSFORMER, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, OPENAIR, SABINE, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

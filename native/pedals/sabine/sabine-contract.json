@@ -1,0 +1,20 @@
+{"slug": "sabine",
+ "params": [
+  {"id":"length","kind":"continuous","min":4,"max":60,"step":0,"log":true,"def":18},
+  {"id":"walls","kind":"choice","options":["concrete","block","plaster","glass","drapes"],"def":"plaster"},
+  {"id":"audience","kind":"continuous","min":0,"max":100,"step":0,"log":false,"def":0},
+  {"id":"distance","kind":"continuous","min":1,"max":40,"step":0,"log":true,"def":6},
+  {"id":"level","kind":"continuous","min":-24,"max":24,"step":0,"log":false,"def":2.2},
+  {"id":"width","kind":"continuous","min":3,"max":40,"step":0,"log":true,"def":12},
+  {"id":"height","kind":"continuous","min":2.5,"max":20,"step":0,"log":true,"def":6},
+  {"id":"floor","kind":"choice","options":["wood","carpet","concrete"],"def":"wood"},
+  {"id":"humidity","kind":"continuous","min":10,"max":90,"step":0,"log":false,"def":50}
+ ],
+ "presets": [
+  {"name":"Empty hall","values":{"length":18,"walls":"plaster","audience":0,"distance":6,"level":2.2,"width":12,"height":6,"floor":"wood","humidity":50}},
+  {"name":"Full house","values":{"length":18,"walls":"plaster","audience":100,"distance":6,"level":3.9,"width":12,"height":6,"floor":"wood","humidity":50}},
+  {"name":"Concrete bunker","values":{"length":12,"walls":"concrete","audience":0,"distance":4,"level":-10.2,"width":8,"height":3,"floor":"concrete","humidity":50}},
+  {"name":"Glass atrium","values":{"length":30,"walls":"glass","audience":0,"distance":12,"level":8.1,"width":20,"height":15,"floor":"concrete","humidity":50}},
+  {"name":"Cathedral","values":{"length":60,"walls":"block","audience":0,"distance":20,"level":11.2,"width":25,"height":20,"floor":"concrete","humidity":50}},
+  {"name":"Drawing room","values":{"length":7,"walls":"drapes","audience":0,"distance":2.5,"level":-6.4,"width":5,"height":3,"floor":"carpet","humidity":50}}
+ ]}

@@ -139,6 +139,11 @@ export const PEDALS = [
     blurb: 'Your bass heard across a field: the air soaks up its treble with distance, more when it is dry, and the ground\'s reflection, softer than a mirror, digs a dip into it that moves as you walk away.',
   },
   {
+    id: 'sabine', section: 'vibration', name: 'Sabine\'s Room', version: '0.1.0', ready: true, plugin: { code: 'Sabn' }, enclosure: ['#4a3b2c', '#efe2c8'],
+    after: 'Wallace Sabine\'s measurements of reverberation at Harvard (1895–1900), and the image method of Allen and Berkley',
+    blurb: 'Your bass in a room you build: its early reflections by the image method, then its reverberation, dying away octave by octave as Sabine\'s law, in Eyring\'s form, says it must from the room\'s size, its walls and its audience.',
+  },
+  {
     id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
     after: 'the steel plate reverbs of 1960s studios',
     blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',
