@@ -49,6 +49,11 @@ export const PEDALS = [
     blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
   },
   {
+    id: 'transformer', section: 'circuits', name: 'Output Transformer', version: '0.1.0', ready: true, plugin: { code: 'Xfmr' }, enclosure: ['#2e2a26', '#e8b46a'],
+    after: 'the iron of a valve amplifier\'s output stage, after Jiles and Atherton\'s theory of hysteresis (1986)',
+    blurb: 'Your bass through the iron core of a valve amp\'s output transformer, magnetised round its hysteresis loop: the low notes, which need the most flux, saturate it first.',
+  },
+  {
     id: 'bandgap', section: 'circuits', name: 'Bandgap', version: '0.1.0', ready: true, plugin: { code: 'Bgap' }, enclosure: ['#22304a', '#e9f0ff'],
     after: 'the op-amp distortions of the late 1970s, with LEDs for diodes',
     blurb: 'An op-amp drives a pair of diodes to ground, and each turns on at its bandgap: germanium low, silicon higher, and LEDs at the energy of the light they give out.',

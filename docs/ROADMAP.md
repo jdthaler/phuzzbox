@@ -23,8 +23,8 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    first stage) as one circuit of 20 nodes, three Dempwolf–Zölzer triodes with grid current, the
    Yeh–Smith tone stack, the supply rail through its dropper, by the DK method (`phuzzbox/dk.h`
    gained triodes and current sources); tested against an independent JavaScript model
-   (`test/preamp-circuit.mjs`). The output transformer, which the first plan put here, waits for
-   a power-amp pedal, where it belongs.
+   (`test/preamp-circuit.mjs`). The output transformer, which the first plan put here, became a
+   pedal of its own in the second wave (the Output Transformer).
    The **Opto Compressor** landed 2026-11-01: an electroluminescent panel lit by a driver that
    hears the signal after the cell (or before it), and a photocell from rate equations for its
    free and trapped electrons (Rose 1951), tuned to the LA-2A's published timing (attack 10 ms,
@@ -189,6 +189,14 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    in the direction it moves, so it keeps its branch until the branch ends. Tested against the fit
    by Newton in all three unknowns, the thresholds from the load line's turning points, the switch
    without capacitance as a map, and the oscillator's period integrated along each branch.
+   The **Power Amp** landed 2026-11-05 as the **Output Transformer**: the output valves as a linear
+   source behind their plate resistance, into a transformer (Hammond's 1750L impedances, 4.2 kΩ to
+   4 Ω) whose core follows Jiles and Atherton's 1986 equation, with three published fits: their own
+   iron, a 50 % nickel–iron and a permalloy (a silicon-steel fit with α Ms/3a over 1 ratchets in
+   minor loops, so it is out). The flux by the trapezoidal rule, the field by Newton, the
+   magnetisation by exact solutions of the equation linearised in the effective field, at 2×
+   oversampling. Tested against the loop and the stage integrated by Runge–Kutta, the small-signal
+   highpass from the reversible susceptibility, and Faraday's law.
 
 ## The standalone app
 
