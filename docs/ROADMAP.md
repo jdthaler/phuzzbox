@@ -175,6 +175,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    cycle apart. Tested against Takahashi and Nakamura's exact amplification factor (eq. 17, a
    complex Γ and ₁F₁ in JavaScript), their geometric-optics limit, Paczyński's magnification, and
    the area integrated the other way round.
+   The **Crystal Radio** landed 2026-11-05: the bass as an AM station (overmodulation cuts the
+   carrier off), a tuned circuit of Q about the station, a point-contact diode into the earphone's
+   R and bypass C, and the next station 10 kHz up. Worked in the complex envelope: the diode's
+   current averaged over the carrier's cycle is Is(e^(−V/nVT) I0(A/nVT) − 1), the earphone by
+   BDF2 with Newton (on the logarithm where the exponential dominates), at 4× oversampling. Tested
+   against the whole set simulated at radio frequency with no envelope, the square and peak laws,
+   the square law's m/4, the onset of diagonal clipping, and the tuned circuit's bandwidth.
 
 ## The standalone app
 

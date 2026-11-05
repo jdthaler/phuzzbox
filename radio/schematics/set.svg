@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="300" viewBox="0 0 540 300" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="The Crystal Radio: a tuned circuit, a point-contact diode and an earphone">
+<title>The Crystal Radio: a tuned circuit, a point-contact diode and an earphone</title>
+<rect width="540" height="300" rx="10" fill="#151518" stroke="#2b2a30"/>
+<path d="M40 30 L60 60 L80 30" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M60 60 L60 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="100" y="40" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">antenna</text>
+<path d="M60 80 L60 132" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M60 168 L60 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(60 132) rotate(90)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="46" y="154" text-anchor="end" fill="#ece8e1" font-size="12" font-weight="400">L</text>
+<path d="M60 80 L160 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M160 80 L160 146" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M160 154 L160 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(160 146) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="174" y="147" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">C</text>
+<text x="174" y="161" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">tuning</text>
+<path d="M132 188 L188 112" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M186.53 119.86 L188 112 L180.93 115.74" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M60 220 L160 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M110 220 L110 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M101 228 L119 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M104.5 232 L115.5 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M108 236 L112 236" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="160" cy="80" r="3" fill="#ece8e1"/>
+<text x="110" y="288" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">the tuned circuit</text>
+<path d="M160 80 L200 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M200 80 L242 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M258 80 L300 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(242 80) rotate(0)"><path d="M0 -8 L0 8 L16 0 L0 -8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 -8 L16 8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="250" y="68" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">D</text>
+<text x="250" y="128" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">the crystal</text>
+<circle cx="320" cy="80" r="3" fill="#ece8e1"/>
+<path d="M300 80 L320 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M320 80 L320 146" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M320 154 L320 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(320 146) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="334" y="147" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">C</text>
+<text x="334" y="161" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">1 nF</text>
+<path d="M320 80 L420 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M420 80 L420 132" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M420 168 L420 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(420 132) rotate(90)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="434" y="147" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">R</text>
+<text x="434" y="161" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">100 kΩ</text>
+<path d="M320 220 L420 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M370 220 L370 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M361 228 L379 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M364.5 232 L375.5 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M368 236 L372 236" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="420" cy="80" r="3" fill="#ece8e1"/>
+<path d="M420 80 L500 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="500" cy="80" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="500" y="70" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">V</text>
+<text x="370" y="288" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">the earphone</text>
+</svg>

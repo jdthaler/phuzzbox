@@ -1,0 +1,24 @@
+{"slug": "radio",
+ "params": [
+  {"id":"signal","kind":"continuous","min":0.003,"max":3,"step":0,"log":true,"def":0.3},
+  {"id":"depth","kind":"continuous","min":0.1,"max":10,"step":0,"log":true,"def":0.8},
+  {"id":"tuning","kind":"continuous","min":-15000,"max":15000,"step":0,"log":false,"def":0},
+  {"id":"q","kind":"continuous","min":10,"max":300,"step":0,"log":true,"def":50},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":0},
+  {"id":"diode","kind":"choice","options":["ge","schottky","si"],"def":"ge"},
+  {"id":"load","kind":"continuous","min":10000,"max":1000000,"step":0,"log":true,"def":100000},
+  {"id":"cap","kind":"continuous","min":1e-10,"max":1e-8,"step":0,"log":true,"def":1e-9},
+  {"id":"station","kind":"continuous","min":540000,"max":1700000,"step":0,"log":true,"def":1000000},
+  {"id":"neighbour","kind":"continuous","min":-80,"max":0,"step":0,"log":false,"def":-46}
+ ],
+ "presets": [
+  {"name":"A local station","values":{"signal":0.3,"depth":0.8,"tuning":0,"q":50,"level":0,"diode":"ge","load":100000,"cap":1e-9,"station":1000000,"neighbour":-46}},
+  {"name":"Faint and far: square law","values":{"signal":0.01,"depth":0.8,"tuning":0,"q":50,"level":0,"diode":"ge","load":100000,"cap":1e-9,"station":1000000,"neighbour":-46}},
+  {"name":"Silicon detector","values":{"signal":0.3,"depth":0.8,"tuning":0,"q":50,"level":-0.2,"diode":"si","load":100000,"cap":1e-9,"station":1000000,"neighbour":-46}},
+  {"name":"Strong and linear","values":{"signal":2,"depth":0.8,"tuning":0,"q":50,"level":0,"diode":"ge","load":100000,"cap":1e-9,"station":1000000,"neighbour":-46}},
+  {"name":"Sharp tuning","values":{"signal":0.3,"depth":0.8,"tuning":0,"q":200,"level":0,"diode":"ge","load":100000,"cap":1e-9,"station":1000000,"neighbour":-46}},
+  {"name":"Off the station","values":{"signal":0.3,"depth":0.8,"tuning":6000,"q":50,"level":1.5,"diode":"ge","load":100000,"cap":1e-9,"station":1000000,"neighbour":-46}},
+  {"name":"Whistle from next door","values":{"signal":0.3,"depth":0.8,"tuning":0,"q":50,"level":-2,"diode":"ge","load":100000,"cap":1e-9,"station":1000000,"neighbour":-24}},
+  {"name":"Overmodulated","values":{"signal":0.3,"depth":5,"tuning":0,"q":50,"level":0.5,"diode":"ge","load":100000,"cap":1e-9,"station":1000000,"neighbour":-46}},
+  {"name":"Diagonal clipping","values":{"signal":1,"depth":0.8,"tuning":0,"q":50,"level":0,"diode":"ge","load":1000000,"cap":4.7e-9,"station":1000000,"neighbour":-46}}
+ ]}

@@ -26,6 +26,7 @@ namespace michelson { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace lampvibe { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace cable { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace ringmod { const phuzzbox::PedalInfo &pedalInfo(); }
+namespace radio { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace bbd { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace neon { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace lens { const phuzzbox::PedalInfo &pedalInfo(); }
@@ -33,7 +34,7 @@ namespace lens { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace phuzzbox::app {
 
 const std::vector<const PedalInfo *> &pedals() {
-  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo(), &preamp::pedalInfo(), &bandgap::pedalInfo(), &cable::pedalInfo(), &ringmod::pedalInfo(), &opto::pedalInfo(), &lampvibe::pedalInfo(), &neon::pedalInfo(), &michelson::pedalInfo(), &cabinet::pedalInfo(), &envelope::pedalInfo(), &octave::pedalInfo(), &spring::pedalInfo(), &echo::pedalInfo(), &bbd::pedalInfo(), &rotary::pedalInfo(), &plate::pedalInfo(), &sympathetic::pedalInfo(), &blackhole::pedalInfo(), &lens::pedalInfo(), &doppler::pedalInfo()};
+  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo(), &preamp::pedalInfo(), &bandgap::pedalInfo(), &cable::pedalInfo(), &ringmod::pedalInfo(), &radio::pedalInfo(), &opto::pedalInfo(), &lampvibe::pedalInfo(), &neon::pedalInfo(), &michelson::pedalInfo(), &cabinet::pedalInfo(), &envelope::pedalInfo(), &octave::pedalInfo(), &spring::pedalInfo(), &echo::pedalInfo(), &bbd::pedalInfo(), &rotary::pedalInfo(), &plate::pedalInfo(), &sympathetic::pedalInfo(), &blackhole::pedalInfo(), &lens::pedalInfo(), &doppler::pedalInfo()};
   return all;
 }
 

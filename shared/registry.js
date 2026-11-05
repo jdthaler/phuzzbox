@@ -64,6 +64,11 @@ export const PEDALS = [
     blurb: 'Four diodes between two transformers, switched by a carrier: the radio engineer\'s heterodyne, so every note comes out as its sum and difference with the carrier.',
   },
   {
+    id: 'radio', section: 'circuits', name: 'Crystal Radio', version: '0.1.0', ready: true, plugin: { code: 'CRad' }, enclosure: ['#5a3b22', '#f1e2c0'],
+    after: 'the crystal sets of the 1920s: a tuned coil, a cat\'s whisker on a crystal, and an earphone',
+    blurb: 'Your bass broadcast as an AM station and heard on a crystal set: a weak signal comes through the diode squared, a strong one straight, the tuned coil cuts the treble, and the next station whistles.',
+  },
+  {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
