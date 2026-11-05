@@ -34,7 +34,8 @@ import { PEDAL as DOPPLER } from '../../doppler/src/doppler-pedal.js';
 import { PEDAL as BANDGAP } from '../../bandgap/src/bandgap-pedal.js';
 import { PEDAL as MICHELSON } from '../../michelson/src/michelson-pedal.js';
 import { PEDAL as LAMPVIBE } from '../../lampvibe/src/lampvibe-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE].map((d) => [d.id, d]));
+import { PEDAL as CABLE } from '../../cable/src/cable-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

@@ -140,6 +140,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    the resistor of a phase-splitter all-pass stage. Tested against the power balance solved by
    Newton's method, its time constant from the balance's slope, the glow integrated over frequency,
    Davisson and Weeks's emissivity, the stages' arctangents and the vibrato's Δf = (1/2π) dφ/dt.
+   The **Transatlantic Cable** landed 2026-11-05: the telegrapher's equations for the 1858 and 1866
+   Atlantic cables (R, L and C from their cores' copper and gutta-percha) and a telephone pair,
+   solved as a ladder of sections by the trapezoidal rule (a tridiagonal system each sample), with
+   loading coils every 1.83 km, or Heaviside's distortionless loading solved exactly as two waves
+   reflected at each end. Tested against the line's ABCD matrices, the ladder's chained sections,
+   its step response by Talbot's inversion of the Laplace transform, Thomson's Fourier series for
+   the law of squares, and Heaviside's bounce diagram.
 
 ## The standalone app
 

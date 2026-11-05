@@ -690,6 +690,10 @@ body.one-screen .card .canvas.tubes { flex: 1 1 0; height: auto; min-height: 90p
 /* the Bandgap's enclosure: a deep blue, its ink a pale blue-white, the colour of the LEDs' light */
 :root[data-pedal="bandgap"] { --enclosure: #22304a; --enclosure-ink: #e9f0ff; }
 
+/* ---- cable/style.css */
+/* the Transatlantic Cable's enclosure: a deep sea's blue, its ink the tan of tarred hemp */
+:root[data-pedal="cable"] { --enclosure: #1d3b4a; --enclosure-ink: #e8d9b0; }
+
 /* ---- opto/style.css */
 /* the Opto Compressor's enclosure: the grey of a rack leveler's panel */
 :root[data-pedal="opto"] { --enclosure: #8a9096; --enclosure-ink: #16181b; }
@@ -1663,6 +1667,11 @@ const PEDALS = [
     id: 'bandgap', section: 'circuits', name: 'Bandgap', version: '0.1.0', ready: true, plugin: { code: 'Bgap' }, enclosure: ['#22304a', '#e9f0ff'],
     after: 'the op-amp distortions of the late 1970s, with LEDs for diodes',
     blurb: 'An op-amp drives a pair of diodes to ground, and each turns on at its bandgap: germanium low, silicon higher, and LEDs at the energy of the light they give out.',
+  },
+  {
+    id: 'cable', section: 'circuits', name: 'Transatlantic Cable', version: '0.1.0', ready: true, plugin: { code: 'Cabl' }, enclosure: ['#1d3b4a', '#e8d9b0'],
+    after: 'the Atlantic telegraph cables of 1858 and 1866, and loaded telephone lines',
+    blurb: 'Your bass sent down a long cable: Kelvin\'s law of squares smears it, loading coils and Heaviside\'s distortionless line bring it back, and an open far end echoes.',
   },
   {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
@@ -3271,6 +3280,79 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- cable/src/cable-params.js
+const __m47 = (() => {
+
+// cable-params.js — the Transatlantic Cable's controls. Values in SI units; `scale` shows them in
+// friendlier ones.
+
+// the cables, in the order of native/pedals/cable/cable-model.cpp's table
+const CABLES = [
+  ['atlantic1858', 'Atlantic telegraph, 1858'], ['atlantic1866', 'Atlantic telegraph, 1866'], ['pair', 'Telephone pair, 0.4 mm'],
+];
+
+const pedal = [
+  { id: 'length', label: 'Length', min: 1e3, max: 200e3, def: 100e3, log: true, unit: 'km', scale: 1e-3, decimals: 1, perform: true,
+    hint: 'How far your bass travels. The cable loses the treble faster than the bass, so the longer the darker: 100 km of the 1858 cable passes 1 kHz 15 dB below the bass, 200 km 37 dB. And a note takes 3.5 times as long to arrive down 200 km as down 100.' },
+  { id: 'loading', label: 'Loading', type: 'select', def: 'none', options: [['none', 'None'], ['coils', 'Coils'], ['heaviside', 'Heaviside']], perform: true,
+    hint: 'None: the cable as laid. Coils: a loading coil every 1.83 km, so the line passes more up to a cutoff and nothing above it (30 km of telephone pair passes 1 kHz 20 dB louder, and 4 kHz not at all). Heaviside: inductance spread along the line with just enough leakage, so every frequency is delayed alike and loses the same.' },
+  { id: 'repeater', label: 'Repeater', min: -20, max: 80, def: 19.2, unit: 'dB', decimals: 1, perform: true,
+    hint: 'An amplifier at the far end, as the later cables had: every 20 dB multiplies the voltage by ten (and below 0 dB, divides it, as a pad).' },
+  { id: 'far', label: 'Far end', type: 'select', def: 'matched', options: [['matched', 'Matched'], ['open', 'Open']], perform: true,
+    hint: "Matched: the far end absorbs what arrives. Open: into an amplifier's megohm, which reflects it back, and the voltage there doubles. On a Heaviside line you hear the reflections come back, one round trip apart." },
+];
+
+const bench = [
+  { id: 'conductor', label: 'Cable', type: 'select', def: 'atlantic1858', options: CABLES,
+    hint: "The cable itself. The 1858 Atlantic cable's thin core has 2.8 times the resistance of the 1866 cable's, so it is darker; a telephone pair of 0.4 mm wires has 274 Ω per km, and half the 1858 cable's capacitance." },
+  { id: 'coil', label: 'Loading coils', min: 22e-3, max: 250e-3, def: 88e-3, log: true, unit: 'mH', scale: 1e3, decimals: 0,
+    hint: "Each loading coil's inductance. Heavier coils cut off lower, at 1/(π√(L C)): on the telephone pair, 3.4 kHz at 88 mH and 2.0 kHz at 250 mH." },
+  { id: 'inductance', label: 'Heaviside inductance', min: 10e-3, max: 1, def: 100e-3, log: true, unit: 'mH/km', scale: 1e3, decimals: 0,
+    hint: "The inductance Heaviside's loading adds per km, with the leakage that keeps L/R = C/G. More makes the line slower and loses less: down 100 km of the 1866 cable, 100 mH/km delays the bass 11.4 ms and loses 2.1 dB; 1 H/km, 35.9 ms and 0.7 dB." },
+];
+
+const GROUPS = [
+  { name: 'The pedal', params: pedal },
+  { name: 'The line', params: bench },
+];
+
+const stock = { length: 100e3, loading: 'none', repeater: 19.2, far: 'matched', conductor: 'atlantic1858', coil: 88e-3, inductance: 100e-3 };
+const PRESETS = {
+  '1858 cable, 100 km': { ...stock },
+  '1858 cable, 200 km, into a galvanometer': { ...stock, length: 200e3, far: 'open', repeater: 19 },
+  '1866 cable, 200 km': { ...stock, conductor: 'atlantic1866', length: 200e3, repeater: 22.3 },
+  'Telephone pair, 10 km': { ...stock, conductor: 'pair', length: 10e3, repeater: 13.9 },
+  'Telephone pair with coils, 30 km': { ...stock, conductor: 'pair', length: 30e3, loading: 'coils', repeater: 23.9 },
+  'Heavy coils: a lower cutoff': { ...stock, conductor: 'pair', length: 30e3, loading: 'coils', coil: 250e-3, repeater: 19.7 },
+  'Heaviside: a clean delay': { ...stock, conductor: 'atlantic1866', loading: 'heaviside', inductance: 1, repeater: 0.7 },
+  'Heaviside, far end open: echoes': { ...stock, conductor: 'atlantic1866', loading: 'heaviside', inductance: 1, far: 'open', repeater: -8.7 },
+  'Heaviside on a telephone pair': { ...stock, conductor: 'pair', length: 10e3, loading: 'heaviside', inductance: 1, repeater: 6.5 },
+};
+const KEEP = [];
+
+return { CABLES, GROUPS, PRESETS, KEEP };
+})();
+
+// ---- cable/src/cable-pedal.js
+const __m46 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m47;
+// cable-pedal.js — the Transatlantic Cable's descriptor: everything a host needs to run it
+// without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'cable',
+  name: 'Transatlantic Cable',
+  description: 'Your bass sent down a long cable: Kelvin\'s law of squares smears it, Heaviside\'s loading straightens it out, and an open far end echoes',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: nothing changes (the input buffer barely loads a pickup)
+  guitar: {},
+  wasm: { binary: () => new URL('../wasm/cable.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue, fromNative } = __m1;
@@ -3298,6 +3380,7 @@ const { PEDAL: DOPPLER } = __m38;
 const { PEDAL: BANDGAP } = __m40;
 const { PEDAL: MICHELSON } = __m42;
 const { PEDAL: LAMPVIBE } = __m44;
+const { PEDAL: CABLE } = __m46;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -3334,7 +3417,8 @@ const { PEDAL: LAMPVIBE } = __m44;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
