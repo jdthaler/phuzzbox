@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { PHUZZBOX_VERSION } from '../shared/registry.js';
+import { PHUZZBOX_VERSION, pluginName } from '../shared/registry.js';
 import { APP, SYSTEMS, archive, withPlugins } from '../shared/plugins.js';
 
 // A release is published only when this changes (the workflow compares it with the latest
@@ -58,7 +58,7 @@ export function notes() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const arg = process.argv[2];
   console.log(arg === '--tag' ? `plugins-v${PHUZZBOX_VERSION}`
-    : arg === '--plugins' ? withPlugins().map((p) => `${p.id}\t${p.name}`).join('\n')
+    : arg === '--plugins' ? withPlugins().map((p) => `${p.id}\t${pluginName(p)}`).join('\n')
     : arg === '--manifest' ? manifest()
     : arg === '--files' ? files().join('\n')
     : notes());

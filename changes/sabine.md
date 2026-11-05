@@ -7,4 +7,9 @@
   audience and the air's absorption, at the diffuse field's level, so that past the critical
   distance you hear more room than bass. Length, walls, audience, distance and level, with width,
   height, floor and humidity; views of each octave's decay and of the echogram, a tour, and its
-  plugins.
+  plugins, named Sabine Room.
+
+### PhuzzBox (patch)
+- A pedal whose name won't do for a file gives its plugins a name of their own (`plugin.name` in
+  the registry): clap-wrapper's build commands broke on the apostrophe in Sabine's Room. A test
+  keeps every plugin's name to letters, digits, spaces, dots and hyphens.
