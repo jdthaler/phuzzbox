@@ -220,7 +220,7 @@ const boxView = {
       draw(xs, css('--accent'));
       g.strokeStyle = css('--ink'); g.beginPath(); g.moveTo(X(k), box.t); g.lineTo(X(k), box.b); g.stroke();
       g.fillStyle = css('--ink-2'); g.font = '11px system-ui, sans-serif'; g.textAlign = 'center';
-      g.fillText(m.label(), w / 2, h - 4);
+      g.fillText(m.label(), w / 2, h - 4, w - 8);
     });
   },
 };

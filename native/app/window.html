@@ -166,15 +166,16 @@ button.info::after { content: ""; position: absolute; inset: -5px; border-radius
 .views { display: grid; gap: 16px; }
 .card { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .card figcaption { font-size: 13px; color: var(--ink-2); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-.card figcaption b { color: var(--ink); }
+.card figcaption b { color: var(--ink); white-space: nowrap; }
 .card .canvas { height: 230px; }
 .card canvas { width: 100%; height: 100%; display: block; }
 .card .caption { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
 .card .caption button.link { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; min-height: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .card .caption button.link:hover { color: var(--ink); }
 /* a slow-motion view's speed, pause and replay, at the right of its title bar (shared/motion.js) */
-.card figcaption .motion { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
-.card figcaption .motion select { font-size: 12px; padding: 2px 6px; }
+.card figcaption .motion { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.card figcaption .motion select { font-size: 12px; padding: 2px 6px; min-width: 62px; flex: 0 1 auto; }
+.card figcaption .motion button { flex: none; }
 .card figcaption .motion button { font-size: 12px; min-width: 26px; min-height: 24px; padding: 1px 6px; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
 .legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
@@ -427,10 +428,13 @@ body.one-screen .views { display: block; grid-row: 2; min-height: 0; overflow-y:
 .view-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 1), minmax(0, 1fr)); gap: 12px; padding: 12px; height: 100%; min-height: 0; }
 .view-grid .card { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
 body.one-screen .card .canvas, body.one-screen .card .canvas.transistors { flex: 1 1 0; height: auto; min-height: 60px; }
-/* a view's legend keeps its one line in a short card: the canvas gives way, and a long entry is cut with an ellipsis */
+/* a view's legend: its entries wrap onto more lines where the card has room, or keep to one line in a
+   short card, each entry cut with an ellipsis (shell.js fitLegend chooses, and holds its height
+   steady as its numbers change); the canvas gives way */
 @media (min-width: 601px) {
-  body.one-screen .view-grid .legend { flex: none; flex-wrap: nowrap; overflow: hidden; }
-  body.one-screen .view-grid .legend > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  body.one-screen .view-grid .legend { flex: none; overflow: hidden; align-content: flex-start; }
+  body.one-screen .view-grid .legend.one-line { flex-wrap: nowrap; }
+  body.one-screen .view-grid .legend > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 100%; }
 }
 body.one-screen .card:not(.notes-open) .caption { display: none; }
 body.one-screen .card.notes-open .caption { flex: none; max-height: 40%; overflow-y: auto; }

@@ -189,16 +189,24 @@ const loopView = {
       }
       // the heads: the record head at 0, the playback heads where they sit
       const on = headsOn(api.P), at = headsAt(api.P);
+      // each head's delay under the tape; one that would run into the one before it drops a line
+      let subEnd = -Infinity, subRow = 0;
       const head = (X, color, label, sub, active) => {
         g.fillStyle = color; g.globalAlpha = active ? 1 : 0.45;
         g.fillRect(X - 5, ty - 18, 10, 16);
         g.globalAlpha = 1;
         g.fillStyle = css(active ? '--ink' : '--ink-2'); g.textAlign = 'center'; g.font = '11px system-ui, sans-serif';
         g.fillText(label, X, ty - 22);
-        if (sub) g.fillText(sub, X, ty + th + 14);
+        if (sub) {
+          const half = g.measureText(sub).width / 2;
+          subRow = X - half < subEnd + 4 ? 1 - subRow : 0;
+          g.fillText(sub, X, ty + th + 14 + 13 * subRow);
+          subEnd = X + half;
+        }
       };
       head(xOf(0), css('--accent'), 'rec', '', true);
-      at.forEach((d, j) => head(xOf(d), on[j] ? '#e5e7eb' : '#6b7280', `${j + 1}`, `${Math.round((1000 * d) / v)} ms`, on[j]));
+      at.map((d, j) => j).sort((i, j) => at[i] - at[j])
+        .forEach((j) => head(xOf(at[j]), on[j] ? '#e5e7eb' : '#6b7280', `${j + 1}`, `${Math.round((1000 * at[j]) / v)} ms`, on[j]));
       // a scale bar
       g.strokeStyle = css('--ink-2'); g.lineWidth = 1;
       const sy = h - 8; g.beginPath(); g.moveTo(xOf(0), sy); g.lineTo(xOf(0.05), sy); g.stroke();

@@ -113,7 +113,10 @@ const echoesView = {
       for (const f of [100, 300, 1000, 3000, 8000]) g.fillText(f >= 1000 ? `${f / 1000}k` : `${f}`, box.l - 5, Yf(f) + 4);
       g.textAlign = 'left'; g.fillStyle = css('--ink'); g.fillText('F_C', box.l + 4, Yf(fc) - 4);
       g.fillStyle = css('--ink-2'); g.textAlign = 'center';
-      for (let t = 0; t <= SECS + 1e-9; t += 0.05) g.fillText(t ? `${Math.round(t * 1000)} ms` : '0', X(t), h - 6);
+      // the time axis, every 50 ms, or every 100 or 200 where the labels would run into each other
+      let step = 0.05;
+      while (X(step) - X(0) < g.measureText('000 ms').width + 8 && step < SECS) step *= 2;
+      for (let j = 0; j * step <= SECS + 1e-9; j++) { const t = j * step; g.fillText(t ? `${Math.round(t * 1000)} ms` : '0', X(t), h - 6); }
     });
     compute();
   },
@@ -184,9 +187,19 @@ const springsView = {
         }
         if (roomy) { g.fillStyle = css('--ink-2'); g.textAlign = 'left'; g.fillText(`${(tank.springs[k].L).toFixed(2)} m of wire`, x0 + 10, yc + amp + 13); }
       }
-      g.fillStyle = css('--ink-2'); g.textAlign = 'left'; g.fillText('drive', 4, h - 6);
-      g.textAlign = 'right'; g.fillText('pickup', w - 4, h - 6);
-      g.textAlign = 'center'; g.fillText(m.label(), w / 2, h - 6);
+      // the ends' names under them, or, where the clock's line would run into them, up the margins
+      const label = m.label(), half = g.measureText(label).width / 2;
+      g.fillStyle = css('--ink-2');
+      if (w / 2 - half > g.measureText('drive').width + 12 && w / 2 + half < w - g.measureText('pickup').width - 12) {
+        g.textAlign = 'left'; g.fillText('drive', 4, h - 6);
+        g.textAlign = 'right'; g.fillText('pickup', w - 4, h - 6);
+      } else {
+        g.textAlign = 'center';
+        for (const [x, a, t] of [[14, -Math.PI / 2, 'drive'], [w - 14, Math.PI / 2, 'pickup']]) {
+          g.save(); g.translate(x, (h - 18) / 2); g.rotate(a); g.fillText(t, 0, 4); g.restore();
+        }
+      }
+      g.textAlign = 'center'; g.fillText(label, w / 2, h - 6, w - 8);
       if (++shown % 20 === 1) legend.innerHTML = tank.springs.slice(0, S).map((sp, i) => `<span>spring ${i + 1}: across in ${(500 * sp.TD).toFixed(1)} ms, low notes first</span>`).join('');
     });
   },

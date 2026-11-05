@@ -147,7 +147,7 @@ const plateView = {
         g.fillStyle = i ? '#f5f5f5' : css('--accent'); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1; g.stroke();
       });
       g.fillStyle = css('--ink-2'); g.font = '11px system-ui, sans-serif'; g.textAlign = 'center';
-      g.fillText(m.label(), w / 2, h - 6);
+      g.fillText(m.label(), w / 2, h - 6, w - 8);
       if (plate && ++shown % 20 === 1) legend.innerHTML = `<span>${plate.modes.length} modes</span>` + WHERE.map(([ix, iy, name], i) => `<span${i ? '' : ' style="color:var(--accent)"'}>${name} at ${api.P[ix].toFixed(2)}, ${api.P[iy].toFixed(2)} m</span>`).join('');
     });
   },
