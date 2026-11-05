@@ -232,6 +232,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
         v.about ? [' ', h('button', { type: 'button', class: 'link', onclick: () => notes.open(v.about) }, `How the ${v.title.toLowerCase()} works`)] : null) : null);
     viewList.push({ key: v.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: v.title, card, on: v.perform ?? i < 2 });
     v.mount(holder, api);
+    fitLegend(card);
   });
 
   // the test bass or guitar, pinned below while it is the input
@@ -494,6 +495,34 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     send({ type: 'bypass', on });
   }
 
+
+  // A view's legend under its canvas: its readouts wrap onto more lines when the card has room for
+  // them (up to a third of its height), and otherwise keep to one line with each entry cut short
+  // (shared/pedal.css). The room it takes only grows while the card keeps its size, so numbers that
+  // change every frame don't make the canvas jump; an entry still cut shows whole on hover.
+  function fitLegend(card) {
+    let size = '', need = 0, queued = false, watched = null;
+    const fit = () => {
+      queued = false;
+      const lg = card.querySelector(':scope > .legend');
+      if (!lg || !card.clientHeight) return;
+      if (lg !== watched) { watched = lg; changes.observe(lg, { childList: true, subtree: true, characterData: true }); }
+      const now = `${card.clientWidth}x${card.clientHeight}`;
+      if (now !== size) { size = now; need = 0; }
+      lg.classList.remove('one-line');
+      lg.style.height = '';
+      need = Math.max(need, lg.scrollHeight);
+      const wrap = need <= card.clientHeight / 3;
+      lg.classList.toggle('one-line', !wrap);
+      lg.style.height = wrap ? `${need}px` : '';
+      lg.title = lg.textContent.replace(/\s+/g, ' ').trim();
+    };
+    const later = () => { if (!queued) { queued = true; requestAnimationFrame(fit); } };
+    const changes = new MutationObserver(later);
+    new MutationObserver(later).observe(card, { childList: true });
+    new ResizeObserver(later).observe(card);
+    later();
+  }
 
   function meter(label) {
     const bar = h('span', { class: 'bar' });
