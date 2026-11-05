@@ -1,11 +1,12 @@
 // bandgap-model.h — the Bandgap's circuit: a non-inverting op-amp stage whose gain the Drive pot
-// sets, then a resistor (1 kΩ and the Filter pot) into a pair of diodes to ground with 3.3 nF
-// across them, then a buffer and the Level. Four capacitors' voltages are the state:
+// sets, then 1 kΩ into a pair of diodes to ground with 3.3 nF across them, then a buffer, the
+// Filter (1.5 kΩ and a 100 kΩ pot into 3.3 nF) and the Level. Four capacitors' voltages are the
+// state the diodes couple (the Filter's, behind the buffer, follows on its own):
 //
 //   x   the op-amp's output (its compensation capacitor's voltage, as a macromodel has it)
 //   vf  across Cf (100 pF) and the Drive pot Rf, from the output to the inverting input u = x − vf
 //   vg  across the low-cut capacitor Cg, in series with Rg (1 kΩ) from u to ground
-//   vd  across the diodes and Cd (3.3 nF), fed from x through Rt = 1 kΩ + the Filter pot
+//   vd  across the diodes and Cd (3.3 nF), fed from x through Rt = 1 kΩ
 //
 // The op-amp: its input pair's current saturates as tanh, so its output moves at
 //   dx/dt = SR tanh(e / Vs),  e = v+ − u,  Vs = SR / (2π GBW),
@@ -38,6 +39,7 @@ struct Stack {
 
 struct Parts {
   double Rf, Cf, Rg, Cg, Rt, Cd; // ohms and farads
+  double Rft, Ct;                // the Filter after the buffer: 1.5 kΩ + the pot, into 3.3 nF
   double SR, GBW, Vs, rail;      // V/s, Hz, V, and the output's swing (±V)
   Stack up, down;                // the diodes that conduct for vd > 0 and vd < 0
   double gain;                   // the Level, as a factor

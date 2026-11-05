@@ -42,6 +42,7 @@ class Engine : public phuzzbox::Effect {
   double h = 0;               // the step (s)
   double y[4] = {}, yPrev[4] = {}, f0[4] = {}; // the state and its derivatives at the start of the step
   double lastIn = 0, id = 0;
+  double vo = 0; // the Filter's capacitor, after the buffer: the output
 
   int pointEvery = 36, pointAt = 0, points = 0;
   phuzzbox::Message msg;

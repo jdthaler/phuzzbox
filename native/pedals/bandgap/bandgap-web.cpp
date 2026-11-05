@@ -57,11 +57,11 @@ PHUZZ_EXPORT void bandgap_response(double *io, int n) {
   }
 }
 // in: P. out (at io): the rail (V), the op-amp's slew rate (V/s), gain–bandwidth (Hz) and Vs (V),
-// Rf, Rg, Cg, Rt, Cd (Ω, F), and the Level as a factor.
+// Rf, Rg, Cg, Rt, Cd (Ω, F), the Level as a factor, and the Filter's Rft and Ct (Ω, F).
 PHUZZ_EXPORT void bandgap_parts(double *io) {
   const bandgap::Parts p = bandgap::parts(io);
-  const double out[] = {p.rail, p.SR, p.GBW, p.Vs, p.Rf, p.Rg, p.Cg, p.Rt, p.Cd, p.gain};
-  for (int k = 0; k < 10; k++) io[k] = out[k];
+  const double out[] = {p.rail, p.SR, p.GBW, p.Vs, p.Rf, p.Rg, p.Cg, p.Rt, p.Cd, p.gain, p.Rft, p.Ct};
+  for (int k = 0; k < 12; k++) io[k] = out[k];
 }
 PHUZZ_EXPORT double bandgap_iterations(phuzzbox::Effect *e) { auto *b = static_cast<bandgap::Engine *>(e); return b->steps ? (double)b->iterations / b->steps : 0; }
 PHUZZ_EXPORT double bandgap_failures(phuzzbox::Effect *e) { return (double)static_cast<bandgap::Engine *>(e)->failures; }

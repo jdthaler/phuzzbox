@@ -67,8 +67,10 @@ Parts parts(const double *P) {
   p.Cf = 100e-12;
   p.Rg = 1e3;
   p.Cg = P[lowCut];
-  p.Rt = 1e3 + 100e3 * P[filter];
+  p.Rt = 1e3;
   p.Cd = 3.3e-9;
+  p.Rft = 1.5e3 + 100e3 * P[filter];
+  p.Ct = 3.3e-9;
   const OpAmp &a = kOpAmps[std::clamp((int)std::lround(P[opamp]), 0, 2)];
   p.GBW = a.gbw;
   p.SR = a.sr;
@@ -133,7 +135,8 @@ std::complex<double> response(const Parts &p, double f) {
   p.up.current(0, s1);
   p.down.current(0, s2);
   const C Yd = s * p.Cd + (s1 + s2);
-  return x / (1.0 + p.Rt * Yd);
+  // then the buffer and the Filter's low-pass
+  return x / (1.0 + p.Rt * Yd) / (1.0 + s * p.Rft * p.Ct);
 }
 
 } // namespace bandgap

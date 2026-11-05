@@ -23,8 +23,8 @@ const call = (P, fn, extra = [], n = 0) => {
 };
 function parts(P) {
   const { s } = call(P, (at) => model.bandgap_parts(at));
-  const [rail, SR, GBW, Vs, Rf, Rg, Cg, Rt, Cd, gain] = s.f64(10);
-  return { rail, SR, GBW, Vs, Rf, Rg, Cg, Rt, Cd, gain };
+  const [rail, SR, GBW, Vs, Rf, Rg, Cg, Rt, Cd, gain, Rft, Ct] = s.f64(12);
+  return { rail, SR, GBW, Vs, Rf, Rg, Cg, Rt, Cd, gain, Rft, Ct };
 }
 function iv(P, k, volts) {
   const r = call(P, (at) => model.bandgap_iv(at, k, volts.length), volts);
@@ -156,7 +156,7 @@ const responseView = {
     const db = (x) => 20 * Math.log10(x);
     const update = () => {
       H = response(api.P); pp = parts(api.P);
-      const G = 1 + pp.Rf / pp.Rg, flc = 1 / (2 * Math.PI * pp.Rg * pp.Cg), ffl = 1 / (2 * Math.PI * pp.Rt * pp.Cd);
+      const G = 1 + pp.Rf / pp.Rg, flc = 1 / (2 * Math.PI * pp.Rg * pp.Cg), ffl = 1 / (2 * Math.PI * pp.Rft * pp.Ct);
       legend.innerHTML = `<span><i style="background:${css('--accent')}"></i>gain ×${G.toFixed(1)}, ${db(G).toFixed(1)} dB before the Level</span><span>low cut ${flc < 100 ? flc.toFixed(1) : flc.toFixed(0)} Hz</span><span>Filter ${ffl >= 1000 ? `${(ffl / 1000).toFixed(1)} kHz` : `${ffl.toFixed(0)} Hz`}</span><span>op-amp ${(pp.GBW / G / 1000).toFixed(0)} kHz at this gain</span>`;
     };
     const draw = () => {

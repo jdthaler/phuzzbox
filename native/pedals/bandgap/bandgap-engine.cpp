@@ -50,7 +50,7 @@ void Engine::setParams(const double *P) {
 void Engine::reset() {
   os.reset();
   for (int i = 0; i < 4; i++) y[i] = yPrev[i] = 0; // no bias: the op-amp and the diodes sit at 0 V with nothing in
-  lastIn = 0;
+  lastIn = vo = 0;
   double J[16];
   derivatives(parts, y, 0, f0, J, &id);
   pointAt = points = 0;
@@ -81,6 +81,7 @@ bool Engine::solve(double *yy, double a, const double *r, double vin, int &its) 
 }
 
 double Engine::step(double vin) {
+  const double vd0 = y[3];
   const double vg = lastIn + kGamma * (vin - lastIn); // the input part way through the step, by a straight line
   // the trapezoidal stage to t + γh: y_g − (γh/2) f(y_g) = y + (γh/2) f(y)
   double yg[4], r[4], y1[4];
@@ -107,12 +108,18 @@ double Engine::step(double vin) {
   lastIn = vin;
   iterations += it1 + it2; steps++;
   itersSincePost += it1 + it2; stepsSincePost++;
-  return y[3];
+  // the Filter, behind the buffer: Ct dvo/dt = (vd − vo)/Rft, by the trapezoidal rule
+  const double al = h / (2 * parts.Rft * parts.Ct);
+  vo = (vo * (1 - al) + al * (vd0 + y[3])) / (1 + al);
+  return vo;
 }
 
 void Engine::process(const float *in, float *L, float *R, int n) {
   const int M = os.factor();
   for (int i = 0; i < n; i++) {
+    // a sample that isn't a number goes out as one, so the block is silenced and the pedal reset
+    // (px_process), rather than into the oversampler, where it would stay
+    if (!std::isfinite(in[i])) { L[i] = R[i] = in[i]; continue; }
     double out = 0;
     for (int m = 0; m < M; m++) out = os.downsample(step(os.upsample(in[i], m)));
     const float v = (float)(parts.gain * out);

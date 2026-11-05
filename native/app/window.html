@@ -3036,7 +3036,7 @@ const pedal = [
   { id: 'drive', label: 'Drive', min: 0, max: 1, def: 0.6, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'A 100 kΩ audio-taper pot in the op-amp\'s feedback, over 1 kΩ to ground: the gain runs from 1.1 to 101, 1 to 40 dB, and is 16, 24 dB, at its default. More drive pushes the bass further past the diodes\' knee, from a rounded edge to a square wave. Near the top the op-amp\'s own bandwidth, its gain–bandwidth product over the gain, takes the very top off.' },
   { id: 'filter', label: 'Filter', min: 0, max: 1, def: 0.2, unit: '%', scale: 100, decimals: 0, perform: true,
-    hint: 'A 100 kΩ pot (plus 1 kΩ) between the op-amp and the diodes, with 3.3 nF across the diodes: a low-pass from 48 kHz full down to 480 Hz full up, 2.2 kHz at its default. It also limits the current the op-amp can push into the diodes, so turned up it clips softer and darker, and the LEDs glow dimmer.' },
+    hint: 'A 100 kΩ pot (plus 1.5 kΩ) into 3.3 nF after the diodes, behind a buffer: a low-pass from 32 kHz full down to 475 Hz full up, 2.2 kHz at its default. Turned up, it takes the clipping\'s highest harmonics off, from fizz to a dark, woolly drive; it can\'t change how hard the diodes clip, only what of it you hear.' },
   { id: 'level', label: 'Level', min: -30, max: 12, def: -16.4, unit: 'dB', decimals: 1, perform: true,
     hint: 'The output, after a buffer. The diodes hold the level near their own turn-on voltage, so it follows the Diodes switch: LEDs come out several times louder than germanium.' },
   { id: 'diodes', label: 'Diodes', type: 'select', def: 'si', options: DIODES, perform: true,
