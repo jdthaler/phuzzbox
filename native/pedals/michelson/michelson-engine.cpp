@@ -49,6 +49,7 @@ void Engine::setParams(const double *P) {
 }
 
 void Engine::reset() {
+  if (!haveParams) return; // a host may reset before it sets the parameters; setParams resets then
   os.reset();
   ic1 = ic2 = x = 0;
   w = wPrev = 0;
