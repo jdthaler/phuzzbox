@@ -59,6 +59,11 @@ export const PEDALS = [
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
   },
   {
+    id: 'lampvibe', section: 'light', name: 'Lamp Vibe', version: '0.1.0', ready: true, plugin: { code: 'LVib' }, enclosure: ['#3d2a4f', '#ffd27a'],
+    after: 'the photocell phase-shifters of the late 1960s',
+    blurb: 'A tungsten lamp that heats and cools with the oscillator, a black body whose glow four photocells turn into a sweeping phase.',
+  },
+  {
     id: 'michelson', section: 'optics', name: 'Michelson Interferometer', version: '0.1.0', ready: true, plugin: { code: 'Mich' }, enclosure: ['#16191e', '#ff6a5c'],
     after: 'Michelson and Morley\'s interferometer (1887), and LIGO\'s',
     blurb: 'A laser split into two arms and recombined: your bass moves one mirror, and the fringes sweeping past the detector fold the wave over, half a wavelength at a time.',

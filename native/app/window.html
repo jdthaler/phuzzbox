@@ -699,6 +699,10 @@ body.one-screen .card .canvas.history { flex: 1 1 0; height: auto; min-height: 9
   body.one-screen .card .canvas.history { flex: none; height: 260px; }
 }
 
+/* ---- lampvibe/style.css */
+/* the Lamp Vibe's enclosure: a deep violet, its ink the yellow of a tungsten filament */
+:root[data-pedal="lampvibe"] { --enclosure: #3d2a4f; --enclosure-ink: #ffd27a; }
+
 /* ---- michelson/style.css */
 /* the Michelson Interferometer's enclosure: an optical bench's black anodising, its ink the red of a helium–neon laser */
 :root[data-pedal="michelson"] { --enclosure: #16191e; --enclosure-ink: #ff6a5c; }
@@ -1664,6 +1668,11 @@ const PEDALS = [
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
+  },
+  {
+    id: 'lampvibe', section: 'light', name: 'Lamp Vibe', version: '0.1.0', ready: true, plugin: { code: 'LVib' }, enclosure: ['#3d2a4f', '#ffd27a'],
+    after: 'the photocell phase-shifters of the late 1960s',
+    blurb: 'A tungsten lamp that heats and cools with the oscillator, a black body whose glow four photocells turn into a sweeping phase.',
   },
   {
     id: 'michelson', section: 'optics', name: 'Michelson Interferometer', version: '0.1.0', ready: true, plugin: { code: 'Mich' }, enclosure: ['#16191e', '#ff6a5c'],
@@ -3191,6 +3200,77 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- lampvibe/src/lampvibe-params.js
+const __m45 = (() => {
+
+// lampvibe-params.js — the Lamp Vibe's controls. Values in SI units; `scale` shows them in
+// friendlier ones.
+
+// the lamps, in the order of native/pedals/lampvibe/lampvibe-model.cpp's table
+const BULBS = [
+  ['grain', 'Grain of wheat, 12 V 50 mA'], ['pilot', 'Pilot lamp, 6.3 V 150 mA'], ['panel', 'Panel bulb, 12 V 5 W'],
+];
+
+const pedal = [
+  { id: 'speed', label: 'Speed', min: 0.5, max: 12, def: 2.5, log: true, unit: 'Hz', decimals: 2, perform: true,
+    hint: 'How fast the oscillator swings the lamp, from one sweep every two seconds to twelve a second. The filament stores heat, so the faster it goes, the less its temperature swings: the stock pilot lamp at 70 % Intensity swings between about 1710 K and 2500 K at 1 Hz, but only between 2010 K and 2390 K at 12 Hz, and the sweep grows shallower.' },
+  { id: 'intensity', label: 'Intensity', min: 0, max: 1, def: 0.7, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How far the lamp\'s voltage dips below its rating each cycle. At 70 % it falls to 30 % of the rating; slowly swept, the filament cools from 2500 K to about 1700 K, its glow at the cells falls nearly a hundredfold, and the cells\' resistance climbs from 5 kΩ to some 250 kΩ, sweeping the notches over nearly six octaves. At 0 the lamp burns steady and the notches stand still.' },
+  { id: 'level', label: 'Level', min: -30, max: 12, def: 4.1, unit: 'dB', decimals: 1, perform: true,
+    hint: 'The output. The stages pass every frequency at full strength, so in vibrato the output is as loud as the input; in chorus the wet and dry are mixed half and half, and the notches take some away.' },
+  { id: 'mode', label: 'Mode', type: 'select', def: 'chorus', options: [['chorus', 'Chorus'], ['vibrato', 'Vibrato']], perform: true,
+    hint: 'Chorus mixes the stages\' output with the dry signal: where the four stages have turned a frequency by 180° or 540°, the two cancel, two notches that the lamp sweeps up and down (with the lamp at its rating, near 130 Hz and 3.7 kHz; as it dims, down to a few hertz and 70 Hz). Vibrato is the stages alone: no notches, but as the lamp sweeps their phase, each note\'s pitch wavers.' },
+];
+
+const bench = [
+  { id: 'bulb', label: 'Lamp', type: 'select', def: 'pilot', options: BULBS,
+    hint: 'The bulb. All three run at 2500 K at their rating; a bigger one has a thicker filament, more heat to store for the light it gives, so it follows the oscillator less. At its rating the filament settles with a time constant of 6 ms (the grain of wheat), 13 ms (the pilot lamp) or 25 ms (the panel bulb); at half its voltage, as a cooler filament radiates its heat away more slowly, two and a half times longer.' },
+  { id: 'cell', label: 'Cells', min: 2e-3, max: 100e-3, def: 15e-3, log: true, unit: 'ms', scale: 1e3, decimals: 1,
+    hint: 'How long a freed electron lasts in the cells\' cadmium sulphide while they are dim. Lit brightly, the electrons find each other and recombine quickly; dim, they linger, so the cells\' resistance falls fast as the light comes up and climbs back slowly. Longer, and the cells smooth the lamp\'s swing and lag it more, and the sweep grows shallower.' },
+];
+
+const GROUPS = [
+  { name: 'The pedal', params: pedal },
+  { name: 'The lamp and cells', params: bench },
+];
+
+const stock = { speed: 2.5, intensity: 0.7, level: 4.1, mode: 'chorus', bulb: 'pilot', cell: 15e-3 };
+const PRESETS = {
+  'Chorus': { ...stock },
+  'Vibrato': { ...stock, mode: 'vibrato', speed: 5, level: 0 },
+  'Slow throb': { ...stock, speed: 0.8, intensity: 1, level: 2.2 },
+  'Fast and shallow': { ...stock, speed: 9, intensity: 0.5, level: 3.1 },
+  'Lamp steady: the notches stand still': { ...stock, intensity: 0, level: 7.8 },
+  'Grain of wheat, quick': { ...stock, bulb: 'grain', speed: 6, intensity: 0.9, level: 4 },
+  'Panel bulb: the lamp can\'t keep up': { ...stock, bulb: 'panel', speed: 6, intensity: 0.9, level: 2.4 },
+  'Slow cells': { ...stock, cell: 60e-3, level: 3.1 },
+  'Seasick vibrato': { ...stock, mode: 'vibrato', speed: 1.5, intensity: 1, level: 0 },
+};
+const KEEP = [];
+
+return { BULBS, GROUPS, PRESETS, KEEP };
+})();
+
+// ---- lampvibe/src/lampvibe-pedal.js
+const __m44 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m45;
+// lampvibe-pedal.js — the Lamp Vibe's descriptor: everything a host needs to run it
+// without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
+
+
+const PEDAL = {
+  id: 'lampvibe',
+  name: 'Lamp Vibe',
+  description: 'A phase vibe lit by a glowing tungsten filament: the lamp heats and cools with the oscillator, and four photocells sweep the phase',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: nothing changes (the input buffer barely loads a pickup)
+  guitar: {},
+  wasm: { binary: () => new URL('../wasm/lampvibe.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue, fromNative } = __m1;
@@ -3217,6 +3297,7 @@ const { PEDAL: BLACKHOLE } = __m36;
 const { PEDAL: DOPPLER } = __m38;
 const { PEDAL: BANDGAP } = __m40;
 const { PEDAL: MICHELSON } = __m42;
+const { PEDAL: LAMPVIBE } = __m44;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -3252,7 +3333,8 @@ const { PEDAL: MICHELSON } = __m42;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
