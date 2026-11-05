@@ -134,6 +134,11 @@ export const PEDALS = [
     blurb: 'A horn and a drum spinning past two microphones: the pitch rises as each comes toward you and falls as it goes, heard at the retarded time.',
   },
   {
+    id: 'openair', section: 'vibration', name: 'Open Air', version: '0.1.0', ready: true, plugin: { code: 'OAir' }, enclosure: ['#3c5a3a', '#f2ecd8'],
+    after: 'outdoor acoustics: ISO 9613-1\'s absorption of sound by the air, and the ground\'s reflection by Weyl and van der Pol\'s formula',
+    blurb: 'Your bass heard across a field: the air soaks up its treble with distance, more when it is dry, and the ground\'s reflection, softer than a mirror, digs a dip into it that moves as you walk away.',
+  },
+  {
     id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
     after: 'the steel plate reverbs of 1960s studios',
     blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',
