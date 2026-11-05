@@ -74,6 +74,11 @@ export const PEDALS = [
     blurb: 'A tungsten lamp that heats and cools with the oscillator, a black body whose glow four photocells turn into a sweeping phase.',
   },
   {
+    id: 'neon', section: 'light', name: 'Neon Tremolo', version: '0.1.0', ready: true, plugin: { code: 'Neon' }, enclosure: ['#262224', '#ff8a3d'],
+    after: 'Pearson and Anson\'s neon-lamp oscillator of 1921, and the lamp-and-photocell tremolos of guitar amplifiers',
+    blurb: 'A neon lamp flashing in a relaxation oscillator: Paschen\'s law sets the voltage it strikes at, and each flash lights a photocell that ducks the bass.',
+  },
+  {
     id: 'michelson', section: 'optics', name: 'Michelson Interferometer', version: '0.1.0', ready: true, plugin: { code: 'Mich' }, enclosure: ['#16191e', '#ff6a5c'],
     after: 'Michelson and Morley\'s interferometer (1887), and LIGO\'s',
     blurb: 'A laser split into two arms and recombined: your bass moves one mirror, and the fringes sweeping past the detector fold the wave over, half a wavelength at a time.',
