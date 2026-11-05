@@ -15,6 +15,7 @@ import { PEDAL as SPRING } from '../../spring/src/spring-pedal.js';
 import { PEDAL as OPENAIR } from '../../openair/src/openair-pedal.js';
 import { PEDAL as SABINE } from '../../sabine/src/sabine-pedal.js';
 import { PEDAL as RUBENS } from '../../rubens/src/rubens-pedal.js';
+import { PEDAL as HELMHOLTZ } from '../../helmholtz/src/helmholtz-pedal.js';
 import { PEDAL as ECHO } from '../../echo/src/echo-pedal.js';
 import { PEDAL as ROTARY } from '../../rotary/src/rotary-pedal.js';
 import { PEDAL as PLATE } from '../../plate/src/plate-pedal.js';
@@ -32,7 +33,7 @@ import { PEDAL as BBD } from '../../bbd/src/bbd-pedal.js';
 import { PEDAL as NEON } from '../../neon/src/neon-pedal.js';
 import { PEDAL as LENS } from '../../lens/src/lens-pedal.js';
 
-export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, TRANSFORMER, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, OPENAIR, SABINE, RUBENS, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
+export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, TRANSFORMER, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, OPENAIR, SABINE, RUBENS, HELMHOLTZ, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
 
 // each pedal's enclosure and the ink printed on it, as its own page has them (<id>/style.css)
 export const ENCLOSURES = Object.fromEntries(PEDALS.filter((p) => p.enclosure).map((p) => [p.id, p.enclosure]));
