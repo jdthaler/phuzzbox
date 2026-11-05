@@ -54,6 +54,11 @@ export const PEDALS = [
     blurb: 'An op-amp drives a pair of diodes to ground, and each turns on at its bandgap: germanium low, silicon higher, and LEDs at the energy of the light they give out.',
   },
   {
+    id: 'cable', section: 'circuits', name: 'Transatlantic Cable', version: '0.1.0', ready: true, plugin: { code: 'Cabl' }, enclosure: ['#1d3b4a', '#e8d9b0'],
+    after: 'the Atlantic telegraph cables of 1858 and 1866, and loaded telephone lines',
+    blurb: 'Your bass sent down a long cable: Kelvin\'s law of squares smears it, loading coils and Heaviside\'s distortionless line bring it back, and an open far end echoes.',
+  },
+  {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="260" viewBox="0 0 840 260" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="The line: a source, a ladder of sections of cable, the far end and a repeater">
+<title>The line: a source, a ladder of sections of cable, the far end and a repeater</title>
+<rect width="840" height="260" rx="10" fill="#151518" stroke="#2b2a30"/>
+<circle cx="20" cy="80" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="20" y="70" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">in</text>
+<path d="M20 80 L52 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M88 80 L120 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(52 80) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="70" y="54" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">source</text>
+<text x="70" y="68" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">5 Ω or 600 Ω</text>
+<rect x="132" y="12" width="348" height="204" rx="6" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-dasharray="5 5"/>
+<text x="306" y="242" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">one section: dx of cable</text>
+<path d="M120 80 L152 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M188 80 L220 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(152 80) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="170" y="68" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">R dx</text>
+<path d="M220 80 L252 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M288 80 L320 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(252 80) rotate(0)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="270" y="68" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">L dx</text>
+<path d="M320 80 L320 126" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M320 134 L320 180" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(320 126) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#fb923c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#fb923c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="334" y="134" text-anchor="start" fill="#fb923c" font-size="12" font-weight="400">C dx</text>
+<path d="M320 80 L400 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M400 80 L400 112" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M400 148 L400 180" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(400 112) rotate(90)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="414" y="127" text-anchor="start" fill="#fb923c" font-size="12" font-weight="400">G dx</text>
+<text x="414" y="141" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">(leak)</text>
+<circle cx="320" cy="80" r="3" fill="#ece8e1"/>
+<circle cx="320" cy="180" r="3" fill="#ece8e1"/>
+<text x="540" y="88" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">… N of them</text>
+<path d="M400 80 L492 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M588 80 L620 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M620 80 L620 112" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M620 148 L620 180" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(620 112) rotate(90)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="634" y="127" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">far end</text>
+<text x="634" y="141" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">Z₀ or 1 MΩ</text>
+<circle cx="620" cy="80" r="3" fill="#ece8e1"/>
+<path d="M620 80 L700 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M700 56 L760 80 L700 104 L700 56" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="722.8" y="84" text-anchor="middle" fill="#ece8e1" font-size="11" font-weight="400">rep.</text>
+<path d="M760 80 L810 80" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="810" cy="80" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="810" y="70" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">out</text>
+<path d="M20 180 L620 180" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="20" cy="180" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<path d="M620 180 L620 188" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M611 188 L629 188" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M614.5 192 L625.5 192" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M618 196 L622 196" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

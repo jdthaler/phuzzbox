@@ -16,7 +16,7 @@ import { loadPedal, loadBass } from './engine.mjs';
 
 export const FS = 48000, SECONDS = 6, TOLERANCE = 1; // dB
 // the knob that sets each pedal's output: its Level, or the circuit's own output control
-export const KNOB = { phuzz: 'volume', preamp: 'master', opto: 'gain', cabinet: 'mic' };
+export const KNOB = { phuzz: 'volume', preamp: 'master', opto: 'gain', cabinet: 'mic', cable: 'repeater' };
 export const knobOf = (id) => KNOB[id] ?? 'level';
 
 // The riff on the test bass, as the page plays it (at the computer keys' velocity), in volts.
