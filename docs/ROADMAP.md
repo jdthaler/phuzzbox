@@ -127,6 +127,12 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    integrated by TR-BDF2 with Newton at 4× oversampling; tested against an independent integration
    of the same equations, the small-signal response from complex impedances, Shockley's closed
    forms and the temperature coefficient's.
+   The **Michelson Interferometer** landed 2026-11-05: a beam split into two arms, one mirror on a
+   piezo stack or a loudspeaker cone that the bass drives, the detector's light from each source's
+   spectral lines (Gaussian in wavenumber, their visibility its Fourier transform), the air's drift
+   an Ornstein–Uhlenbeck process; first-order antiderivative antialiasing at 4× oversampling;
+   tested against each spectrum integrated numerically, Bessel functions (Jacobi–Anger), the
+   mount's equation of motion and the drift's variance and memory.
 
 ## The standalone app
 

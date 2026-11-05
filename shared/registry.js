@@ -17,6 +17,8 @@ export const SECTIONS = [
     blurb: 'Kirchhoff\'s laws with real parts: a pickup\'s coil, germanium transistors, a wah\'s inductor, triodes, and the comparator and flip-flops of an octave divider, solved node by node every sample.' },
   { id: 'light', title: 'Light and photocells', short: 'Light',
     blurb: 'A light and a cadmium-sulphide cell: the signal lights a glowing panel or an LED, the cell\'s resistance follows the light, slowly, and remembers how long it was lit.' },
+  { id: 'optics', title: 'Optics', short: 'Optics',
+    blurb: 'Light as a wave: an interferometer whose mirror your bass moves, its fringes sweeping past a photodiode half a wavelength at a time.' },
   { id: 'vibration', title: 'Vibrating steel, paper and air', short: 'Vibration',
     blurb: 'Waves in solids and in air: a loudspeaker\'s cone on its box of air, springs whose waves disperse into chirps, a steel plate\'s thousands of bending modes, and strings that ring in sympathy.' },
   { id: 'motion', title: 'Motion and delay', short: 'Motion',
@@ -55,6 +57,11 @@ export const PEDALS = [
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
+  },
+  {
+    id: 'michelson', section: 'optics', name: 'Michelson Interferometer', version: '0.1.0', ready: true, plugin: { code: 'Mich' }, enclosure: ['#16191e', '#ff6a5c'],
+    after: 'Michelson and Morley\'s interferometer (1887), and LIGO\'s',
+    blurb: 'A laser split into two arms and recombined: your bass moves one mirror, and the fringes sweeping past the detector fold the wave over, half a wavelength at a time.',
   },
   {
     id: 'cabinet', section: 'vibration', name: 'Cabinet', version: '0.3.0', ready: true, plugin: { code: 'Cabn' }, enclosure: ['#232326', '#ece8e1'],

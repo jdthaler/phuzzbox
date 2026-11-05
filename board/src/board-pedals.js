@@ -18,8 +18,9 @@ import { PEDAL as SYMPATHETIC } from '../../sympathetic/src/sympathetic-pedal.js
 import { PEDAL as BLACKHOLE } from '../../blackhole/src/blackhole-pedal.js';
 import { PEDAL as DOPPLER } from '../../doppler/src/doppler-pedal.js';
 import { PEDAL as BANDGAP } from '../../bandgap/src/bandgap-pedal.js';
+import { PEDAL as MICHELSON } from '../../michelson/src/michelson-pedal.js';
 
-export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP].map((d) => [d.id, d]));
+export const BOARD_PEDALS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON].map((d) => [d.id, d]));
 
 // each pedal's enclosure and the ink printed on it, as its own page has them (<id>/style.css)
 export const ENCLOSURES = Object.fromEntries(PEDALS.filter((p) => p.enclosure).map((p) => [p.id, p.enclosure]));

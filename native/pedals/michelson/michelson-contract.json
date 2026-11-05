@@ -1,0 +1,24 @@
+{"slug": "michelson",
+ "params": [
+  {"id":"stroke","kind":"continuous","min":2e-8,"max":0.000004,"step":0,"log":true,"def":4e-7},
+  {"id":"fringe","kind":"continuous","min":0,"max":360,"step":0,"log":false,"def":90},
+  {"id":"level","kind":"continuous","min":-30,"max":12,"step":0,"log":false,"def":0},
+  {"id":"light","kind":"choice","options":["hene","green","violet","sodium","white"],"def":"hene"},
+  {"id":"arm","kind":"continuous","min":0,"max":0.0006,"step":0,"log":false,"def":0.00002},
+  {"id":"mount","kind":"choice","options":["piezo","speaker"],"def":"piezo"},
+  {"id":"air","kind":"continuous","min":0,"max":2e-7,"step":0,"log":false,"def":1e-8}
+ ],
+ "presets": [
+  {"name":"Red laser, mid-fringe","values":{"stroke":4e-7,"fringe":90,"level":0,"light":"hene","arm":0.00002,"mount":"piezo","air":1e-8}},
+  {"name":"Bright fringe: an octave up","values":{"stroke":1.5e-7,"fringe":0,"level":0,"light":"hene","arm":0.00002,"mount":"piezo","air":1e-8}},
+  {"name":"Dark fringe","values":{"stroke":1.5e-7,"fringe":180,"level":0,"light":"hene","arm":0.00002,"mount":"piezo","air":1e-8}},
+  {"name":"Deep folds","values":{"stroke":0.000002,"fringe":90,"level":0,"light":"hene","arm":0.00002,"mount":"piezo","air":1e-8}},
+  {"name":"Green laser","values":{"stroke":4e-7,"fringe":90,"level":0,"light":"green","arm":0.00002,"mount":"piezo","air":1e-8}},
+  {"name":"Violet laser","values":{"stroke":4e-7,"fringe":90,"level":0,"light":"violet","arm":0.00002,"mount":"piezo","air":1e-8}},
+  {"name":"Sodium lamp, lines in step","values":{"stroke":4e-7,"fringe":90,"level":0,"light":"sodium","arm":0,"mount":"piezo","air":1e-8}},
+  {"name":"Sodium lamp, lines out of step","values":{"stroke":4e-7,"fringe":90,"level":0,"light":"sodium","arm":0.0001454,"mount":"piezo","air":1e-8}},
+  {"name":"White light at zero path","values":{"stroke":6e-7,"fringe":90,"level":0,"light":"white","arm":0,"mount":"piezo","air":1e-8}},
+  {"name":"White light, out and back","values":{"stroke":0.000004,"fringe":90,"level":0,"light":"white","arm":0,"mount":"piezo","air":1e-8}},
+  {"name":"Loudspeaker mount","values":{"stroke":0.000001,"fringe":90,"level":0,"light":"hene","arm":0.00002,"mount":"speaker","air":1e-8}},
+  {"name":"Breezy lab","values":{"stroke":4e-7,"fringe":90,"level":0,"light":"hene","arm":0.00002,"mount":"piezo","air":8e-8}}
+ ]}
