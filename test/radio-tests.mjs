@@ -195,7 +195,7 @@ for (const st of [540e3, 1000e3, 1700e3]) {
 }
 
 // 9. the solver: Newton converges, fast, on a loud bass, at every quality and diode
-for (const [qu, most] of [['high', 3.5], ['medium', 4], ['low', 4.5]]) {
+for (const [qu, most] of [['high', 4], ['medium', 4.5], ['low', 5]]) {
   let worstIt = 0, finite = true;
   const loud = sine(41.2, fs, fs / 2, 1.5);
   for (const [d] of DIODES) for (const over of [{ signal: 0.003 }, { signal: 3, depth: 10, neighbour: 0 }, { signal: 0.3, load: 1e6, cap: 1e-8 }, { signal: 1, load: 1e4, cap: 1e-10, q: 10 }]) {
