@@ -47,6 +47,11 @@ export const PEDALS = [
     blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
   },
   {
+    id: 'bandgap', section: 'circuits', name: 'Bandgap', version: '0.1.0', ready: true, plugin: { code: 'Bgap' }, enclosure: ['#22304a', '#e9f0ff'],
+    after: 'the op-amp distortions of the late 1970s, with LEDs for diodes',
+    blurb: 'An op-amp drives a pair of diodes to ground, and each turns on at its bandgap: germanium low, silicon higher, and LEDs at the energy of the light they give out.',
+  },
+  {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',

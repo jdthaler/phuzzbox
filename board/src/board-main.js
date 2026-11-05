@@ -65,7 +65,7 @@ function rack(a) {
     const D = BOARD_PEDALS[s.id], [enc, ink] = ENCLOSURES[s.id] ?? ['#333', '#eee'], mine = owned(D);
     const knobs = h('div', { class: 'knobs' });
     const put = (id, v) => { s.P[id] = v; save(); api.send({ type: 'slot', uid: s.uid, P: { [id]: v } }); emitChain(); };
-    for (const p of params(D.groups).filter((q) => q.perform && q.type !== 'select' && !mine.has(q.id))) knobs.append(controlFor(p, () => s.P[p.id], (v) => { put(p.id, v); refreshKnobs(); }));
+    for (const p of params(D.groups).filter((q) => q.perform && !mine.has(q.id))) knobs.append(controlFor(p, () => s.P[p.id], (v) => { put(p.id, v); refreshKnobs(); }));
     const refreshKnobs = () => { for (const k of knobs.children) k.refresh?.(); };
     const presetSel = h('select', { class: 'presets', 'aria-label': `${D.name} presets`, onchange: () => {
       const name = presetSel.value; presetSel.value = '';

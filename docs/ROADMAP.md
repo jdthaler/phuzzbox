@@ -116,6 +116,17 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
 4. **Time and space**: spring reverb (Forte's springs), plate reverb, tape echo, rotary speaker.
 5. **The rest**: envelope filter, octave down, sympathetic strings, black hole, Doppler; a
    hardware pedal (Electrosmith Daisy Seed) if wanted.
+6. **The second wave** (Jesse, 2026-11-05: at least double the pedals, favouring physics
+   principles and experiments). In order: Bandgap Overdrive, Michelson Interferometer, Lamp Vibe,
+   Transatlantic Cable, Ring Modulator, Bucket Brigade, Talk Box, Neon Tremolo, Power Amp,
+   Gravitational Lens, Sabine's Room, Atmospheres, Rubens' Tube, Tunnel Diode, Crystal Radio;
+   spares Scanner Vibrato and Gong.
+   The **Bandgap** landed 2026-11-05: a non-inverting op-amp stage (a one-pole, slew-limited
+   macromodel with soft rails: LM308, µA741, TL072) into a pair of diodes to ground, each family by
+   Shockley's equation with SPICE's temperature law, the LEDs' turn-on from their photons' energy;
+   integrated by TR-BDF2 with Newton at 4× oversampling; tested against an independent integration
+   of the same equations, the small-signal response from complex impedances, Shockley's closed
+   forms and the temperature coefficient's.
 
 ## The standalone app
 

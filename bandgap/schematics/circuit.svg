@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="400" viewBox="0 0 860 400" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="The Bandgap: an op-amp's gain, diodes to ground, then the Filter">
+<title>The Bandgap: an op-amp's gain, diodes to ground, then the Filter</title>
+<rect width="860" height="400" rx="10" fill="#151518" stroke="#2b2a30"/>
+<circle cx="20" cy="108" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="20" y="98" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">in</text>
+<path d="M20 108 L160 108" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M160 96 L220 120 L160 144 L160 96" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="172" y="115" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">+</text>
+<text x="172" y="139" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">−</text>
+<text x="190" y="82" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">op-amp: LM308 · µA741 · TL072</text>
+<path d="M160 132 L140 132 L140 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140 200 L192 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M228 200 L280 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(192 200) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="210" y="174" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">Drive</text>
+<text x="210" y="188" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">0.1–100 kΩ</text>
+<path d="M140 200 L140 260" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140 260 L206 260" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M214 260 L280 260" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(206 260) rotate(0)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="210" y="282" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Cf</text>
+<text x="210" y="296" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">100 pF</text>
+<path d="M280 260 L280 200 L280 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M220 120 L280 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="140" cy="200" r="3" fill="#ece8e1"/>
+<circle cx="280" cy="200" r="3" fill="#ece8e1"/>
+<circle cx="280" cy="120" r="3" fill="#ece8e1"/>
+<path d="M140 200 L80 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M80 200 L80 222" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M80 258 L80 280" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(80 222) rotate(90)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="66" y="237" text-anchor="end" fill="#ece8e1" font-size="12" font-weight="400">Rg</text>
+<text x="66" y="251" text-anchor="end" fill="#9b958b" font-size="12" font-weight="400">1 kΩ</text>
+<path d="M80 280 L80 316" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M80 324 L80 360" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(80 316) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="66" y="317" text-anchor="end" fill="#ece8e1" font-size="12" font-weight="400">Low cut</text>
+<text x="66" y="331" text-anchor="end" fill="#9b958b" font-size="12" font-weight="400">10 µF</text>
+<path d="M80 360 L80 368" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M71 368 L89 368" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M74.5 372 L85.5 372" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M78 376 L82 376" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M280 120 L322 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M358 120 L400 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(322 120) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="340" y="94" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Rt</text>
+<text x="340" y="108" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">1 kΩ</text>
+<path d="M400 120 L400 166" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M400 174 L400 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(400 166) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="414" y="167" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">Cd</text>
+<text x="414" y="181" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">3.3 nF</text>
+<path d="M400 220 L400 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M391 228 L409 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M394.5 232 L405.5 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M398 236 L402 236" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M400 120 L560 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M480 120 L480 162" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M480 178 L480 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(480 162) rotate(90)"><path d="M0 -8 L0 8 L16 0 L0 -8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 -8 L16 8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="494" y="174" text-anchor="start" fill="#fb923c" font-size="12" font-weight="400">D1</text>
+<path d="M560 220 L560 178" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M560 162 L560 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(560 178) rotate(-90)"><path d="M0 -8 L0 8 L16 0 L0 -8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 -8 L16 8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="574" y="174" text-anchor="start" fill="#fb923c" font-size="12" font-weight="400">D2</text>
+<path d="M480 220 L480 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M471 228 L489 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M474.5 232 L485.5 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M478 236 L482 236" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M560 220 L560 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M551 228 L569 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M554.5 232 L565.5 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M558 236 L562 236" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="400" cy="120" r="3" fill="#ece8e1"/>
+<circle cx="480" cy="120" r="3" fill="#ece8e1"/>
+<text x="520" y="272" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">Diodes: Ge · Schottky · Si</text>
+<text x="520" y="292" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">red · green · blue LED</text>
+<path d="M560 120 L600 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M600 102 L640 120 L600 138 L600 102" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="615.2" y="124" text-anchor="middle" fill="#ece8e1" font-size="11" font-weight="400">1</text>
+<path d="M640 120 L682 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M718 120 L760 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(682 120) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="700" y="94" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">Filter</text>
+<text x="700" y="108" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">1.5–101.5 kΩ</text>
+<path d="M760 120 L760 166" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M760 174 L760 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(760 166) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="774" y="167" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">Ct</text>
+<text x="774" y="181" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">3.3 nF</text>
+<path d="M760 220 L760 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M751 228 L769 228" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M754.5 232 L765.5 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M758 236 L762 236" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M760 120 L820 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="760" cy="120" r="3" fill="#ece8e1"/>
+<circle cx="820" cy="120" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="820" y="110" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">out</text>
+</svg>

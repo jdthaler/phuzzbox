@@ -94,7 +94,7 @@ export function knobFor(p, get, put) {
   dial.addEventListener('dblclick', () => put(p.def));
   dial.addEventListener('keydown', (e) => {
     const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
-    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + step * (e.shiftKey ? 0.25 : 1))); }
+    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + (p.type === 'select' ? Math.sign(step) / (p.options.length - 1) : step * (e.shiftKey ? 0.25 : 1)))); }
   });
   return el;
 }
@@ -430,7 +430,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   layout = createLayout({ id: PEDAL.id, h, store, app, header, rack, views: viewList, groups: groupList, dock });
   api.layout = layout;
 
-  for (const p of all.filter((q) => q.perform && q.type !== 'select')) knobs.append(controlFor(p, () => P[p.id], (v) => set(p.id, v)));
+  for (const p of all.filter((q) => q.perform)) knobs.append(controlFor(p, () => P[p.id], (v) => set(p.id, v)));
 
   // ---- state
   function refresh() {

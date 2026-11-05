@@ -686,6 +686,10 @@ body.one-screen .card .canvas.tubes { flex: 1 1 0; height: auto; min-height: 90p
   body.one-screen .card .canvas.tubes { flex: none; height: 300px; }
 }
 
+/* ---- bandgap/style.css */
+/* the Bandgap's enclosure: a deep blue, its ink a pale blue-white, the colour of the LEDs' light */
+:root[data-pedal="bandgap"] { --enclosure: #22304a; --enclosure-ink: #e9f0ff; }
+
 /* ---- opto/style.css */
 /* the Opto Compressor's enclosure: the grey of a rack leveler's panel */
 :root[data-pedal="opto"] { --enclosure: #8a9096; --enclosure-ink: #16181b; }
@@ -829,12 +833,15 @@ function fromNative(p, v) {
 }
 
 // Position 0..1 along a knob (log parameters in log(value)), and back, snapped to `step`.
+// A choice turns as a rotary switch: its options spread evenly along the knob.
 function toUnit(p, v) {
+  if (p.type === 'select') return Math.max(0, p.options.findIndex(([x]) => x === v)) / Math.max(1, p.options.length - 1);
   if (p.log) return Math.log(v / p.min) / Math.log(p.max / p.min);
   return (v - p.min) / (p.max - p.min);
 }
 function fromUnit(p, x) {
   x = Math.min(1, Math.max(0, x));
+  if (p.type === 'select') return p.options[Math.round(x * (p.options.length - 1))][0];
   let v = p.log ? p.min * (p.max / p.min) ** x : p.min + x * (p.max - p.min);
   if (p.step) v = p.min + Math.round((v - p.min) / p.step) * p.step;
   return Math.min(p.max, Math.max(p.min, v));
@@ -1583,7 +1590,7 @@ function treadleFor(p, get, put, h) {
   plate.addEventListener('dblclick', () => put(p.def));
   plate.addEventListener('keydown', (e) => {
     const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
-    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + step * (e.shiftKey ? 0.25 : 1))); }
+    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + (p.type === 'select' ? Math.sign(step) / (p.options.length - 1) : step * (e.shiftKey ? 0.25 : 1)))); }
   });
   return el;
 }
@@ -1641,6 +1648,11 @@ const PEDALS = [
     id: 'preamp', section: 'circuits', name: 'Tube Preamp', version: '0.3.0', ready: true, plugin: { code: 'Tube' }, enclosure: ['#b08a55', '#2a1d10'],
     after: 'the 1959 Fender Bassman\'s preamp',
     blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
+  },
+  {
+    id: 'bandgap', section: 'circuits', name: 'Bandgap', version: '0.1.0', ready: true, plugin: { code: 'Bgap' }, enclosure: ['#22304a', '#e9f0ff'],
+    after: 'the op-amp distortions of the late 1970s, with LEDs for diodes',
+    blurb: 'An op-amp drives a pair of diodes to ground, and each turns on at its bandgap: germanium low, silicon higher, and LEDs at the energy of the light they give out.',
   },
   {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
@@ -3009,6 +3021,88 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- bandgap/src/bandgap-params.js
+const __m41 = (() => {
+
+// bandgap-params.js — the Bandgap's controls. Values in SI units; `scale` shows them in friendlier ones.
+
+// the clipping diodes, in the order of the voltage they turn on at (native/pedals/bandgap/bandgap-model.cpp)
+const DIODES = [
+  ['ge', 'Germanium'], ['schottky', 'Schottky'], ['si', 'Silicon'],
+  ['red', 'Red LED'], ['green', 'Green LED'], ['blue', 'Blue LED'], ['none', 'None'],
+];
+
+const pedal = [
+  { id: 'drive', label: 'Drive', min: 0, max: 1, def: 0.6, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'A 100 kΩ audio-taper pot in the op-amp\'s feedback, over 1 kΩ to ground: the gain runs from 1.1 to 101, 1 to 40 dB, and is 16, 24 dB, at its default. More drive pushes the bass further past the diodes\' knee, from a rounded edge to a square wave. Near the top the op-amp\'s own bandwidth, its gain–bandwidth product over the gain, takes the very top off.' },
+  { id: 'filter', label: 'Filter', min: 0, max: 1, def: 0.2, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'A 100 kΩ pot (plus 1.5 kΩ) into 3.3 nF after the diodes, behind a buffer: a low-pass from 32 kHz full down to 475 Hz full up, 2.2 kHz at its default. Turned up, it takes the clipping\'s highest harmonics off, from fizz to a dark, woolly drive; it can\'t change how hard the diodes clip, only what of it you hear.' },
+  { id: 'level', label: 'Level', min: -30, max: 12, def: -14.5, unit: 'dB', decimals: 1, perform: true,
+    hint: 'The output, after a buffer. The diodes hold the level near their own turn-on voltage, so it follows the Diodes switch: LEDs come out several times louder than germanium.' },
+  { id: 'diodes', label: 'Diodes', type: 'select', def: 'si', options: DIODES, perform: true,
+    hint: 'The pair of diodes from the signal to ground, back to back. Each turns on near its bandgap: germanium and Schottky at about 0.3 V, silicon at 0.6 V, and LEDs at the energy of the light they give out, E = hc/λ, so red at 1.8 V, green 2.2 V, blue 2.5 V. Higher, less clipping and louder, until the op-amp\'s rails clip first. None leaves only the rails. With LEDs the light you see is the clipping.' },
+];
+
+const parts = [
+  { id: 'perSide', label: 'Diodes each way', type: 'select', def: 'one', options: [['one', 'One each way'], ['two', 'Two each way'], ['asym', 'One up, two down']],
+    hint: 'How many diodes in series each way. Two in series turn on at twice the voltage: louder, less clipped. One up and two down clips the two halves of the wave unevenly, which adds the even harmonics a symmetrical clipper doesn\'t make.' },
+  { id: 'opamp', label: 'Op-amp', type: 'select', def: 'lm308', options: [['lm308', 'LM308 (slow)'], ['ua741', 'µA741'], ['tl072', 'TL072 (fast)']],
+    hint: 'The op-amp: its gain–bandwidth product and its slew rate, the fastest its output can move. The LM308 with its 30 pF compensation slews at about 0.3 V/µs and has 1 MHz of gain–bandwidth; the µA741 slews at 0.5 V/µs; the TL072\'s JFET inputs slew at 13 V/µs, with 3 MHz. On a bass the difference is small: the LM308 takes 20 µs to swing rail to rail where the TL072 takes half a microsecond, and at full drive its bandwidth is 10 kHz against 30 kHz, so with Drive up and Filter down it is a shade darker on high notes.' },
+  { id: 'temp', label: 'Temperature', min: -10, max: 50, def: 25, unit: '°C', decimals: 0,
+    hint: 'The diodes\' temperature. A diode\'s voltage at a given current falls about 2 mV for every degree for silicon, 1.5 mV for germanium and 1 mV for an LED, by how its saturation current climbs with the bandgap: warm, they clip a little lower and quieter; cold, a little higher.' },
+  { id: 'supply', label: 'Supply', min: 9, max: 18, def: 9, unit: 'V', decimals: 1,
+    hint: 'The supply: 9 V from a battery or adapter, 18 V from a doubler. The op-amp\'s output swings to within about 1.5 V of each rail, so 9 V leaves it ±3 V and 18 V ±7.5 V. With silicon it hardly matters; with blue LEDs, two each way or None, more supply lets the diodes clip before the rails do.' },
+  { id: 'lowCut', label: 'Low-cut capacitor', min: 0.22e-6, max: 22e-6, def: 10e-6, log: true, unit: 'µF', scale: 1e6, decimals: 2,
+    hint: 'The capacitor in series with the 1 kΩ to ground in the feedback: below 1/(2π · 1 kΩ · C) the gain falls to 1, so the lows are not driven. 10 µF puts that at 16 Hz, below the low B; 2.2 µF, as in many guitar pedals, at 72 Hz, which thins a bass\'s low notes before they clip; 0.22 µF at 720 Hz keeps the bottom clean under the distortion.' },
+];
+
+const GROUPS = [
+  { name: 'The pedal', params: pedal },
+  { name: 'Diodes and op-amp', params: parts },
+];
+
+// Each preset shows one idea, at the level that makes it as loud as bypass on the test bass's riff
+// (tools/loudness.mjs), except the cold and hot stages, which keep Silicon's so the difference is heard.
+const stock = { drive: 0.6, filter: 0.2, level: -14.5, diodes: 'si', perSide: 'one', opamp: 'lm308', temp: 25, supply: 9, lowCut: 10e-6 };
+const PRESETS = {
+  'Silicon': { ...stock },
+  'Germanium, soft and low': { ...stock, diodes: 'ge', level: -9.1 },
+  'Red LEDs, open and loud': { ...stock, diodes: 'red', level: -21.4 },
+  'Blue LEDs, barely clipping': { ...stock, diodes: 'blue', level: -22.9 },
+  'No diodes: the rails': { ...stock, diodes: 'none', level: -23.5 },
+  'Two each way': { ...stock, perSide: 'two', level: -18.8 },
+  'Lopsided: one up, two down': { ...stock, perSide: 'asym', level: -17.1 },
+  'Flat out, slow op-amp': { ...stock, drive: 1, filter: 0, level: -18.1 },
+  'Flat out, fast op-amp': { ...stock, drive: 1, filter: 0, opamp: 'tl072', level: -18.1 },
+  'Bright, guitar-pedal low cut': { ...stock, lowCut: 2.2e-6, filter: 0.05, level: -14.8 },
+  'Cold stage (−5 °C)': { ...stock, temp: -5 },
+  'Hot stage (45 °C)': { ...stock, temp: 45 },
+};
+const KEEP = [];
+
+return { DIODES, GROUPS, PRESETS, KEEP };
+})();
+
+// ---- bandgap/src/bandgap-pedal.js
+const __m40 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m41;
+// bandgap-pedal.js — the Bandgap's descriptor: everything a host needs to run it without its page.
+// Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
+
+const PEDAL = {
+  id: 'bandgap',
+  name: 'Bandgap',
+  description: 'An op-amp overdrive whose clipping diodes turn on at their bandgap: germanium, silicon, or LEDs at the energy of their light',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: nothing changes (its 1 MΩ input barely loads a pickup)
+  guitar: {},
+  wasm: { binary: () => new URL('../wasm/bandgap.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue, fromNative } = __m1;
@@ -3033,6 +3127,7 @@ const { PEDAL: PLATE } = __m32;
 const { PEDAL: SYMPATHETIC } = __m34;
 const { PEDAL: BLACKHOLE } = __m36;
 const { PEDAL: DOPPLER } = __m38;
+const { PEDAL: BANDGAP } = __m40;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -3066,7 +3161,8 @@ const { PEDAL: DOPPLER } = __m38;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
@@ -3298,7 +3394,7 @@ async function main(info, carry = {}) {
     // a plugin's audio and MIDI are the host's (its MIDI pedals are mapped in the plugin: the FC-300's numbers)
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
-  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(p.face === 'treadle' ? treadleFor(p, () => P[p.id], (v) => set(p.id, v), h) : knob(p));
+  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox')) knobs.append(p.face === 'treadle' ? treadleFor(p, () => P[p.id], (v) => set(p.id, v), h) : knob(p));
 
   // ---- state
   function refresh() {
@@ -3358,7 +3454,7 @@ async function main(info, carry = {}) {
     dial.addEventListener('dblclick', () => set(p.id, p.def));
     dial.addEventListener('keydown', (e) => {
       const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
-      if (step) { e.preventDefault(); set(p.id, fromUnit(p, toUnit(p, P[p.id]) + step * (e.shiftKey ? 0.25 : 1))); }
+      if (step) { e.preventDefault(); set(p.id, fromUnit(p, toUnit(p, P[p.id]) + (p.type === 'select' ? Math.sign(step) / (p.options.length - 1) : step * (e.shiftKey ? 0.25 : 1)))); }
     });
     return el;
   }
