@@ -94,7 +94,7 @@ export function knobFor(p, get, put) {
   dial.addEventListener('dblclick', () => put(p.def));
   dial.addEventListener('keydown', (e) => {
     const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
-    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + step * (e.shiftKey ? 0.25 : 1))); }
+    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + (p.type === 'select' ? Math.sign(step) / (p.options.length - 1) : step * (e.shiftKey ? 0.25 : 1)))); }
   });
   return el;
 }

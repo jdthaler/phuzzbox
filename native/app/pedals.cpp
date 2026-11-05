@@ -21,11 +21,12 @@ namespace plate { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace sympathetic { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace blackhole { const phuzzbox::PedalInfo &pedalInfo(); }
 namespace doppler { const phuzzbox::PedalInfo &pedalInfo(); }
+namespace bandgap { const phuzzbox::PedalInfo &pedalInfo(); }
 
 namespace phuzzbox::app {
 
 const std::vector<const PedalInfo *> &pedals() {
-  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo(), &preamp::pedalInfo(), &opto::pedalInfo(), &cabinet::pedalInfo(), &envelope::pedalInfo(), &octave::pedalInfo(), &spring::pedalInfo(), &echo::pedalInfo(), &rotary::pedalInfo(), &plate::pedalInfo(), &sympathetic::pedalInfo(), &blackhole::pedalInfo(), &doppler::pedalInfo()};
+  static const std::vector<const PedalInfo *> all{&buffer::pedalInfo(), &phuzz::pedalInfo(), &wah::pedalInfo(), &preamp::pedalInfo(), &opto::pedalInfo(), &cabinet::pedalInfo(), &envelope::pedalInfo(), &octave::pedalInfo(), &spring::pedalInfo(), &echo::pedalInfo(), &rotary::pedalInfo(), &plate::pedalInfo(), &sympathetic::pedalInfo(), &blackhole::pedalInfo(), &doppler::pedalInfo(), &bandgap::pedalInfo()};
   return all;
 }
 

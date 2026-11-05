@@ -31,7 +31,8 @@ import { PEDAL as PLATE } from '../../plate/src/plate-pedal.js';
 import { PEDAL as SYMPATHETIC } from '../../sympathetic/src/sympathetic-pedal.js';
 import { PEDAL as BLACKHOLE } from '../../blackhole/src/blackhole-pedal.js';
 import { PEDAL as DOPPLER } from '../../doppler/src/doppler-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER].map((d) => [d.id, d]));
+import { PEDAL as BANDGAP } from '../../bandgap/src/bandgap-pedal.js';
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
@@ -323,7 +324,7 @@ async function main(info, carry = {}) {
     dial.addEventListener('dblclick', () => set(p.id, p.def));
     dial.addEventListener('keydown', (e) => {
       const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
-      if (step) { e.preventDefault(); set(p.id, fromUnit(p, toUnit(p, P[p.id]) + step * (e.shiftKey ? 0.25 : 1))); }
+      if (step) { e.preventDefault(); set(p.id, fromUnit(p, toUnit(p, P[p.id]) + (p.type === 'select' ? Math.sign(step) / (p.options.length - 1) : step * (e.shiftKey ? 0.25 : 1)))); }
     });
     return el;
   }
