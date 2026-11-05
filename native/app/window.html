@@ -694,6 +694,10 @@ body.one-screen .card .canvas.tubes { flex: 1 1 0; height: auto; min-height: 90p
 /* the Transatlantic Cable's enclosure: a deep sea's blue, its ink the tan of tarred hemp */
 :root[data-pedal="cable"] { --enclosure: #1d3b4a; --enclosure-ink: #e8d9b0; }
 
+/* ---- ringmod/style.css */
+/* the Ring Modulator's enclosure: the grey-green of telephone exchange equipment, its ink cream */
+:root[data-pedal="ringmod"] { --enclosure: #3e4a3d; --enclosure-ink: #f3ecd2; }
+
 /* ---- opto/style.css */
 /* the Opto Compressor's enclosure: the grey of a rack leveler's panel */
 :root[data-pedal="opto"] { --enclosure: #8a9096; --enclosure-ink: #16181b; }
@@ -1672,6 +1676,11 @@ const PEDALS = [
     id: 'cable', section: 'circuits', name: 'Transatlantic Cable', version: '0.1.0', ready: true, plugin: { code: 'Cabl' }, enclosure: ['#1d3b4a', '#e8d9b0'],
     after: 'the Atlantic telegraph cables of 1858 and 1866, and loaded telephone lines',
     blurb: 'Your bass sent down a long cable: Kelvin\'s law of squares smears it, loading coils and Heaviside\'s distortionless line bring it back, and an open far end echoes.',
+  },
+  {
+    id: 'ringmod', section: 'circuits', name: 'Ring Modulator', version: '0.1.0', ready: true, plugin: { code: 'Ring' }, enclosure: ['#3e4a3d', '#f3ecd2'],
+    after: 'the diode-ring modulators of carrier telephony, and of the first synthesizers',
+    blurb: 'Four diodes between two transformers, switched by a carrier: the radio engineer\'s heterodyne, so every note comes out as its sum and difference with the carrier.',
   },
   {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
@@ -3353,6 +3362,84 @@ const PEDAL = {
 return { PEDAL };
 })();
 
+// ---- ringmod/src/ringmod-params.js
+const __m49 = (() => {
+
+// ringmod-params.js — the Ring Modulator's controls. Values in SI units; `scale` shows them in friendlier ones.
+
+// the diodes in the ring (native/pedals/ringmod/ringmod-model.cpp: the Bandgap's families)
+const DIODES = [['ge', 'Germanium'], ['schottky', 'Schottky'], ['si', 'Silicon']];
+const WAVES = [['sine', 'Sine'], ['triangle', 'Triangle'], ['square', 'Square']];
+
+const pedal = [
+  { id: 'carrier', label: 'Carrier', min: 1, max: 4000, def: 220, log: true, unit: 'Hz', decimals: 1, perform: true,
+    hint: 'The carrier oscillator\'s frequency, fc. Each frequency f you play comes out as f + fc and |f − fc|, and neither f nor fc itself: the A at 55 Hz with the carrier at 220 Hz comes out at 165 and 275 Hz. A carrier a whole number of times the note keeps it harmonic; anything else rings like a bell. Below about 20 Hz the sum and difference are too close to hear apart, and it is a tremolo whose every other beat comes out upside down. An expression pedal sweeps it (MIDI CC 1 unless you teach it another).' },
+  { id: 'carrierLevel', label: 'Carrier level', min: 0.03, max: 10, def: 3, log: true, unit: 'V', decimals: 2, perform: true,
+    hint: 'The carrier\'s peak voltage, into the input transformer\'s centre tap through 470 Ω. Well above the diodes\' knee it switches them hard, so the bass is multiplied by a square wave that flips its sign, and the sidebands of the carrier\'s odd harmonics, 3fc ± f, 5fc ± f, come with it, a third and a fifth as loud. Well below the knee, at its lowest, 30 mV, the diodes multiply the two smoothly, as tanh does, and f ± fc come out almost alone, 20 dB quieter. With the bass louder than the carrier, the bass switches the diodes too, and its own harmonics join the sidebands: 3f ± fc.' },
+  { id: 'wave', label: 'Carrier wave', type: 'select', def: 'sine', options: WAVES, perform: true,
+    hint: 'The carrier\'s shape. Strong enough, any of them switches the ring, so they differ most near the knee: a triangle spends longer near zero than a sine, so the ring is off more of the time; a square, from a comparator slewing at 0.5 V/µs, switches almost at once, the hardest and brightest.' },
+  { id: 'mix', label: 'Mix', min: 0, max: 1, def: 1, unit: '%', scale: 100, decimals: 0, perform: true,
+    hint: 'How much of the ring\'s output against the dry bass, taken from the input buffer. At 100 % only the sidebands: the note you play is gone. Lower, the note comes back under them.' },
+  { id: 'level', label: 'Level', min: -30, max: 24, def: 0, unit: 'dB', decimals: 1, perform: true,
+    hint: 'The output, after the recovery amplifier. Its gain of 2 makes up the half that the 600 Ω transformers lose into their 600 Ω load, so at 0 dB a strong carrier gives back sidebands about as loud as the bass went in. A weak carrier\'s are quieter, and the recovery amplifier has up to 24 dB more for them.' },
+];
+
+const ring = [
+  { id: 'diodes', label: 'Diodes', type: 'select', def: 'ge', options: DIODES,
+    hint: 'The four diodes of the ring. The early telephone modulators used copper-oxide rectifiers, the first synthesizers\' germanium point-contact diodes. Germanium and Schottky diodes turn on at about 0.3 V, silicon at 0.6 V, so silicon needs a stronger carrier to switch fully: at 0.3 V of carrier the sidebands from silicon are more than ten times quieter than from germanium.' },
+  { id: 'mismatch', label: 'Mismatch', min: 0, max: 0.03, def: 0.002, unit: 'mV', scale: 1000, decimals: 1,
+    hint: 'How much more voltage one of the four diodes needs for the same current than the other three. A perfectly matched ring is balanced: the carrier and the bass cancel at the output. One diode off by 2 mV lets about a millivolt of a 3 V carrier through, a quiet whistle at fc under the sidebands; 30 mV, fifteen times as much.' },
+  { id: 'inductance', label: 'Transformer inductance', min: 0.1, max: 30, def: 3, log: true, unit: 'H', decimals: 2,
+    hint: 'The two transformers\' magnetising inductance, across their windings. Below R/(2πL), where R is the 600 Ω either side of them in parallel, about 300 Ω, they let the low frequencies past their windings: 3 H puts it at 16 Hz, below the low B, but 0.3 H at 160 Hz thins the bass going in and the low difference tones coming out.' },
+];
+
+const GROUPS = [
+  { name: 'The pedal', params: pedal },
+  { name: 'The ring', params: ring },
+];
+
+// Each preset shows one idea, at the level that makes it as loud as bypass on the test bass's riff
+// (tools/loudness.mjs).
+const stock = { carrier: 220, carrierLevel: 3, wave: 'sine', mix: 1, level: 0, diodes: 'ge', mismatch: 0.002, inductance: 3 };
+const PRESETS = {
+  'Two octaves up: 220 Hz': { ...stock },
+  'Bell': { ...stock, carrier: 311, level: -0.6 },
+  'Low carrier: 110 Hz': { ...stock, carrier: 110, level: 0.8 },
+  'Square carrier': { ...stock, wave: 'square', level: -0.4 },
+  'Smooth multiplier': { ...stock, carrierLevel: 0.03, level: 22.3 },
+  'Silicon, under-driven': { ...stock, diodes: 'si', carrierLevel: 0.5, level: 7 },
+  'Upside-down tremolo': { ...stock, carrier: 6, mix: 0.5, level: 3.2 },
+  'High and metallic': { ...stock, carrier: 1400, wave: 'triangle', level: -2.5 },
+  'Leaky ring': { ...stock, mismatch: 0.03, level: -0.2 },
+  'Small transformers': { ...stock, inductance: 0.3, level: 3.8 },
+};
+const KEEP = [];
+
+return { DIODES, WAVES, GROUPS, PRESETS, KEEP };
+})();
+
+// ---- ringmod/src/ringmod-pedal.js
+const __m48 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m49;
+// ringmod-pedal.js — the Ring Modulator's descriptor: everything a host needs to run it without its page.
+// Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
+
+const PEDAL = {
+  id: 'ringmod',
+  name: 'Ring Modulator',
+  description: 'Four diodes in a ring between two transformers, switched by a carrier: every note comes out as its sum and difference with the carrier',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: nothing changes (the input buffer doesn't load a pickup)
+  guitar: {},
+  // the parameter an expression pedal moves (shared/midi.js maps MIDI CC 1 to it unless taught)
+  expression: 'carrier',
+  wasm: { binary: () => new URL('../wasm/ringmod.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
 // ---- native/app/app.js
 const __m0 = (() => {
 const { params, defaults, fmt, toUnit, fromUnit, nativeValue, fromNative } = __m1;
@@ -3381,6 +3468,7 @@ const { PEDAL: BANDGAP } = __m40;
 const { PEDAL: MICHELSON } = __m42;
 const { PEDAL: LAMPVIBE } = __m44;
 const { PEDAL: CABLE } = __m46;
+const { PEDAL: RINGMOD } = __m48;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -3418,7 +3506,8 @@ const { PEDAL: CABLE } = __m46;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

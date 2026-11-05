@@ -147,6 +147,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    reflected at each end. Tested against the line's ABCD matrices, the ladder's chained sections,
    its step response by Talbot's inversion of the Laplace transform, Thomson's Fourier series for
    the law of squares, and Heaviside's bounce diagram.
+   The **Ring Modulator** landed 2026-11-05: four diodes in a ring between two centre-tapped
+   transformers, the carrier into the input transformer's centre tap, the ring's three equations
+   solved by Newton's method each step and the transformers' magnetising inductances by the
+   trapezoidal rule. Tested against the closed form tanh w = tanh u tanh vc for an unloaded ring,
+   the ring's node equations solved independently, the switching function's Fourier series for the
+   sidebands, the carrier's leak in the transformers' periodic steady state, and the low cut from
+   complex impedances.
 
 ## The standalone app
 

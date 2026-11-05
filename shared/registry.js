@@ -59,6 +59,11 @@ export const PEDALS = [
     blurb: 'Your bass sent down a long cable: Kelvin\'s law of squares smears it, loading coils and Heaviside\'s distortionless line bring it back, and an open far end echoes.',
   },
   {
+    id: 'ringmod', section: 'circuits', name: 'Ring Modulator', version: '0.1.0', ready: true, plugin: { code: 'Ring' }, enclosure: ['#3e4a3d', '#f3ecd2'],
+    after: 'the diode-ring modulators of carrier telephony, and of the first synthesizers',
+    blurb: 'Four diodes between two transformers, switched by a carrier: the radio engineer\'s heterodyne, so every note comes out as its sum and difference with the carrier.',
+  },
+  {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
