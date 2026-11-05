@@ -37,10 +37,11 @@ import { PEDAL as LAMPVIBE } from '../../lampvibe/src/lampvibe-pedal.js';
 import { PEDAL as CABLE } from '../../cable/src/cable-pedal.js';
 import { PEDAL as RINGMOD } from '../../ringmod/src/ringmod-pedal.js';
 import { PEDAL as RADIO } from '../../radio/src/radio-pedal.js';
+import { PEDAL as TUNNEL } from '../../tunnel/src/tunnel-pedal.js';
 import { PEDAL as BBD } from '../../bbd/src/bbd-pedal.js';
 import { PEDAL as NEON } from '../../neon/src/neon-pedal.js';
 import { PEDAL as LENS } from '../../lens/src/lens-pedal.js';
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, BBD, NEON, LENS].map((d) => [d.id, d]));
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {

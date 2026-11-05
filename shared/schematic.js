@@ -122,9 +122,10 @@ export function schematic({ w, h, title = '' }) {
       });
       return api;
     },
+    // a diode (o.tunnel: a tunnel diode, its bar hooked back towards the anode)
     diode(a, b, o) {
       o = opts(o);
-      twoTerminal(a, b, o, 16, (L) => { line([[0, -8], [0, 8], [L, 0], [0, -8]], o); line([[L, -8], [L, 8]], o); });
+      twoTerminal(a, b, o, 16, (L) => { line([[0, -8], [0, 8], [L, 0], [0, -8]], o); line(o.tunnel ? [[L - 5, -8], [L, -8], [L, 8], [L - 5, 8]] : [[L, -8], [L, 8]], o); });
       return api;
     },
     // a pot from a to b, its wiper an arrow from the point w onto the track's middle (w level with
