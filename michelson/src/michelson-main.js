@@ -83,7 +83,7 @@ const ringsView = {
     legend.className = 'legend';
     holder.after(legend);
     const { now } = tracker(api);
-    const RAD = 150;
+    const RAD = 300;
     let P, pp, colour, angles;
     const update = () => {
       P = api.P; pp = parts(P); colour = colourOf(P, pp);
@@ -101,9 +101,11 @@ const ringsView = {
       const cx = w / 2, cy = h / 2, R = Math.hypot(w, h) / 2;
       const I = rings(P, now.x + now.w, angles);
       const step = R / RAD;
+      // each annulus painted over the last, outermost first: black, then the light at its brightness
       for (let i = RAD - 1; i >= 0; i--) {
-        g.fillStyle = rgb(colour, I[i]);
-        g.beginPath(); g.arc(cx, cy, (i + 1) * step, 0, 2 * Math.PI); g.fill();
+        g.beginPath(); g.arc(cx, cy, (i + 1) * step, 0, 2 * Math.PI);
+        g.fillStyle = '#000'; g.fill();
+        g.fillStyle = rgb(colour, I[i]); g.fill();
       }
       g.strokeStyle = css('--accent'); g.lineWidth = 1.5;
       g.beginPath(); g.arc(cx, cy, 6, 0, 2 * Math.PI); g.stroke();
@@ -145,7 +147,7 @@ const transferView = {
       if (!curve) return;
       const { g, w, h } = fit(canvas);
       g.clearRect(0, 0, w, h);
-      const box = { l: 34, r: w - 10, t: 12, b: h - 24 };
+      const box = { l: 34, r: w - 10, t: 24, b: h - 24 };
       const X = (x) => box.l + ((box.r - box.l) * (x + span)) / (2 * span), Y = (I) => box.b - (box.b - box.t) * I;
       g.strokeStyle = css('--grid'); g.lineWidth = 1; g.strokeRect(box.l, box.t, box.r - box.l, box.b - box.t);
       g.beginPath(); g.moveTo(X(0), box.t); g.lineTo(X(0), box.b); g.stroke();
@@ -153,7 +155,7 @@ const transferView = {
       g.textAlign = 'right'; g.fillText('1', box.l - 4, box.t + 8); g.fillText('0', box.l - 4, box.b);
       g.textAlign = 'center';
       g.fillText(`−${nm(span)}`, box.l + 24, box.b + 14); g.fillText('0', X(0), box.b + 14); g.fillText(`+${nm(span)}`, box.r - 24, box.b + 14);
-      g.textAlign = 'left'; g.fillText('light on the detector', box.l + 6, box.t + 14);
+      g.textAlign = 'left'; g.fillText('light on the detector', box.l, box.t - 8);
       // the contrast's envelope
       g.strokeStyle = css('--ink-2'); g.setLineDash([4, 4]);
       for (const s of [1, -1]) { g.beginPath(); xs.forEach((x, i) => { const y = Y(0.5 + (s * env[i]) / 2); i ? g.lineTo(X(x), y) : g.moveTo(X(x), y); }); g.stroke(); }

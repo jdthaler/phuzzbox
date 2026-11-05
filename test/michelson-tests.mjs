@@ -152,7 +152,7 @@ const steady = (P, f = 100, a = 0.5, quality = 'high') => run(P, sine(f, fs, fs,
 {
   const f = 1010, n = 4800; // 101 periods, so the harmonics fall on bins exactly; and fs/f isn't whole, so what aliases falls between them
   const inharmonic = (q) => {
-    const y = run(W({ stroke: 1e-6 }), sine(f, fs, fs + n, 0.5), q).L.subarray(fs);
+    const y = run(W({ stroke: 4e-6 }), sine(f, fs, fs + n, 0.5), q).L.subarray(fs);
     let tot = 0, bad = 0;
     for (let k = 1; k < n / 2; k++) {
       let re = 0, im = 0;
