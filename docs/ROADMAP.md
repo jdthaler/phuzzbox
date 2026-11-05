@@ -197,6 +197,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    magnetisation by exact solutions of the equation linearised in the effective field, at 2×
    oversampling. Tested against the loop and the stage integrated by Runge–Kutta, the small-signal
    highpass from the reversible susceptibility, and Faraday's law.
+   **Atmospheres** landed 2026-11-05 as **Open Air**: a source and a listener over flat ground, the
+   direct path and the ground's reflection, each through ISO 9613-1's absorption; the ground's
+   impedance by Miki's law from Piercy and Embleton's flow resistivities, and its reflection by Weyl
+   and van der Pol's formula (the Faddeeva function by Weideman's rational approximation). Played
+   as the minimum-phase filter with the response's magnitude (the model is not quite causal), 4096
+   taps at 48 kHz in a partitioned convolution with no latency. Tested against ISO 9613-2's table,
+   w(z) integrated by Runge–Kutta, the hard ground's interference nulls, and the filter's magnitude.
 
 ## The standalone app
 

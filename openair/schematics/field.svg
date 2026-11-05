@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="380" viewBox="0 0 640 380" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="Open Air: the bass and you over the ground, the direct path r1 and the path r2 reflected from the ground, which seems to come from the bass's image beneath it">
+<title>Open Air: the bass and you over the ground, the direct path r1 and the path r2 reflected from the ground, which seems to come from the bass's image beneath it</title>
+<rect width="640" height="380" rx="10" fill="#151518" stroke="#2b2a30"/>
+<path d="M12 220 L628 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M20 220 L8 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M44 220 L32 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M68 220 L56 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M92 220 L80 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M116 220 L104 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140 220 L128 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M164 220 L152 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M188 220 L176 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M212 220 L200 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M236 220 L224 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M260 220 L248 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M284 220 L272 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M308 220 L296 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M332 220 L320 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M356 220 L344 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M380 220 L368 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M404 220 L392 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M428 220 L416 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M452 220 L440 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M476 220 L464 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M500 220 L488 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M524 220 L512 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M548 220 L536 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M572 220 L560 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M596 220 L584 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M620 220 L608 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="480" y="256" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">the ground: its impedance Z, by its flow resistivity σ</text>
+<path d="M60 150 L60 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="46" y="136" width="28" height="28" rx="6" fill="none" stroke="#fb923c" stroke-width="1.6"/>
+<text x="84" y="126" text-anchor="start" fill="#fb923c" font-size="11" font-weight="400">the bass, hs up</text>
+<path d="M580 108 L580 220" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="580" cy="108" r="3" fill="#ece8e1"/>
+<text x="576" y="86" text-anchor="end" fill="#ece8e1" font-size="11" font-weight="400">you, hr up</text>
+<rect x="46" y="276" width="28" height="28" rx="6" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-dasharray="4 4"/>
+<text x="84" y="318" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">its image, hs down</text>
+<path d="M76 148 L572 109" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M565.09 113.03 L572 109 L564.55 106.1" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="320" y="108" text-anchor="middle" fill="#fb923c" font-size="11" font-weight="400">r1, the direct path</text>
+<path d="M72 162 L260 220" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M252.09 221.2 L260 220 L254.14 214.55" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M260 220 L572 114" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M566.3 119.61 L572 114 L564.06 113.02" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M74 284 L260 220" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4"/>
+<path d="M254.32 225.63 L260 220 L252.06 219.05" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="410" y="192" text-anchor="middle" fill="#60a5fa" font-size="11" font-weight="400">r2, reflected: Q</text>
+<text x="320" y="364" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">heard: e^(ik r1)/r1 + Q e^(ik r2)/r2, each path through the air's absorption</text>
+</svg>
