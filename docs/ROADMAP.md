@@ -133,6 +133,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    an Ornstein–Uhlenbeck process; first-order antiderivative antialiasing at 4× oversampling;
    tested against each spectrum integrated numerically, Bessel functions (Jacobi–Anger), the
    mount's equation of motion and the drift's variance and memory.
+   The **Lamp Vibe** landed 2026-11-05: an oscillator dims a tungsten lamp whose filament (sized
+   from its rating; Forsythe and Watson's resistivity, Parker and Abbott's free-electron
+   emissivity) heats by its current and cools by radiating; its Planck glow, weighted by the
+   cadmium-sulphide cells' response, frees electrons that recombine with each other; each cell is
+   the resistor of a phase-splitter all-pass stage. Tested against the power balance solved by
+   Newton's method, its time constant from the balance's slope, the glow integrated over frequency,
+   Davisson and Weeks's emissivity, the stages' arctangents and the vibrato's Δf = (1/2π) dφ/dt.
 
 ## The standalone app
 

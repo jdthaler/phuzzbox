@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="320" viewBox="0 0 520 320" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="One stage: a phase splitter, whose two outputs meet through C and the cell">
+<title>One stage: a phase splitter, whose two outputs meet through C and the cell</title>
+<rect width="520" height="320" rx="10" fill="#151518" stroke="#2b2a30"/>
+<circle cx="20" cy="160" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="20" y="150" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">in</text>
+<path d="M20 160 L100 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="140" cy="160" r="24" fill="none" stroke="#ece8e1" stroke-width="1.6"/>
+<path d="M133 149 L133 171" fill="none" stroke="#ece8e1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M133 160 L100 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M133 155 L148 146 L148 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M133 165 L148 174 L148 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M135.22 170.25 L142.21 170.53 L138.67 164.49" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M148 20 L148 52" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M148 88 L148 120" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(148 52) rotate(90)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="162" y="67" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">Rc</text>
+<text x="162" y="81" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">equal</text>
+<text x="148" y="14" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">+V</text>
+<path d="M148 200 L148 232" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M148 268 L148 300" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(148 232) rotate(90)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="162" y="247" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">Re</text>
+<text x="162" y="261" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">equal</text>
+<path d="M148 300 L148 308" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M139 308 L157 308" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M142.5 312 L153.5 312" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M146 316 L150 316" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="92" y="88" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">−x</text>
+<text x="92" y="248" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">+x</text>
+<path d="M148 120 L148 90 L240 90" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M240 90 L296 90" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M304 90 L360 90" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(296 90) rotate(0)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="300" y="78" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">C</text>
+<path d="M148 200 L148 230 L240 230" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M240 230 L282 230" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M318 230 L360 230" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(282 230) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M-2 24 L8 12" fill="none" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 12 L2 14" fill="none" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 12 L6 18" fill="none" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 24 L20 12" fill="none" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12 L14 14" fill="none" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12 L18 18" fill="none" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="300" y="218" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">cell R</text>
+<path d="M360 90 L360 230" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="360" cy="160" r="3" fill="#ece8e1"/>
+<circle cx="148" cy="90" r="3" fill="#ece8e1"/>
+<circle cx="148" cy="230" r="3" fill="#ece8e1"/>
+<path d="M360 160 L480 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="480" cy="160" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="480" y="150" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">out</text>
+<text x="420" y="212" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">(1 − sRC)/(1 + sRC)</text>
+</svg>
