@@ -134,6 +134,11 @@ export const PEDALS = [
     blurb: 'Your bass perturbs a spinning black hole and it rings in its quasinormal modes: a thud without spin, a bell near the limit. Mass sets the pitch.',
   },
   {
+    id: 'lens', section: 'gravity', name: 'Gravitational Lens', version: '0.1.0', ready: true, plugin: { code: 'GLns' }, enclosure: ['#0b1026', '#cfe3ff'],
+    after: 'Einstein\'s lens of 1936, the twin quasar of 1979 and the wave optics of lensed gravitational waves',
+    blurb: 'Your bass from far behind a star or a black hole, bent round it: two images arrive, the second late and Hilbert-transformed, and the long waves diffract round the lens untouched.',
+  },
+  {
     id: 'doppler', section: 'motion', name: 'Doppler', version: '0.2.0', ready: true, plugin: { code: 'Dopp' }, enclosure: ['#1f4e5f', '#e9f3f5'],
     after: 'a car, a train, a jet going by',
     blurb: 'Your bass rides past you on a straight road, again and again, heard at its retarded time: the pitch falls as it goes, and past Mach 1 it arrives as a boom, half of it backwards.',

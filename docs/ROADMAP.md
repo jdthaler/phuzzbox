@@ -167,6 +167,14 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    lighting a cadmium-sulphide cell in a divider. The oscillator is solved exactly, stretch by
    stretch. Tested against Townsend's breakdown condition solved numerically, the curve's minimum
    found by search, the oscillator by Runge–Kutta, the period in closed form, and the cell.
+   The **Gravitational Lens** landed 2026-11-05: the bass as a wave from far behind a point mass
+   of 1 to 1000 suns. Its impulse response is the second derivative of the area of the lens
+   plane arriving before each time, worked out by quadrature at sparse taps and interpolated,
+   and convolved with no latency (uniformly partitioned FFT, new kernels built a little each
+   block and crossfaded). Geometric optics alone, causally, through two allpass chains a quarter
+   cycle apart. Tested against Takahashi and Nakamura's exact amplification factor (eq. 17, a
+   complex Γ and ₁F₁ in JavaScript), their geometric-optics limit, Paczyński's magnification, and
+   the area integrated the other way round.
 
 ## The standalone app
 
