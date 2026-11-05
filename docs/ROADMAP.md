@@ -182,6 +182,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    BDF2 with Newton (on the logarithm where the exponential dominates), at 4× oversampling. Tested
    against the whole set simulated at radio frequency with no envelope, the square and peak laws,
    the square law's m/4, the onset of diagonal clipping, and the tuned circuit's bandwidth.
+   The **Tunnel Diode** landed 2026-11-05: Sze's tunnelling, excess and diffusion currents fitted
+   to the GE manual's typical 1 mA germanium diode, through a load (a switch with memory when the
+   load is steeper than the diode's −152 Ω) or a load and an inductor (a relaxation oscillator).
+   Backward Euler at 4× oversampling, each step's root found by marching from the diode's voltage
+   in the direction it moves, so it keeps its branch until the branch ends. Tested against the fit
+   by Newton in all three unknowns, the thresholds from the load line's turning points, the switch
+   without capacitance as a map, and the oscillator's period integrated along each branch.
 
 ## The standalone app
 

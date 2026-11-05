@@ -69,6 +69,11 @@ export const PEDALS = [
     blurb: 'Your bass broadcast as an AM station and heard on a crystal set: a weak signal comes through the diode squared, a strong one straight, the tuned coil cuts the treble, and the next station whistles.',
   },
   {
+    id: 'tunnel', section: 'circuits', name: 'Tunnel Diode', version: '0.1.0', ready: true, plugin: { code: 'Tnnl' }, enclosure: ['#1f2723', '#9fe8b8'],
+    after: 'Esaki\'s germanium tunnel diode of 1958, and the switches and oscillators of the tunnel diode manuals',
+    blurb: 'A diode whose current falls as its voltage rises, because electrons tunnel through its junction: with a load it is a switch with memory that squares your bass, with an inductor an oscillator your bass plays.',
+  },
+  {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
