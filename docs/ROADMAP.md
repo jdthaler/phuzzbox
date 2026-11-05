@@ -160,6 +160,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    ((1 − ε)/(1 − εz⁻¹))^N. Tested against the filters from their poles, the transfer loss summed term
    by term, the sampling theorem's aliases, the feedback comb, and the pitch a swinging clock bends,
    found by counting its cycles.
+   The **Neon Tremolo** landed 2026-11-05 (ahead of the Talk Box, whose vocal-tract data were
+   harder to verify): Pearson and Anson's relaxation oscillator, a neon lamp across a capacitor
+   charged through R, its strike from Paschen's law (Townsend's A and B for neon, helium and
+   argon, and the cathode's γ), its burning voltage the normal glow's cathode fall, its flashes
+   lighting a cadmium-sulphide cell in a divider. The oscillator is solved exactly, stretch by
+   stretch. Tested against Townsend's breakdown condition solved numerically, the curve's minimum
+   found by search, the oscillator by Runge–Kutta, the period in closed form, and the cell.
 
 ## The standalone app
 
