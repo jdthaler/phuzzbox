@@ -148,6 +148,11 @@ export const PEDALS = [
     blurb: 'Your bass in a room you build: its early reflections by the image method, then its reverberation, dying away octave by octave as Sabine\'s law, in Eyring\'s form, says it must from the room\'s size, its walls and its audience.',
   },
   {
+    id: 'rubens', section: 'vibration', name: 'Rubens\' Tube', version: '0.1.0', ready: true, plugin: { code: 'Rubn', name: 'Rubens Tube' }, enclosure: ['#5a2c14', '#f8dcae'],
+    after: 'Heinrich Rubens\' flame tube (1905), and Gardner, Gee and Dix\'s measurements of one',
+    blurb: 'Your bass through a loudspeaker into a closed pipe of propane, heard inside: the pipe rings at its resonances, which the walls and the speaker damp, and its standing waves shape the flames along its top.',
+  },
+  {
     id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
     after: 'the steel plate reverbs of 1960s studios',
     blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',
