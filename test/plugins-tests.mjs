@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { check, done } from './harness.mjs';
-import { PEDALS, PHUZZBOX_VERSION, SOURCE } from '../shared/registry.js';
+import { PEDALS, PHUZZBOX_VERSION, SOURCE, pluginName } from '../shared/registry.js';
 import { LATEST, SYSTEMS, APP, archive, downloads, withPlugins, parseRelease, releaseLine } from '../shared/plugins.js';
 import { notes, files, manifest } from '../tools/plugin-release.mjs';
 
@@ -14,6 +14,10 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const ready = PEDALS.filter((p) => p.ready);
 
 check(withPlugins().length === ready.length && ready.every((p) => p.plugin?.code), 'every ready pedal has plugins', `${withPlugins().length} of ${ready.length}`);
+const names = ready.map(pluginName);
+check(names.every((n) => /^[A-Za-z0-9][A-Za-z0-9 .-]*$/.test(n)) && new Set(names).size === names.length,
+  'every pedal\'s plugins have a name of letters, digits, spaces, dots and hyphens, each its own (clap-wrapper puts it in shell commands unquoted)',
+  names.filter((n) => !/^[A-Za-z0-9][A-Za-z0-9 .-]*$/.test(n)).join(', ') || `${names.length} names`);
 const all = files();
 check(all.length === SYSTEMS.length * (2 + ready.length) && new Set(all).size === all.length,
   'a release holds one archive per system for every pedal together, the app alone and each pedal, each named once', `${all.length} archives`);

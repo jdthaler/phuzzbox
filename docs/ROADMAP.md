@@ -204,6 +204,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    as the minimum-phase filter with the response's magnitude (the model is not quite causal), 4096
    taps at 48 kHz in a partitioned convolution with no latency. Tested against ISO 9613-2's table,
    w(z) integrated by Runge–Kutta, the hard ground's interference nulls, and the filter's magnitude.
+   **Sabine's Room** landed 2026-11-05: a shoebox room with Hall's absorption coefficients in six
+   octaves and ISO 9613-1's air, the direct sound and the first 64 reflections by Allen and
+   Berkley's image method as taps on a complementary band split, then in each octave a 16-line
+   Hadamard feedback delay network decaying in Eyring's time, fed through twelfth-order Butterworth
+   bands so that octaves don't leak into each other, scaled to the diffuse field's 4π c/V. Tested
+   against the images found again by mirroring, the networks' decay and power, each octave's T30
+   in the impulse response, and the critical distance in a steady sound.
 
 ## The standalone app
 

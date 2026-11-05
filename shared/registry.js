@@ -1,7 +1,9 @@
 // registry.js — every pedal: the landing page, the menus and the tests read this list.
 //   id: the folder; name; version (semver, bumped only at a release: CLAUDE.md);
 //   ready: playable; blurb: one line for the landing page; after: what it is modelled on;
-//   plugin: { code } the AU subtype (four characters, unique);
+//   plugin: { code, name? } the AU subtype (four characters, unique), and the plugins' file and AU
+//   name where the pedal's name won't do for one (pluginName: an apostrophe breaks clap-wrapper's
+//   build commands);
 //   enclosure: [its colour, the ink printed on it], as its page's style.css has them;
 //   section: the physics it is made of (SECTIONS), which groups it on the landing page and in the
 //   menu, in the order PEDALS lists them
@@ -9,6 +11,8 @@
 export const PHUZZBOX_VERSION = '0.5.0';
 // the site's credits link to the source; the only link to GitHub on the site (Jesse, 2026-11-01):
 // everything a reader needs is on the site itself, in How it works
+// the name of a pedal's plugin files and its AU: letters, digits, spaces, dots and hyphens only
+export const pluginName = (p) => p.plugin?.name ?? p.name;
 export const SOURCE = 'https://github.com/jdthaler/phuzzbox';
 
 // the pedals by the physics they are made of: the landing page's sections and the menu's, in this order
@@ -137,6 +141,11 @@ export const PEDALS = [
     id: 'openair', section: 'vibration', name: 'Open Air', version: '0.1.0', ready: true, plugin: { code: 'OAir' }, enclosure: ['#3c5a3a', '#f2ecd8'],
     after: 'outdoor acoustics: ISO 9613-1\'s absorption of sound by the air, and the ground\'s reflection by Weyl and van der Pol\'s formula',
     blurb: 'Your bass heard across a field: the air soaks up its treble with distance, more when it is dry, and the ground\'s reflection, softer than a mirror, digs a dip into it that moves as you walk away.',
+  },
+  {
+    id: 'sabine', section: 'vibration', name: 'Sabine\'s Room', version: '0.1.0', ready: true, plugin: { code: 'Sabn', name: 'Sabine Room' }, enclosure: ['#4a3b2c', '#efe2c8'],
+    after: 'Wallace Sabine\'s measurements of reverberation at Harvard (1895–1900), and the image method of Allen and Berkley',
+    blurb: 'Your bass in a room you build: its early reflections by the image method, then its reverberation, dying away octave by octave as Sabine\'s law, in Eyring\'s form, says it must from the room\'s size, its walls and its audience.',
   },
   {
     id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],

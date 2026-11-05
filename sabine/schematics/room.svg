@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="Sabine's Room seen from above: the bass near one end and you along the room, the direct path, and a reflection off a side wall, which seems to come from the bass's image beyond the wall">
+<title>Sabine's Room seen from above: the bass near one end and you along the room, the direct path, and a reflection off a side wall, which seems to come from the bass's image beyond the wall</title>
+<rect width="640" height="420" rx="10" fill="#151518" stroke="#2b2a30"/>
+<path d="M40 40 L600 40" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M600 40 L600 230" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M600 230 L40 230" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M40 230 L40 40" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M52 230 L42 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M76 230 L66 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M100 230 L90 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M124 230 L114 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M148 230 L138 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M172 230 L162 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M196 230 L186 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M220 230 L210 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M244 230 L234 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M268 230 L258 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M292 230 L282 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M316 230 L306 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M340 230 L330 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M364 230 L354 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M388 230 L378 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M412 230 L402 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M436 230 L426 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M460 230 L450 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M484 230 L474 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M508 230 L498 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M532 230 L522 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M556 230 L546 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M580 230 L570 240" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="320" y="24" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">L long, W wide, H high: every surface absorbing α of what strikes it</text>
+<rect x="138" y="136" width="28" height="28" rx="6" fill="none" stroke="#fb923c" stroke-width="1.6"/>
+<text x="130" y="157" text-anchor="end" fill="#fb923c" font-size="11" font-weight="400">the bass</text>
+<circle cx="400" cy="92" r="3" fill="#ece8e1"/>
+<text x="418" y="99" text-anchor="start" fill="#ece8e1" font-size="11" font-weight="400">you</text>
+<rect x="138" y="296" width="28" height="28" rx="6" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-dasharray="4 4"/>
+<text x="130" y="317" text-anchor="end" fill="#9b958b" font-size="11" font-weight="400">its image</text>
+<path d="M168 145 L392 94" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M385.75 98.99 L392 94 L384.2 92.21" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="244" y="98" text-anchor="middle" fill="#fb923c" font-size="11" font-weight="400">d, the direct sound</text>
+<path d="M166 160 L243.01 230" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M235.34 227.73 L243.01 230 L240.02 222.58" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M243.01 230 L394 100" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.81 107.34 L394 100 L386.27 102.06" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M166 302 L243.01 230" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4"/>
+<path d="M240.12 237.46 L243.01 230 L235.37 232.38" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="450" y="192" text-anchor="middle" fill="#60a5fa" font-size="11" font-weight="400">a reflection: √(1 − α) of it</text>
+<text x="320" y="348" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">an image for every sequence of bounces, its path r, its strength (√(1 − α))ⁿ/r</text>
+<text x="320" y="388" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">after the first 64, the diffuse field: T60 = 55.3 V/(c A)</text>
+</svg>
