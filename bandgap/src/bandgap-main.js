@@ -47,7 +47,7 @@ const mA = (i) => (Math.abs(i) < 1e-3 ? `${(1e6 * i).toFixed(0)} µA` : `${(1e3 
 // drives them along through Rt, and the operating point as you play; the LEDs lit by their current.
 const diodesView = {
   title: 'The diodes',
-  caption: 'the current through the pair of diodes against the voltage across them, for each kind (faint) and the ones fitted (bright), both ways. Each bends sharply upward at its knee, near its bandgap: germanium and Schottky at a few tenths of a volt, silicon at 0.6, and the LEDs at the energy of their light, E = hc/λ, less a little. The dashed line is what the op-amp can push through the Filter\'s resistance from its rail, and the dots where the circuit is as you play: a dot that reaches the knee is clipping. With LEDs, the two at the top light up as much as they pass current, which is the clipping you hear.',
+  caption: 'the current through the pair of diodes against the voltage across them, for each kind (faint) and the ones fitted (bright), both ways. Each bends sharply upward at its knee, near its bandgap: germanium and Schottky at a few tenths of a volt, silicon at 0.6, and the LEDs at the energy of their light, E = hc/λ, less a little. The dashed line is what the op-amp can push through the 1 kΩ from its rail, and the dots where the circuit is as you play: a dot that reaches the knee is clipping. With LEDs, the two at the top light up as much as they pass current, which is the clipping you hear.',
   mount(holder, api) {
     const canvas = document.createElement('canvas');
     holder.append(canvas);
@@ -55,7 +55,7 @@ const diodesView = {
     legend.className = 'legend';
     holder.after(legend);
     const trail = [], KEEP = 280;
-    let P, pp, curves, fam, vmax, imax, glow = 0;
+    let P, pp, curves, fam, vmax, imax;
     const update = () => {
       P = api.P; pp = parts(P); fam = families(P, 1e-3);
       const per = { one: 1, two: 2, asym: 2 }[P.perSide];
@@ -66,14 +66,14 @@ const diodesView = {
       curves = { vs, i: Array.from({ length: FAMILIES }, (_, k) => iv(P, k, vs)) };
       const k = familyOf(P), f = fam[k];
       const light = f?.lambda ? `<span style="color:${COLOURS[k]}">● ${(1e9 * f.lambda).toFixed(0)} nm: hc/λ = ${f.eg.toFixed(2)} eV</span>` : '';
-      legend.innerHTML = (f ? `<span><i style="background:${COLOURS[k]}"></i>${DIODES[k][1]}: ${mV(f.up)} at 1 mA, ${f.lambda ? 'bandgap' : k === 1 ? 'barrier' : 'bandgap'} ${f.eg.toFixed(2)} eV</span>${light}` : '<span>no diodes: the op-amp clips at its rails</span>')
+      legend.innerHTML = (f ? `<span><i style="background:${COLOURS[k]}"></i>${DIODES[k][1]}: ${mV(f.up)} at 1 mA</span>${f.lambda ? light : `<span>${k === 1 ? 'barrier' : 'bandgap'} ${f.eg.toFixed(2)} eV</span>`}` : '<span>no diodes: the op-amp clips at its rails</span>')
         + `<span>rails ±${pp.rail.toFixed(1)} V, through ${(pp.Rt / 1000).toFixed(0)} kΩ</span>`;
     };
     const draw = () => {
       if (!curves) return;
       const { g, w, h } = fit(canvas);
       g.clearRect(0, 0, w, h);
-      const box = { l: 46, r: w - 10, t: 34, b: h - 22 };
+      const box = { l: 46, r: w - 10, t: 44, b: h - 22 };
       const X = (v) => box.l + ((box.r - box.l) * (v + vmax)) / (2 * vmax);
       const Y = (i) => (box.t + box.b) / 2 - ((box.b - box.t) / 2) * Math.max(-1.05, Math.min(1.05, i / imax));
       g.font = '11px system-ui, sans-serif'; g.lineWidth = 1;
@@ -87,7 +87,7 @@ const diodesView = {
       g.textAlign = 'right';
       g.fillText(mA(imax).replace(/ (mA|µA)/, ''), box.l - 4, box.t + 8); g.fillText('0', box.l - 4, Y(0) + 4); g.fillText(`−${mA(imax).replace(/ (mA|µA)/, '')}`, box.l - 4, box.b);
       g.save(); g.translate(10, (box.t + box.b) / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillText(imax < 1e-3 ? 'I (µA)' : 'I (mA)', 0, 0); g.restore();
-      g.textAlign = 'left'; g.fillText('V across the diodes', box.l + 4, box.b - 4);
+      g.textAlign = 'left'; g.fillText('V across the diodes →', box.l + 6, box.t + 14); // the top left: no curve goes there
       // every family, the fitted one last and bright
       const k = familyOf(P);
       for (let j = 0; j < FAMILIES; j++) {
@@ -114,14 +114,13 @@ const diodesView = {
       const f = fam[k];
       if (f?.lambda) {
         const last = trail.slice(-6), iu = Math.max(0, ...last.map(([, i]) => i)), id = Math.max(0, ...last.map(([, i]) => -i));
-        glow = Math.max(glow * 0.85, 0);
-        [[iu, box.r - 52, '▲ up'], [id, box.r - 22, '▼ down']].forEach(([i, cx, label]) => {
-          const b = Math.min(1, i / (0.6 * imax));
+        [[iu, box.r - 62, '▲ up'], [id, box.r - 22, '▼ down']].forEach(([i, cx, label]) => {
+          const b = i > 0 ? Math.min(1, Math.max(0, (Math.log10(i) + 6) / 3)) : 0; // an LED is visible from a microamp, bright by a milliamp
           const r = 7;
           g.save();
           g.shadowColor = COLOURS[k]; g.shadowBlur = 22 * b;
           g.fillStyle = COLOURS[k]; g.globalAlpha = 0.18 + 0.82 * b;
-          g.beginPath(); g.arc(cx, 16, r, Math.PI, 0); g.lineTo(cx + r, 24); g.lineTo(cx - r, 24); g.closePath(); g.fill();
+          g.beginPath(); g.arc(cx, 13, r, Math.PI, 0); g.lineTo(cx + r, 21); g.lineTo(cx - r, 21); g.closePath(); g.fill();
           g.restore();
           g.fillStyle = css('--ink-2'); g.textAlign = 'center'; g.font = '9px system-ui, sans-serif'; g.fillText(label, cx, 33);
         });

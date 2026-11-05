@@ -430,7 +430,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   layout = createLayout({ id: PEDAL.id, h, store, app, header, rack, views: viewList, groups: groupList, dock });
   api.layout = layout;
 
-  for (const p of all.filter((q) => q.perform && q.type !== 'select')) knobs.append(controlFor(p, () => P[p.id], (v) => set(p.id, v)));
+  for (const p of all.filter((q) => q.perform)) knobs.append(controlFor(p, () => P[p.id], (v) => set(p.id, v)));
 
   // ---- state
   function refresh() {

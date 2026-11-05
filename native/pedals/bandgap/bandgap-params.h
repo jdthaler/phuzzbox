@@ -26,7 +26,7 @@ inline const char *const opampChoices[] = {"LM308 (slow)", "µA741", "TL072 (fas
 inline const phuzzbox::ParamInfo kParams[] = {
   {"drive", "Drive", "The pedal", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.6, 0.0, false, "%", 100.0, 0},
   {"filter", "Filter", "The pedal", phuzzbox::ParamKind::continuous, 0.0, 1.0, 0.2, 0.0, false, "%", 100.0, 0},
-  {"level", "Level", "The pedal", phuzzbox::ParamKind::continuous, -30.0, 12.0, -16.4, 0.0, false, "dB", 1.0, 1},
+  {"level", "Level", "The pedal", phuzzbox::ParamKind::continuous, -30.0, 12.0, -14.5, 0.0, false, "dB", 1.0, 1},
   {"diodes", "Diodes", "The pedal", phuzzbox::ParamKind::choice, 0.0, 6.0, 2.0, 0.0, false, "", 1.0, 2, diodesChoices, 7},
   {"perSide", "Diodes each way", "Diodes and op-amp", phuzzbox::ParamKind::choice, 0.0, 2.0, 0.0, 0.0, false, "", 1.0, 2, perSideChoices, 3},
   {"opamp", "Op-amp", "Diodes and op-amp", phuzzbox::ParamKind::choice, 0.0, 2.0, 0.0, 0.0, false, "", 1.0, 2, opampChoices, 3},
@@ -35,18 +35,18 @@ inline const phuzzbox::ParamInfo kParams[] = {
   {"lowCut", "Low-cut capacitor", "Diodes and op-amp", phuzzbox::ParamKind::continuous, 2.2e-7, 0.000022, 0.00001, 0.0, true, "µF", 1000000.0, 2},
 };
 
-inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.6}, {1, 0.2}, {2, -16.4}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset1[] = {{0, 0.6}, {1, 0.2}, {2, -8.0}, {3, 0.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset2[] = {{0, 0.6}, {1, 0.2}, {2, -24.0}, {3, 3.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset3[] = {{0, 0.6}, {1, 0.2}, {2, -26.0}, {3, 5.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset4[] = {{0, 0.6}, {1, 0.2}, {2, -26.0}, {3, 6.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset5[] = {{0, 0.6}, {1, 0.2}, {2, -22.0}, {3, 2.0}, {4, 1.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset6[] = {{0, 0.6}, {1, 0.2}, {2, -20.0}, {3, 2.0}, {4, 2.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset7[] = {{0, 1.0}, {1, 0.0}, {2, -16.4}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset8[] = {{0, 1.0}, {1, 0.0}, {2, -16.4}, {3, 2.0}, {4, 0.0}, {5, 2.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset9[] = {{0, 0.6}, {1, 0.05}, {2, -16.4}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.0000022}};
-inline const phuzzbox::PresetValue kPreset10[] = {{0, 0.6}, {1, 0.2}, {2, -16.4}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, -5.0}, {7, 9.0}, {8, 0.00001}};
-inline const phuzzbox::PresetValue kPreset11[] = {{0, 0.6}, {1, 0.2}, {2, -16.4}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, 45.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset0[] = {{0, 0.6}, {1, 0.2}, {2, -14.5}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset1[] = {{0, 0.6}, {1, 0.2}, {2, -9.1}, {3, 0.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset2[] = {{0, 0.6}, {1, 0.2}, {2, -21.4}, {3, 3.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset3[] = {{0, 0.6}, {1, 0.2}, {2, -22.9}, {3, 5.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset4[] = {{0, 0.6}, {1, 0.2}, {2, -23.5}, {3, 6.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset5[] = {{0, 0.6}, {1, 0.2}, {2, -18.8}, {3, 2.0}, {4, 1.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset6[] = {{0, 0.6}, {1, 0.2}, {2, -17.1}, {3, 2.0}, {4, 2.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset7[] = {{0, 1.0}, {1, 0.0}, {2, -18.1}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset8[] = {{0, 1.0}, {1, 0.0}, {2, -18.1}, {3, 2.0}, {4, 0.0}, {5, 2.0}, {6, 25.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset9[] = {{0, 0.6}, {1, 0.05}, {2, -14.8}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, 25.0}, {7, 9.0}, {8, 0.0000022}};
+inline const phuzzbox::PresetValue kPreset10[] = {{0, 0.6}, {1, 0.2}, {2, -14.5}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, -5.0}, {7, 9.0}, {8, 0.00001}};
+inline const phuzzbox::PresetValue kPreset11[] = {{0, 0.6}, {1, 0.2}, {2, -14.5}, {3, 2.0}, {4, 0.0}, {5, 0.0}, {6, 45.0}, {7, 9.0}, {8, 0.00001}};
 inline const phuzzbox::Preset kPresets[] = {
   {"Silicon", kPreset0, 9},
   {"Germanium, soft and low", kPreset1, 9},

@@ -264,7 +264,7 @@ async function main(info, carry = {}) {
     // a plugin's audio and MIDI are the host's (its MIDI pedals are mapped in the plugin: the FC-300's numbers)
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
-  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox' && q.type !== 'select')) knobs.append(p.face === 'treadle' ? treadleFor(p, () => P[p.id], (v) => set(p.id, v), h) : knob(p));
+  for (const p of all.filter((q) => q.perform && q.type !== 'checkbox')) knobs.append(p.face === 'treadle' ? treadleFor(p, () => P[p.id], (v) => set(p.id, v), h) : knob(p));
 
   // ---- state
   function refresh() {

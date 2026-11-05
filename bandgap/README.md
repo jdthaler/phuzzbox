@@ -8,7 +8,7 @@ between them and you hear Planck's constant: the bluer the light, the later the 
 louder and more open the sound. The LEDs glow on the page as they conduct.
 
 It is the circuit of the RAT and of a hundred pedals since: a non-inverting op-amp stage with a
-pot in its feedback, then a resistor into diodes to ground. The Bandgap solves it as it plays:
+pot in its feedback, then a resistor into diodes to ground, then a tone filter. The Bandgap solves it as it plays:
 the op-amp with its finite gain–bandwidth, its slew rate and its rails, each diode by Shockley's
 equation with its temperature, and the capacitors between.
 
@@ -22,7 +22,7 @@ Part of [PhuzzBox](../README.md).
 
 ## The circuit
 
-![The Bandgap: a non-inverting op-amp with the Drive pot in its feedback, then the Filter resistor into a pair of diodes to ground](schematics/circuit.svg)
+![The Bandgap: a non-inverting op-amp with the Drive pot in its feedback, then 1 kΩ into a pair of diodes to ground, a buffer and the Filter](schematics/circuit.svg)
 
 The bass goes straight into the op-amp's + input. Its output feeds back to the − input through
 **Drive**, a 100 kΩ audio-taper pot (plus 100 Ω) with 100 pF across it, and the − input goes to
@@ -36,13 +36,15 @@ full up, and 16 (24 dB) at its default. Below 1/(2π R_g C_g), 16 Hz with 10 µF
 impedance takes over and the gain falls to 1, so the lowest frequencies are not driven into the
 diodes; above 1/(2π R_f C_f), 16 kHz with Drive full, the 100 pF takes the very top off.
 
-From the op-amp's output, **Filter** (1 kΩ plus a 100 kΩ pot) feeds the diode node, which has
-3.3 nF to ground and the diodes. While the diodes are off, that is a low-pass at
-1/(2π R_t C_d): 48 kHz with Filter down, 2.2 kHz at its default, 480 Hz full up. When they
-conduct they pull the node toward ground, and the resistor is what they pull against: the more
-of it, the gentler the clipping, and the less current the LEDs get to glow with.
+From the op-amp's output, 1 kΩ feeds the diodes, with 3.3 nF across them (a pole at 48 kHz,
+standing in for their capacitance and the wiring's). The diodes pull that node toward ground, and
+the 1 kΩ is what they pull against: with the op-amp at its rail it lets about 2.4 mA through
+silicon, and that current is what lights the LEDs.
 
-Then **Level**, a buffer with gain, in decibels.
+A buffer follows the diodes, then **Filter**: 1.5 kΩ and a 100 kΩ pot into 3.3 nF, a low-pass at
+1/(2π R_ft C_t), from 32 kHz with the knob down to 2.2 kHz at its default and 475 Hz full up. As
+in the RAT, it comes after the clipping, so it takes off the highest of the harmonics the diodes
+make without changing how hard they clip. Then **Level**, a gain in decibels.
 
 ## The diodes
 
@@ -50,7 +52,8 @@ Each diode passes Shockley's current,
 
   I = I_s (e^(V / n V_T) − 1),  V_T = kT/q (25.7 mV at 25 °C)
 
-with an ideality factor n and a saturation current I_s set by the voltage it shows at 1 mA:
+with an ideality factor n and a saturation current I_s set by the voltage it shows at 1 mA. Past
+its knee the current grows tenfold for every ln 10 · n V_T, about 0.1 V in silicon:
 
 | Diode | V at 1 mA | n | gap (eV) | |
 |---|---|---|---|---|
@@ -108,7 +111,8 @@ drive, a shade off the top of high notes when Filter is down. The tests measure 
 
 ## Solving it
 
-Four states: the op-amp's output, the voltages on C_f and C_g, and the diode node. The equations
+Four states: the op-amp's output, the voltages on C_f and C_g, and the diode node. (The
+Filter's capacitor, behind its buffer, follows by the trapezoidal rule.) The equations
 are stiff (the diodes' conductance changes by many orders of magnitude within a cycle, and the op-amp
 pole is at a megahertz), so they are integrated by TR-BDF2, a trapezoidal step to the middle of
 the sample then a second-order backward-difference step to its end, which is A-stable and damps
@@ -126,10 +130,10 @@ Two or three iterations a step is usual. The circuit runs at 4× the sample rate
 
 ## The views
 
-- **The diodes**: each family's current against its voltage on a log scale, the chosen one
-  bright, with the load line the Filter resistor draws from each rail and the operating point's
+- **The diodes**: each family's current against its voltage, the chosen one
+  bright, with the load line the 1 kΩ draws from each rail and the operating point's
   trail as you play. The LEDs glow by their current.
-- **The response**: the small-signal gain from the bass to the diodes, from the circuit's complex
+- **The response**: the small-signal gain from the bass to the output, from the circuit's complex
   impedances with the op-amp's finite gain–bandwidth: the low cut, the gain, the Filter's corner
   and the op-amp's.
 - **Scope**: the input and the output in volts.
@@ -138,17 +142,19 @@ Two or three iterations a step is usual. The circuit runs at 4× the sample rate
 ## What to listen for
 
 - **Silicon**, **Germanium, soft and low** and **Red LEDs, open and loud**: the same gain into three
-  bandgaps. Germanium squashes everything to 0.2 V; red LEDs let the bass's dynamics through until
-  1.6 V.
+  bandgaps. Germanium squashes everything to 0.3 V; red LEDs let the bass's dynamics through until
+  1.8 V.
 - **Blue LEDs, barely clipping** and **No diodes: the rails**: the diodes clip only the loudest
-  notes, then nothing does but the op-amp's rails, abruptly.
-- **Two each way** and **Lopsided: one up, two down**: twice the turn-on voltage, then half each way,
-  with even harmonics in the **Spectrum**.
+  notes, at 2.4 V, then nothing does but the op-amp's rails, abruptly, at ±3 V from 9 V and
+  ±7.5 V from 18 V.
+- **Two each way** and **Lopsided: one up, two down**: twice the turn-on voltage, 1.2 V with silicon,
+  then 0.6 V one way and 1.2 V the other, with even harmonics in the **Spectrum**.
 - **Flat out, slow op-amp** against **Flat out, fast op-amp**: the LM308 against the TL072 at full
   drive and Filter down, the one place they differ, and only slightly.
 - **Bright, guitar-pedal low cut**: 2.2 µF, as many guitar pedals have, moves the low cut to
   72 Hz, so a bass's low notes reach the diodes less driven than its higher ones.
-- **Cold stage (−5 °C)** and **Hot stage (45 °C)**: silicon clipping at 0.55 V and at 0.44 V.
+- **Cold stage (−5 °C)** and **Hot stage (45 °C)**: silicon clipping at 0.68 V and at 0.58 V,
+  1.3 dB apart.
 
 ## Plugged in backwards
 
@@ -190,9 +196,9 @@ test/bandgap-tests.mjs                   node test/bandgap-tests.mjs
 ## Prior art and references
 
 * The circuit is the ProCo RAT's (1978) in outline: an LM308 non-inverting stage, a resistor into
-  a pair of diodes to ground. Its values and analysis are in ElectroSmash's
-  [RAT analysis](https://electrosmash.com/proco-rat). The Bandgap's Filter sits before the diodes
-  rather than after them, and its diodes switch among six families.
+  a pair of diodes to ground, then the Filter. Its values and analysis are in ElectroSmash's
+  [RAT analysis](https://electrosmash.com/proco-rat). The Bandgap buffers the diodes from the
+  Filter, and its diodes switch among six families.
 * Shockley, W. (1949). "The theory of p-n junctions in semiconductors and p-n junction
   transistors." *Bell System Technical Journal* 28(3), 435–489.
 * Sze, S. M. & Ng, K. K. (2007). *Physics of Semiconductor Devices*, 3rd ed. Wiley. Band gaps,

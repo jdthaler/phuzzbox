@@ -10,3 +10,5 @@
 ### PhuzzBox (minor)
 - A switch among several choices can be a knob on a pedal's face, turned through its positions
   by dragging or the arrow keys, as the Bandgap's Diodes switch is.
+- The release test lets a pedal waiting for its first release (a `new` note) be missing from the
+  changelog until the release writes it.

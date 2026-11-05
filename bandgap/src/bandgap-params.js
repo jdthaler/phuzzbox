@@ -11,7 +11,7 @@ const pedal = [
     hint: 'A 100 kΩ audio-taper pot in the op-amp\'s feedback, over 1 kΩ to ground: the gain runs from 1.1 to 101, 1 to 40 dB, and is 16, 24 dB, at its default. More drive pushes the bass further past the diodes\' knee, from a rounded edge to a square wave. Near the top the op-amp\'s own bandwidth, its gain–bandwidth product over the gain, takes the very top off.' },
   { id: 'filter', label: 'Filter', min: 0, max: 1, def: 0.2, unit: '%', scale: 100, decimals: 0, perform: true,
     hint: 'A 100 kΩ pot (plus 1.5 kΩ) into 3.3 nF after the diodes, behind a buffer: a low-pass from 32 kHz full down to 475 Hz full up, 2.2 kHz at its default. Turned up, it takes the clipping\'s highest harmonics off, from fizz to a dark, woolly drive; it can\'t change how hard the diodes clip, only what of it you hear.' },
-  { id: 'level', label: 'Level', min: -30, max: 12, def: -16.4, unit: 'dB', decimals: 1, perform: true,
+  { id: 'level', label: 'Level', min: -30, max: 12, def: -14.5, unit: 'dB', decimals: 1, perform: true,
     hint: 'The output, after a buffer. The diodes hold the level near their own turn-on voltage, so it follows the Diodes switch: LEDs come out several times louder than germanium.' },
   { id: 'diodes', label: 'Diodes', type: 'select', def: 'si', options: DIODES, perform: true,
     hint: 'The pair of diodes from the signal to ground, back to back. Each turns on near its bandgap: germanium and Schottky at about 0.3 V, silicon at 0.6 V, and LEDs at the energy of the light they give out, E = hc/λ, so red at 1.8 V, green 2.2 V, blue 2.5 V. Higher, less clipping and louder, until the op-amp\'s rails clip first. None leaves only the rails. With LEDs the light you see is the clipping.' },
@@ -35,19 +35,20 @@ export const GROUPS = [
   { name: 'Diodes and op-amp', params: parts },
 ];
 
-// Each preset shows one idea.
-const stock = { drive: 0.6, filter: 0.2, level: -16.4, diodes: 'si', perSide: 'one', opamp: 'lm308', temp: 25, supply: 9, lowCut: 10e-6 };
+// Each preset shows one idea, at the level that makes it as loud as bypass on the test bass's riff
+// (tools/loudness.mjs), except the cold and hot stages, which keep Silicon's so the difference is heard.
+const stock = { drive: 0.6, filter: 0.2, level: -14.5, diodes: 'si', perSide: 'one', opamp: 'lm308', temp: 25, supply: 9, lowCut: 10e-6 };
 export const PRESETS = {
   'Silicon': { ...stock },
-  'Germanium, soft and low': { ...stock, diodes: 'ge', level: -8 },
-  'Red LEDs, open and loud': { ...stock, diodes: 'red', level: -24 },
-  'Blue LEDs, barely clipping': { ...stock, diodes: 'blue', level: -26 },
-  'No diodes: the rails': { ...stock, diodes: 'none', level: -26 },
-  'Two each way': { ...stock, perSide: 'two', level: -22 },
-  'Lopsided: one up, two down': { ...stock, perSide: 'asym', level: -20 },
-  'Flat out, slow op-amp': { ...stock, drive: 1, filter: 0 },
-  'Flat out, fast op-amp': { ...stock, drive: 1, filter: 0, opamp: 'tl072' },
-  'Bright, guitar-pedal low cut': { ...stock, lowCut: 2.2e-6, filter: 0.05 },
+  'Germanium, soft and low': { ...stock, diodes: 'ge', level: -9.1 },
+  'Red LEDs, open and loud': { ...stock, diodes: 'red', level: -21.4 },
+  'Blue LEDs, barely clipping': { ...stock, diodes: 'blue', level: -22.9 },
+  'No diodes: the rails': { ...stock, diodes: 'none', level: -23.5 },
+  'Two each way': { ...stock, perSide: 'two', level: -18.8 },
+  'Lopsided: one up, two down': { ...stock, perSide: 'asym', level: -17.1 },
+  'Flat out, slow op-amp': { ...stock, drive: 1, filter: 0, level: -18.1 },
+  'Flat out, fast op-amp': { ...stock, drive: 1, filter: 0, opamp: 'tl072', level: -18.1 },
+  'Bright, guitar-pedal low cut': { ...stock, lowCut: 2.2e-6, filter: 0.05, level: -14.8 },
   'Cold stage (−5 °C)': { ...stock, temp: -5 },
   'Hot stage (45 °C)': { ...stock, temp: 45 },
 };
