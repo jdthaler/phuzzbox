@@ -10,5 +10,7 @@ export const PEDAL = {
   groups: GROUPS, presets: PRESETS, keep: KEEP,
   // a guitar: nothing changes (the input buffer barely loads a pickup)
   guitar: {},
+  // tap tempo (shared/midi.js): one sweep of the lamp a beat, within the oscillator's 0.5 to 12 Hz
+  tap: (P, beat) => ({ speed: Math.min(12, Math.max(0.5, 1 / beat)) }),
   wasm: { binary: () => new URL('../wasm/lampvibe.wasm', import.meta.url).href },
 };

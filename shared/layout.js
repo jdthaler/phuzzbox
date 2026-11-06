@@ -24,7 +24,7 @@
 //            rack, rather than in the views' stage, its toggle there too)
 //   groups = [{ key, name, el }]
 //   share  = the views' share of the height at first (0.6); store = { get(k, d), set(k, v) }
-//   returns { showViews(names | null), viewNames(), tourSlot, arrange() }
+//   returns { showViews(names | null), viewNames(), viewShown(key), setView(key, on), tourSlot, arrange() }
 
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const CHEVRON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6"/></svg>';
@@ -248,6 +248,9 @@ export function createLayout({ id, h, store, app, header, rack, views, groups, d
     tourSlot,
     arrange,
     viewNames: () => all.map((v) => v.name),
+    // one view on or off, by its key, as its toggle does (a MIDI pedal shows the tuner)
+    viewShown: (key) => !!all.find((v) => v.key === key)?.shown(),
+    setView(key, on) { if (!all.some((v) => v.key === key) || touring) return; prefs.views[key] = on; save(); apply(); },
     showViews(names) { touring = names ? new Set(names.map((n) => n.toLowerCase())) : null; apply(); },
   };
 }

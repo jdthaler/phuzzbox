@@ -133,13 +133,15 @@ bass's, the tuner's, the scope's and the spectrum's. **Tour** is a guided tour o
 have: a few steps, each setting the pedal up and playing the test bass through it while a card
 says what to listen for and which view to watch. Your own settings come back when it ends.
 
-**MIDI pedals.** A MIDI foot controller (a Roland FC-300 through a USB
-MIDI interface, in Control Change mode) works the page in Chrome or Edge: press **Connect MIDI** in
-the MIDI pedals card. Out of the box its expression pedal 1 (CC 7) is a volume pedal, expression
-pedal 2 (CC 1) the pedal's expression control (the Wah's rocker), number pedal 1 (CC 65) the
-footswitch and number pedal 2 (CC 66) the tuner's mute; **Learn** teaches any pedal any control.
-The plugins take the same CCs on their MIDI input ([shared/midi.js](shared/midi.js),
-`native/core/include/phuzzbox/midi.h`).
+**MIDI pedals.** A MIDI foot controller (a Roland FC-300 through a USB MIDI interface, in Control
+Change mode) plays the page in Chrome or Edge: press **Connect MIDI** in the MIDI pedals card. Out
+of the box it is laid out for playing live ([midi/README.md](midi/README.md)): expression pedal 1
+(CC 7) a volume pedal, expression pedal 2 (CC 1) the pedal's expression control and its toe switch
+the footswitch, number pedal 1 the footswitch and 2–10 the pedal's presets, CTL 1 the tuner and
+CTL 2 tap tempo. On the Pedalboard the number pedals switch the board's pedals in and out. The
+**FC-300** toggle under the pedal draws the board with what each pedal does there; **Learn** teaches
+any pedal any control. The plugins take the expression pedals and number pedal 1 on their MIDI input
+([shared/midi.js](shared/midi.js), `native/core/include/phuzzbox/midi.h`).
 
 Your settings stay in your browser.
 
@@ -158,9 +160,8 @@ with a cable from the interface's output back to its input. Settings are kept in
 `~/.config/phuzzbox` on Linux).
 
 A MIDI foot controller works in the app as on the pages: the app listens to every MIDI input
-(RtMidi), and its MIDI card maps the control changes with the FC-300's factory numbers to start
-(expression 1 the **Volume**, expression 2 the Wah's rocker, number pedals 1 and 2 the
-footswitch and the tuner's mute), each pedal keeping its own mappings.
+(RtMidi), and its MIDI card and **FC-300** view have the pages' live layout (all but the metronome,
+which the app has not), each pedal keeping its own mappings.
 
 Download it, or the plugins, from the Plugins tab of How it works on any page (`plugins/README.md`
 says how to install them); CI builds it on every pull request that changes `native/` too (the `native` workflow's

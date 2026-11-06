@@ -296,9 +296,58 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
 .mrow input[type="number"] { width: 62px; }
 .mrow input[type="checkbox"] { accent-color: var(--accent); }
 .mrow select { min-width: 0; max-width: 100%; }
+/* a long preset's name in a row's menu never widens the card past the screen */
+.midi, .midi-maps, .mrow { min-width: 0; }
+.mrow select[aria-label="What it moves"] { flex: 0 1 auto; width: 16em; max-width: 100%; text-overflow: ellipsis; }
 .mrow .arrow { color: var(--ink-2); }
 .mrow .learn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .midi-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.mrow .fc-name { font-size: 12px; color: var(--ink-2); min-width: 7ch; }
+.mrow .fc-name:empty { display: none; }
+
+/* the FC-300, drawn: its control and expression pedals above its five number pedals, each saying
+   what it does here, lit while that is on (shared/midi-panel.js) */
+.fc300 { container-type: inline-size; display: grid; gap: 6px; padding: 8px; border-radius: 10px; background: linear-gradient(#2b2d31, #1b1c1f); border: 1px solid #000; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06); }
+.midi .fc300 { max-width: 640px; margin: 4px 0 10px; }
+.fc-top { display: grid; grid-template-columns: 1fr 1fr 1.3fr 1.3fr; gap: 5px; }
+.fc-nums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.fc-pedal {
+  display: flex; flex-direction: column; justify-content: flex-start; gap: 2px; min-width: 0; margin: 0; padding: 4px 5px 5px; border-radius: 6px;
+  background: linear-gradient(#45484e, #2c2e33); border: 1px solid #0a0a0b; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08); color: var(--ink); font: inherit; text-align: left;
+}
+button.fc-pedal { cursor: pointer; }
+button.fc-pedal:hover { border-color: var(--accent); }
+.fc-pedal > b { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: var(--ink-2); white-space: nowrap; }
+.fc-pedal.hit { animation: midi-hit 0.5s; }
+.fc-line { display: flex; align-items: center; gap: 3px; min-width: 0; font-size: 11px; line-height: 1.25; }
+.fc-line small { flex: none; min-width: 1.4em; font-size: 9px; color: var(--ink-2); }
+.fc-what { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-line.free .fc-what { color: var(--ink-2); opacity: 0.6; }
+.fc-led { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #4a1410; }
+.fc-led.on { background: var(--led); box-shadow: 0 0 6px var(--led); }
+.fc-led[hidden] { display: none; }
+.fc-rail { position: relative; height: 5px; margin: 2px 0; border-radius: 3px; background: #0d0d0e; overflow: hidden; }
+.fc-travel { position: absolute; inset: 0 auto 0 0; width: calc(var(--x, 0.5) * 100%); background: var(--accent); opacity: 0.8; }
+/* narrow (under the pedal, or a phone): the control and expression pedals two by two, and each
+   number pedal a row, its two numbers side by side */
+@container (max-width: 520px) {
+  .fc-top { grid-template-columns: 1fr 1fr; }
+  .fc-nums { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+  .fc-num { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; column-gap: 8px; padding: 3px 6px; }
+  .fc-num > b { display: none; }
+}
+.fc-card figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.fc-status { font-size: 11px; color: var(--ink-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.one-screen .rack .fc-card { flex: none; margin-left: 0; margin-right: 0; padding: 8px 8px 9px; }
+body.one-screen .rack /* narrow (under the pedal, or a phone): the control and expression pedals two by two, and each
+   number pedal a row, its two numbers side by side */
+@container (max-width: 520px) {
+  .fc-top { grid-template-columns: 1fr 1fr; }
+  .fc-nums { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+  .fc-num { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; column-gap: 8px; padding: 3px 6px; }
+  .fc-num > b { display: none; }
+}
+.fc-card figcaption { margin-bottom: 6px; }
 
 /* ================================================================================================
    The one-screen layout of a pedal's page (shared/layout.js), after Forte's: the header; the pedal
@@ -1071,7 +1120,7 @@ return { INTERFACES, byInterface, fullScaleVolts };
 const __m5 = (() => {
 const { params } = __m1;
 // midi.js — MIDI foot controllers on a pedal: which control change (CC) moves which control, the
-// FC-300's defaults, MIDI learn, and what a CC's 0–127 means for each kind of control. No browser
+// FC-300's live layout, MIDI learn, and what a CC's 0–127 means for each kind of control. No browser
 // here (shared/midi-panel.js connects Web MIDI and draws the panel), so the Node tests and the
 // app's window can use it too. The plugins' C++ follows the same rules (phuzzbox/midi.h).
 //
@@ -1079,74 +1128,143 @@ const { params } = __m1;
 //   map.learn(index);                         the next CC that arrives is that mapping's
 //   const { actions } = map.message([0xB0, 7, 93]);
 //   actions: [{ target: 'volume', value: 0.73 }] — a position 0…1 for a knob or the volume pedal,
-//            a boolean for a switch, an index for a choice, { toggle: true } for a momentary press
+//            a boolean for a switch, an index for a choice, { toggle: true } for a switch pressed
+//            once, { press: true } for a pedal that does something each press (tap tempo, a preset)
 //
 // A mapping: { cc, channel (1–16, or 0 for any), target, mode, invert }. Targets: 'volume' (the
 // page's volume, through a volume pedal's audio taper), 'bypass' (the footswitch: on = engaged),
-// 'mute' (the tuner's mute), or 'param:<id>' for any of the pedal's controls. A switch's mode is
-// 'latch' (a footswitch that sends 127 and 0 on alternate presses: 127 is on) or 'momentary' (127
-// while held, 0 on release: each press toggles).
+// 'tuner' (on: the output muted and the tuner shown, as a tuner pedal), 'mute' (the tuner's mute
+// alone), 'tap' (tap tempo: the metronome, and the pedal's own tempo if it has one), 'metronome'
+// (on: it plays), 'preset:<name>' (one of the pedal's presets), 'param:<id>' for any of the pedal's
+// controls, and what a page adds (the Pedalboard: 'slot:<n>', the n-th pedal's footswitch, and
+// 'rocker', the expression control of the pedal its expression pedal rocks).
+//
+// A switch's mode says what a press sends and what it does. 'toggle' (the FC-300's latching
+// pedals: 127, then 0 on the next press): every message is a press, and each press toggles, so the
+// pedal never gets out of step with the screen. 'latch': the same pedals, but 127 is on and 0 off,
+// whatever the screen says. 'momentary' (127 while held, 0 on release): each press toggles.
 
 
-// Roland FC-300 in Control Change mode, as it leaves the factory (its owner's manual, pp. 21–22):
-// expression pedal 1 sends CC 7 and expression pedal 2 CC 1, 0–127; number pedals 1–10 send CC
-// 65–74, latching (127, then 0 on the next press); the control pedals CTL 1 and 2 send CC 80 and
-// 81, momentary (127 while held, 0 on release).
-const FC300 = { exp1: 7, exp2: 1, pedals: [65, 66, 67, 68, 69, 70, 71, 72, 73, 74], ctl: [80, 81] };
+// Roland FC-300 in Control Change mode, as it leaves the factory (its owner's manual, pp. 21–23):
+// expression pedal 1 sends CC 7 and expression pedal 2 CC 1, 0–127; number pedals 1–5 send CC
+// 65–69, and 6–10 (the same five pedals after the bank pedal that selects 6–10) CC 70–74; the
+// control pedals CTL 1 and 2 send CC 80 and 81, and the switches under the expression pedals' toes
+// (EXP PEDAL SW 1 and 2) CC 82 and 83. Its table gives every switch as latching (127, then 0 on
+// the next press), though its text calls the control pedals momentary: the 'toggle' mode works
+// with either.
+const FC300 = { exp1: 7, exp2: 1, pedals: [65, 66, 67, 68, 69, 70, 71, 72, 73, 74], ctl: [80, 81], expSw: [82, 83] };
 
-const SWITCH_MODES = [['latch', 'latching (127, then 0)'], ['momentary', 'momentary (held)']];
+const SWITCH_MODES = [
+  ['toggle', 'each press toggles'],
+  ['latch', 'latching: 127 on, 0 off'],
+  ['momentary', 'momentary (127 while held)'],
+];
 
 // A volume pedal's pot is audio (log) taper: the share of the track below the wiper at travel x is
 // (81^x − 1)/80, 10 % at half travel, as the usual "A" taper; the signal is that share of itself.
 const audioTaper = (x) => (81 ** Math.min(1, Math.max(0, x)) - 1) / 80;
 
-// Everything a CC can move on this pedal's page.
-function targets(PEDAL) {
-  const list = [
-    { id: 'volume', label: 'Volume pedal', kind: 'continuous' },
-    { id: 'bypass', label: 'Footswitch (engage)', kind: 'switch' },
-    { id: 'mute', label: 'Tuner mute', kind: 'switch' },
-  ];
+// The control an expression pedal rocks on a pedal: the one its descriptor names (`expression`:
+// the Wah's rocker, the Radio's tuning), or else its first knob on the face that is not a level or
+// a mix (the Phuzz's Fuzz, the Tape Echo's tape speed, the Plate's decay).
+const LEVELS = /^(level|volume|master|dry|mix|blend|wet)$/i;
+function expressionOf(PEDAL) {
+  const all = params(PEDAL.groups);
+  if (PEDAL.expression && all.some((p) => p.id === PEDAL.expression)) return PEDAL.expression;
+  const knobs = all.filter((p) => p.perform && !p.type);
+  return (knobs.find((p) => !LEVELS.test(p.id)) ?? knobs[0])?.id ?? null;
+}
+
+// What every page can do (`only` leaves out what a page cannot: the app has no metronome).
+const PAGE = [
+  { id: 'volume', label: 'Volume pedal', kind: 'continuous' },
+  { id: 'bypass', label: 'Footswitch (engage)', kind: 'switch' },
+  { id: 'tuner', label: 'Tuner (mutes)', kind: 'switch' },
+  { id: 'mute', label: 'Mute', kind: 'switch' },
+  { id: 'tap', label: 'Tap tempo', kind: 'press' },
+  { id: 'metronome', label: 'Metronome', kind: 'switch' },
+];
+
+// Everything a CC can move on this pedal's page: the page's own, the page's extras (the
+// Pedalboard's slots), the pedal's presets and its controls.
+function targets(PEDAL, { extra = [], only = null } = {}) {
+  const list = [...PAGE.filter((t) => !only || only.includes(t.id)), ...extra];
+  for (const name of Object.keys(PEDAL.presets ?? {})) list.push({ id: `preset:${name}`, label: `Preset: ${name}`, kind: 'press', preset: name });
   for (const p of params(PEDAL.groups)) {
     list.push({ id: `param:${p.id}`, label: p.label, kind: p.type === 'checkbox' ? 'switch' : p.type === 'select' ? 'choice' : 'continuous', param: p });
   }
   return list;
 }
 
-// The FC-300's pedals on this pedal: expression 1 the volume, expression 2 the pedal's expression
-// control (the Wah's rocker), number pedal 1 the footswitch, number pedal 2 the tuner's mute.
+const map = (cc, target, mode = 'toggle') => ({ cc, channel: 0, target, mode, invert: false });
+
+// The FC-300's live layout on a pedal's page, for the bank of number pedals 1–5 and the one of
+// 6–10:
+//   EXP 1   the volume                   EXP 2   the pedal's expression control
+//   1       the footswitch               EXP 2's toe switch   the footswitch too, as a wah's
+//   2–5     the pedal's switches (the Rotary's Fast), then its presets, in order
+//   6–10    the presets after those
+//   CTL 1   the tuner, muting the pedal  CTL 2   tap tempo
 function defaultMappings(PEDAL) {
-  const m = [{ cc: FC300.exp1, channel: 0, target: 'volume', mode: 'latch', invert: false }];
-  if (PEDAL.expression) m.push({ cc: FC300.exp2, channel: 0, target: `param:${PEDAL.expression}`, mode: 'latch', invert: false });
-  m.push({ cc: FC300.pedals[0], channel: 0, target: 'bypass', mode: 'latch', invert: false });
-  m.push({ cc: FC300.pedals[1], channel: 0, target: 'mute', mode: 'latch', invert: false });
+  const m = [map(FC300.exp1, 'volume', 'latch')];
+  const exp = expressionOf(PEDAL);
+  if (exp) m.push(map(FC300.exp2, `param:${exp}`, 'latch'));
+  m.push(map(FC300.pedals[0], 'bypass'));
+  const more = [
+    ...params(PEDAL.groups).filter((p) => p.perform && p.type === 'checkbox').map((p) => `param:${p.id}`),
+    ...Object.keys(PEDAL.presets ?? {}).map((n) => `preset:${n}`),
+  ];
+  more.slice(0, 9).forEach((t, i) => m.push(map(FC300.pedals[i + 1], t)));
+  m.push(map(FC300.ctl[0], 'tuner'), map(FC300.ctl[1], 'tap'), map(FC300.expSw[1], 'bypass'));
   return m;
 }
 
-// What a CC value (0–127) does to a target of a kind: a position for a continuous control, on or
-// off for a switch (latching: ≥ 64 is on; momentary: a press, ≥ 64 after < 64, toggles), and the
-// nearest of a choice's options. Returns null when nothing should happen.
+// The layout before this one (number pedal 2 the tuner's mute, latching): a page that saved it,
+// untouched, takes the live layout instead.
+function legacyMappings(PEDAL) {
+  const m = [map(FC300.exp1, 'volume', 'latch')];
+  if (PEDAL.expression) m.push(map(FC300.exp2, `param:${PEDAL.expression}`, 'latch'));
+  m.push(map(FC300.pedals[0], 'bypass', 'latch'), map(FC300.pedals[1], 'mute', 'latch'));
+  return m;
+}
+const same = (a, b) => a.length === b.length && a.every((x, i) => ['cc', 'channel', 'target', 'mode', 'invert'].every((k) => (x[k] ?? map(0, '')[k]) === b[i][k]));
+const isLegacy = (saved, PEDAL) => Array.isArray(saved) && same(saved, legacyMappings(PEDAL));
+
+// Whether a value is a press of a pedal, given the last value the same CC sent: for a momentary
+// pedal, the value rising through 64; for a latching one, every message.
+const pressed = (m, v, last) => (m.mode === 'momentary' ? v >= 64 && !(last >= 64) : true);
+
+// What a CC value (0–127) does to a target of a kind: a position for a continuous control; for a
+// switch on or off (latch: ≥ 64 is on), or a press that toggles it; a press for a pedal that acts
+// once a press; and the nearest of a choice's options. Returns null when nothing should happen.
 function ccAction(t, m, value, last) {
   const v = m.invert ? 127 - value : value;
   if (t.kind === 'continuous') return { target: t.id, value: v / 127 };
   if (t.kind === 'choice') return { target: t.id, value: Math.round((v / 127) * (t.param.options.length - 1)) };
-  if (m.mode === 'momentary') return v >= 64 && !(last >= 64) ? { target: t.id, toggle: true } : null;
-  return { target: t.id, value: v >= 64 };
+  if (t.kind === 'press') return pressed(m, v, last) ? { target: t.id, press: true } : null;
+  if (m.mode === 'latch') return { target: t.id, value: v >= 64 };
+  return pressed(m, v, last) ? { target: t.id, toggle: true } : null;
 }
 
 class MidiMap {
-  constructor(PEDAL, mappings = defaultMappings(PEDAL)) {
+  // opts: { extra: more targets (the Pedalboard's slots), only: the page's own targets it has,
+  //         defaults: () => its own layout }
+  constructor(PEDAL, mappings, opts = {}) {
     this.PEDAL = PEDAL;
-    this.targets = new Map(targets(PEDAL).map((t) => [t.id, t]));
-    this.mappings = mappings.filter((m) => this.targets.has(m.target)).map((m) => ({ channel: 0, mode: 'latch', invert: false, ...m }));
+    this.opts = opts;
+    this.targets = new Map(targets(PEDAL, opts).map((t) => [t.id, t]));
+    this.mappings = (mappings ?? this.defaults()).filter((m) => this.targets.has(m.target)).map((m) => ({ channel: 0, mode: 'latch', invert: false, ...m }));
     this.learning = -1; // the mapping waiting for its CC
     this.last = new Map(); // `${channel}:${cc}` → the last value, for momentary switches
   }
+  defaults() { return (this.opts.defaults?.() ?? defaultMappings(this.PEDAL)).filter((m) => this.targets.has(m.target)); }
   learn(i) { this.learning = i; }
   cancelLearn() { this.learning = -1; }
-  add(target = 'volume') { this.mappings.push({ cc: 0, channel: 0, target, mode: 'latch', invert: false }); return this.mappings.length - 1; }
+  add(target = 'volume') { this.mappings.push({ cc: 0, channel: 0, target, mode: 'toggle', invert: false }); return this.mappings.length - 1; }
   remove(i) { this.mappings.splice(i, 1); if (this.learning === i) this.learning = -1; else if (this.learning > i) this.learning--; }
-  reset() { this.mappings = defaultMappings(this.PEDAL); this.learning = -1; }
+  reset() { this.mappings = this.defaults(); this.learning = -1; }
+  // the targets a CC moves (on any channel), for the drawing of the foot controller
+  of(cc) { return this.mappings.filter((m) => m.cc === cc).map((m) => this.targets.get(m.target)); }
 
   // One MIDI message, as bytes. Returns { cc, channel, value, learned, actions } for a control
   // change, { program, channel, actions: [{ program }] } for a program change, or null.
@@ -1177,29 +1295,41 @@ class MidiMap {
   }
 }
 
-return { FC300, SWITCH_MODES, audioTaper, targets, defaultMappings, ccAction, MidiMap };
+return { FC300, SWITCH_MODES, audioTaper, expressionOf, targets, defaultMappings, legacyMappings, isLegacy, ccAction, MidiMap };
 })();
 
 // ---- shared/midi-panel.js
 const __m4 = (() => {
-const { MidiMap, defaultMappings, targets, audioTaper, SWITCH_MODES } = __m5;
+const { MidiMap, FC300, isLegacy, audioTaper, SWITCH_MODES } = __m5;
 const { fromUnit } = __m1;
 // midi-panel.js — the MIDI card on a pedal's page: Web MIDI (Chrome and Edge) or the app's own
 // MIDI (window.phuzzMidi(status, d1, d2)), the mappings from control changes to the page's
-// controls (shared/midi.js), MIDI learn, and a monitor of the last message, so you can see a
-// pedal arrive. The shell hands it what the page can do (ui) and puts its element in the page.
+// controls (shared/midi.js), MIDI learn, a monitor of the last message, and a drawing of the FC-300
+// that says what each of its pedals does here and lights as they arrive. The drawing shows twice:
+// at the top of the card, and as the FC-300 view under the pedal, for playing. The shell hands it
+// what the page can do (ui) and puts its elements in the page.
 //
 //   const midi = midiPanel({ PEDAL, h, store, key, ui });
 //   ui = { setVolume(gain), bypassed(), setBypass(on), muted(), setMute(on), value(id), set(id, v),
-//          presets: [names], applyPreset(name) }
+//          presets: [names], applyPreset(name),
+//          and if the page has them: tuning(), setTuning(on), tap() (→ the tempo, or null),
+//          metronome(), setMetronome(on), program(n) (a program change; else the n-th preset),
+//          extra: { targets, isOn(id), act(action) } (the Pedalboard's own) }
+//   midi.el is the card, midi.view the FC-300 view's card.
 
 
 
-function midiPanel({ PEDAL, h, store, key, ui }) {
-  const map = new MidiMap(PEDAL, store.get(`${key}.midi`, null) ?? defaultMappings(PEDAL));
-  const all = targets(PEDAL);
+function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
+  const only = ['volume', 'bypass', 'mute', ...(ui.setTuning ? ['tuner'] : []), ...(ui.tap ? ['tap'] : []), ...(ui.setMetronome ? ['metronome'] : [])];
+  let saved = store.get(`${key}.midi`, null);
+  if (isLegacy(saved, PEDAL)) saved = null; // the old defaults, untouched: the live layout now
+  const map = new MidiMap(PEDAL, saved, { extra: ui.extra?.targets ?? [], only, defaults });
+  const all = [...map.targets.values()];
   const save = () => store.set(`${key}.midi`, map.mappings);
-  let access = null;
+  let access = null, lastPreset = null, bpm = null;
+  const value = new Map(); // CC → its last value, for the expression pedals' travel
+  const boards = []; // the drawings of the FC-300: the card's and the view's
+  const rowEls = [];
 
   const status = h('span', { class: 'midi-status' }, navigator.requestMIDIAccess ? 'not connected' : 'Web MIDI needs Chrome or Edge');
   const connectBtn = h('button', { type: 'button', class: 'ghost', hidden: !navigator.requestMIDIAccess, onclick: () => connect() }, 'Connect MIDI');
@@ -1207,70 +1337,173 @@ function midiPanel({ PEDAL, h, store, key, ui }) {
   const last = h('span', { class: 'pill midi-last', title: 'The last control change that arrived, on any input' }, 'last: –');
   const rowsEl = h('div', { class: 'midi-maps' });
   const addBtn = h('button', { type: 'button', class: 'ghost', onclick: () => { const i = map.add(); save(); draw(); map.learn(i); draw(); } }, '+ Add a pedal');
-  const resetBtn = h('button', { type: 'button', class: 'ghost', title: 'Expression pedal 1 (CC 7) the volume, expression pedal 2 (CC 1) the pedal\'s expression control, number pedal 1 (CC 65) the footswitch, number pedal 2 (CC 66) the tuner\'s mute', onclick: () => { map.reset(); save(); draw(); } }, 'FC-300 defaults');
+  const resetBtn = h('button', { type: 'button', class: 'ghost', title: 'Every pedal of the FC-300 as it leaves the factory in Control Change mode, mapped for playing this page (drawn above)', onclick: () => { map.reset(); save(); draw(); } }, 'FC-300 live layout');
+  const help = h('p', { class: 'midi-help' }, 'A MIDI foot controller works this page: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB), put it in Control Change mode, and press Connect MIDI. The drawing says what each of its pedals does here; Learn, then move a pedal, teaches a row that pedal. ',
+    ui.about ? h('button', { type: 'button', class: 'link', onclick: () => ui.about() }, 'Setting up the FC-300') : null);
+  const boardEl = footboard(true);
   const el = h('section', { class: 'midi', 'aria-label': 'MIDI' },
     h('div', { class: 'midi-bar' }, h('b', {}, 'MIDI pedals'), status, connectBtn, inSel, last),
-    h('p', { class: 'midi-help' }, 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB), set it to Control Change mode, and press Connect MIDI. Learn, then move a pedal, teaches a row that pedal.'),
-    rowsEl, h('div', { class: 'midi-actions' }, addBtn, resetBtn));
+    help, boardEl.el, rowsEl, h('div', { class: 'midi-actions' }, addBtn, resetBtn));
+  const viewBoard = footboard(false);
+  const viewStatus = h('span', { class: 'fc-status' }, '');
+  const view = h('figure', { class: 'card fc-card', 'aria-label': 'FC-300', 'data-view': 'FC-300', 'data-keep-text': '' },
+    h('figcaption', {}, h('b', {}, 'FC-300'), viewStatus), viewBoard.el);
 
   // ---- the mappings
-  const rowEls = [];
   function draw() {
     rowEls.length = 0;
     rowsEl.replaceChildren(...map.mappings.map((m, i) => {
       const t = map.targets.get(m.target);
       const cc = h('input', { type: 'number', min: 0, max: 119, value: m.cc, 'aria-label': 'Control change number' });
-      cc.addEventListener('change', () => { m.cc = Math.max(0, Math.min(119, Math.round(+cc.value) || 0)); cc.value = m.cc; save(); });
+      cc.addEventListener('change', () => { m.cc = Math.max(0, Math.min(119, Math.round(+cc.value) || 0)); cc.value = m.cc; save(); drawBoards(); });
       const ch = h('select', { 'aria-label': 'MIDI channel', onchange: () => { m.channel = +ch.value; save(); } },
         h('option', { value: 0 }, 'any channel'), ...Array.from({ length: 16 }, (_, k) => h('option', { value: k + 1 }, `channel ${k + 1}`)));
       ch.value = m.channel;
       const target = h('select', { 'aria-label': 'What it moves', onchange: () => { m.target = target.value; save(); draw(); } },
         ...all.map((x) => h('option', { value: x.id }, x.label)));
       target.value = m.target;
-      const mode = h('select', { 'aria-label': 'Switch type', hidden: t.kind !== 'switch', onchange: () => { m.mode = mode.value; save(); } },
-        ...SWITCH_MODES.map(([v, l]) => h('option', { value: v }, l)));
-      mode.value = m.mode;
+      const isSwitch = t.kind === 'switch' || t.kind === 'press';
+      const mode = h('select', { 'aria-label': 'Switch type', hidden: !isSwitch, onchange: () => { m.mode = mode.value; save(); } },
+        ...SWITCH_MODES.filter(([v]) => t.kind === 'switch' || v !== 'latch').map(([v, l]) => h('option', { value: v }, t.kind === 'press' && v === 'toggle' ? 'latching (each message a press)' : l)));
+      mode.value = t.kind === 'press' && m.mode === 'latch' ? 'toggle' : m.mode;
       const inv = h('input', { type: 'checkbox', 'aria-label': 'Reverse the pedal' });
       inv.checked = !!m.invert;
       inv.addEventListener('change', () => { m.invert = inv.checked; save(); });
       const learning = map.learning === i;
       const learn = h('button', { type: 'button', class: `ghost learn${learning ? ' on' : ''}`, 'aria-pressed': String(learning), onclick: () => { if (map.learning === i) map.cancelLearn(); else map.learn(i); draw(); } }, learning ? 'Move a pedal…' : 'Learn');
       const del = h('button', { type: 'button', class: 'ghost', 'aria-label': 'Remove this pedal', onclick: () => { map.remove(i); save(); draw(); } }, '✕');
-      const row = h('div', { class: 'mrow' },
-        h('label', { class: 'inline' }, 'CC ', cc), ch, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '→'), target, mode,
-        h('label', { class: 'inline', hidden: t.kind === 'switch' }, inv, 'reverse'), learn, del);
+      const row = h('div', { class: 'mrow', 'data-cc': m.cc },
+        h('label', { class: 'inline' }, 'CC ', cc), h('span', { class: 'fc-name' }, nameOf(m.cc)), ch, h('span', { class: 'arrow', 'aria-hidden': 'true' }, '→'), target, mode,
+        h('label', { class: 'inline', hidden: isSwitch }, inv, 'reverse'), learn, del);
       rowEls.push(row);
       return row;
     }));
-    if (!map.mappings.length) rowsEl.append(h('p', { class: 'midi-help' }, 'No pedals mapped: + Add a pedal, then move it.'));
+    if (!map.mappings.length) rowsEl.append(h('p', { class: 'midi-help' }, 'No pedals mapped: + Add a pedal, then move it, or FC-300 live layout.'));
+    drawBoards();
   }
+
+  // ---- the FC-300, drawn: what each of its pedals does on this page, lit while it is on
+  // the FC-300's name for a CC, in Control Change mode as it leaves the factory
+  function nameOf(cc) {
+    const k = FC300.pedals.indexOf(cc);
+    if (k >= 0) return `pedal ${k + 1}`;
+    if (cc === FC300.exp1) return 'EXP 1';
+    if (cc === FC300.exp2) return 'EXP 2';
+    if (FC300.ctl.includes(cc)) return `CTL ${FC300.ctl.indexOf(cc) + 1}`;
+    if (FC300.expSw.includes(cc)) return `EXP ${FC300.expSw.indexOf(cc) + 1} toe`;
+    return '';
+  }
+  const short = (t) => {
+    if (!t) return '';
+    if (t.short) return t.short();
+    if (t.id === 'bypass') return 'On/off';
+    if (t.id === 'tap') return bpm ? `Tap · ${bpm}/min` : 'Tap tempo';
+    if (t.id === 'tuner') return 'Tuner';
+    if (t.id === 'volume') return 'Volume';
+    if (t.preset) return t.preset;
+    return t.label;
+  };
+  const isOn = (t) => {
+    if (t.id === 'bypass') return !ui.bypassed();
+    if (t.id === 'tuner') return !!ui.tuning?.();
+    if (t.id === 'mute') return ui.muted();
+    if (t.id === 'metronome') return !!ui.metronome?.();
+    if (t.preset) return t.preset === lastPreset;
+    if (t.param?.type === 'checkbox') return !!ui.value(t.param.id);
+    if (ui.extra?.targets.some((x) => x.id === t.id)) return ui.extra.isOn(t.id);
+    return null;
+  };
+  function footboard(teach) {
+    const cells = [];
+    // one line: a CC's number or bank, what it does, and its light
+    const line = (cc, tag) => {
+      const led = h('i', { class: 'fc-led', 'aria-hidden': 'true' }), what = h('span', { class: 'fc-what' });
+      const el = h('span', { class: 'fc-line' }, tag ? h('small', {}, tag) : null, what, led);
+      cells.push({ cc, line: el, what, led });
+      return el;
+    };
+    const cell = (cls, name, ...lines) => {
+      const c = h(teach ? 'button' : 'div', { class: `fc-pedal ${cls}`, ...(teach ? { type: 'button', title: 'Show its rows below' } : {}) }, h('b', {}, name), ...lines);
+      if (teach) c.addEventListener('click', () => { const ccs = [...c.querySelectorAll('.fc-line')].map((l) => +l.dataset.cc); const r = rowEls.filter((x) => ccs.includes(+x.dataset.cc)); r[0]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); for (const x of r) flash(x); c.blur(); });
+      return c;
+    };
+    const exp = (n) => {
+      const travel = h('i', { class: 'fc-travel', 'aria-hidden': 'true' });
+      const c = cell('fc-exp', `EXP ${n + 1}`, line(n ? FC300.exp2 : FC300.exp1), h('span', { class: 'fc-rail', 'aria-hidden': 'true' }, travel), line(FC300.expSw[n], 'toe'));
+      cells.push({ cc: n ? FC300.exp2 : FC300.exp1, travel });
+      return c;
+    };
+    // drawn as a map of its controls, not to scale: the control pedals and the expression pedals
+    // (each with its toe switch) above, the five number pedals (1–5, or 6–10 after the bank pedal)
+    const el = h('div', { class: 'fc300', role: 'group', 'aria-label': 'What the FC-300\'s pedals do here' },
+      h('div', { class: 'fc-top' }, ...FC300.ctl.map((cc, i) => cell('fc-ctl', `CTL ${i + 1}`, line(cc))), exp(0), exp(1)),
+      h('div', { class: 'fc-nums' }, ...[0, 1, 2, 3, 4].map((k) => cell('fc-num', `${k + 1} · ${k + 6}`, line(FC300.pedals[k], `${k + 1}`), line(FC300.pedals[k + 5], `${k + 6}`)))));
+    for (const c of cells) if (c.line) c.line.dataset.cc = c.cc;
+    const b = { el, cells };
+    boards.push(b);
+    return b;
+  }
+  function drawBoards() {
+    for (const b of boards) for (const c of b.cells) {
+      if (c.travel) { const v = value.get(c.cc); c.travel.style.setProperty('--x', v == null ? 0.5 : v / 127); continue; }
+      const ts = map.of(c.cc);
+      const what = ts.length ? ts.map(short).join(' + ') : '–';
+      if (c.what.textContent !== what) c.what.textContent = what; // unchanged, left alone: the page doesn't lay out again
+      c.line.title = `${nameOf(c.cc)}, CC ${c.cc}: ${ts.length ? ts.map(short).join(' and ') : 'nothing yet (Learn teaches it)'}`;
+      c.line.classList.toggle('free', !ts.length);
+      const on = ts.map(isOn).filter((x) => x !== null);
+      c.led.hidden = !on.length;
+      c.led.classList.toggle('on', on.some(Boolean));
+    }
+  }
+  function flash(x) { x.classList.remove('hit'); void x.offsetWidth; x.classList.add('hit'); }
   draw();
+  // the screen moves what the pedals move too: the lights follow it
+  setInterval(() => { if (!document.hidden && (el.isConnected || view.isConnected)) drawBoards(); }, 300);
 
   // ---- what a message does
   function act(a) {
-    if (a.program !== undefined) { const name = ui.presets[a.program]; if (name) ui.applyPreset(name); return; }
+    if (a.program !== undefined) {
+      if (ui.program) return ui.program(a.program);
+      const name = ui.presets[a.program];
+      if (name) { lastPreset = name; ui.applyPreset(name); }
+      return;
+    }
     const on = (now) => (a.toggle ? !now : a.value);
+    const t = map.targets.get(a.target);
     if (a.target === 'volume') ui.setVolume(audioTaper(a.value));
     else if (a.target === 'bypass') ui.setBypass(!on(!ui.bypassed()));
+    else if (a.target === 'tuner') ui.setTuning(on(ui.tuning()));
     else if (a.target === 'mute') ui.setMute(on(ui.muted()));
-    else {
-      const p = map.targets.get(a.target).param;
+    else if (a.target === 'metronome') ui.setMetronome(on(ui.metronome()));
+    else if (a.target === 'tap') bpm = ui.tap() ?? bpm;
+    else if (t.preset) { lastPreset = t.preset; ui.applyPreset(t.preset); }
+    else if (t.param) {
+      const p = t.param;
       if (p.type === 'checkbox') ui.set(p.id, on(!!ui.value(p.id)));
       else if (p.type === 'select') ui.set(p.id, p.options[a.value][0]);
       else ui.set(p.id, fromUnit(p, a.value));
-    }
+    } else ui.extra?.act({ ...a, on: a.toggle ? !ui.extra.isOn(a.target) : a.value });
   }
   function feed(data) {
     const r = map.message(data);
     if (!r) return;
-    if (r.cc !== undefined) last.textContent = `last: CC ${r.cc} = ${r.value} · ch ${r.channel}`;
-    else last.textContent = `last: program ${r.program + 1} · ch ${r.channel}`;
+    if (r.cc !== undefined) {
+      const name = nameOf(r.cc);
+      last.textContent = `last: ${name ? `${name}, ` : ''}CC ${r.cc} = ${r.value} · ch ${r.channel}`;
+      value.set(r.cc, r.value);
+    } else last.textContent = `last: program ${r.program + 1} · ch ${r.channel}`;
     if (r.learned >= 0) { save(); draw(); }
     for (const a of r.actions) act(a);
-    if (r.cc !== undefined) map.mappings.forEach((m, i) => { if (m.cc === r.cc && rowEls[i]) { rowEls[i].classList.remove('hit'); void rowEls[i].offsetWidth; rowEls[i].classList.add('hit'); } });
+    if (r.cc !== undefined) {
+      map.mappings.forEach((m, i) => { if (m.cc === r.cc && rowEls[i]) flash(rowEls[i]); });
+      for (const b of boards) for (const c of b.cells) if (c.cc === r.cc && c.line) flash(c.line.closest('.fc-pedal'));
+    }
+    drawBoards();
   }
   // the app's window has no Web MIDI; its program hands the page the bytes
-  window.phuzzMidi = (s, d1, d2) => { status.textContent = 'from the app'; feed([s, d1, d2]); };
+  window.phuzzMidi = (s, d1, d2) => { setStatus('from the app'); feed([s, d1, d2]); };
+  const setStatus = (s) => { status.textContent = s; viewStatus.textContent = s; };
 
   // ---- Web MIDI
   function listen() {
@@ -1281,7 +1514,7 @@ function midiPanel({ PEDAL, h, store, key, ui }) {
     inSel.value = inputs.some((p) => p.id === want) ? want : '';
     inSel.hidden = !inputs.length;
     for (const p of inputs) p.onmidimessage = !inSel.value || inSel.value === p.id ? (e) => feed(e.data) : null;
-    status.textContent = inputs.length ? `listening to ${inputs.length === 1 ? inputs[0].name : `${inputs.length} inputs`}` : 'connected, but no MIDI input: plug in the interface';
+    setStatus(inputs.length ? `listening to ${inputs.length === 1 ? inputs[0].name : `${inputs.length} inputs`}` : 'connected, but no MIDI input: plug in the interface');
   }
   async function connect() {
     if (!navigator.requestMIDIAccess) return;
@@ -1291,20 +1524,137 @@ function midiPanel({ PEDAL, h, store, key, ui }) {
       connectBtn.hidden = true;
       listen();
     } catch (err) {
-      status.textContent = `MIDI was not allowed (${err.message})`;
+      setStatus(`MIDI was not allowed (${err.message})`);
     }
   }
+  setStatus(status.textContent);
   // connect without asking when the browser already allows it
   navigator.permissions?.query({ name: 'midi' }).then((s) => { if (s.state === 'granted') connect(); }).catch(() => {});
 
-  return { el, map, feed };
+  return { el, view, map, feed, setStatus, refresh: drawBoards };
 }
 
 return { midiPanel };
 })();
 
-// ---- shared/layout.js
+// ---- shared/metronome.js
 const __m6 = (() => {
+
+// metronome.js — the metronome every page has under the pedal, beside the tuner (its card is
+// shared/metronome-card.js; its README metronome/README.md). No DOM: the tests use it in Node.
+//
+// The sound is two struck bars, as a clockwork metronome's escapement and bell: each beat a maple
+// block, the first of each bar a steel bar, both free at both ends. A bar's bending modes are the
+// roots of cos(βL) cosh(βL) = 1 (Euler–Bernoulli), at
+//   fₙ = (βₙL)² / (2π L²) · √(E I / ρ A),   I / A = t² / 12 for a rectangular section,
+// each decaying with the material's loss factor η (τₙ = 1 / (π fₙ η)), struck at its end, where
+// every mode moves alike, by a beater in contact for a while: a half-sine of force, whose spectrum
+// leaves out the modes above about 1.5 / contact.
+//
+// The beat comes from a pendulum: a bob below the pivot and a weight you slide above it, so the
+// tempo printed on the rod is where the weight sits. Small swings of a compound pendulum take
+//   T = 2π √((M r_M² + m r_m²) / (g (M r_M − m r_m))),
+// two beats a period (one each way).
+
+const WOOD = { name: 'maple', E: 12.6e9, rho: 705, eta: 0.02 };
+const STEEL = { name: 'steel', E: 200e9, rho: 7850, eta: 3e-4 };
+// the bars: the tick a maple block, the bell a steel bar (lengths and thicknesses in metres)
+const TICK = { material: WOOD, L: 0.15, t: 0.008, contact: 0.2e-3 };
+const BELL = { material: STEEL, L: 0.08, t: 0.004, contact: 0.1e-3 };
+// the pendulum: the bob (M at r_M below the pivot) and the sliding weight (m, r_m above it)
+const PENDULUM = { M: 0.06, rM: 0.045, m: 0.03, g: 9.81 };
+const TEMPO = { min: 30, max: 250, def: 100 };
+
+// βₙL for the first n free-free modes, by Newton's method on cos x cosh x − 1 from (n + ½)π
+function beamRoots(n = 4) {
+  const out = [];
+  for (let k = 1; k <= n; k++) {
+    let x = (k + 0.5) * Math.PI;
+    for (let i = 0; i < 50; i++) {
+      const f = Math.cos(x) * Math.cosh(x) - 1, d = -Math.sin(x) * Math.cosh(x) + Math.cos(x) * Math.sinh(x);
+      const dx = f / d;
+      x -= dx;
+      if (Math.abs(dx) < 1e-13 * x) break;
+    }
+    out.push(x);
+  }
+  return out;
+}
+const ROOTS = beamRoots(4);
+
+// a bar's modes: [{ f, tau, amp }], amp the contact's spectrum at f relative to its value at 0
+function modes(bar, n = 4) {
+  const { E, rho, eta } = bar.material, c = Math.sqrt(E / rho), r = bar.t / Math.sqrt(12);
+  return ROOTS.slice(0, n).map((bl) => {
+    const f = ((bl * bl) / (2 * Math.PI * bar.L * bar.L)) * r * c;
+    return { f, tau: 1 / (Math.PI * f * eta), amp: contactSpectrum(f, bar.contact) };
+  });
+}
+// |F(f)| / F(0) for a half-sine of force lasting T: cos(πfT) / (1 − (2fT)²)
+function contactSpectrum(f, T) {
+  const u = 2 * f * T;
+  return Math.abs(u - 1) < 1e-9 ? Math.PI / 4 : Math.abs(Math.cos(Math.PI * f * T) / (1 - u * u));
+}
+
+// the bar's sound, struck once: the modes' velocities at the struck end, normalised to a peak of 1,
+// lasting until the slowest mode is 60 dB down (at most 1.5 s)
+function strike(bar, fs) {
+  const M = modes(bar).filter((m) => m.f < 0.45 * fs);
+  const seconds = Math.min(1.5, Math.max(...M.map((m) => m.tau)) * Math.log(1000));
+  const n = Math.max(1, Math.round(seconds * fs)), x = new Float32Array(n);
+  let peak = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / fs;
+    let y = 0;
+    for (const m of M) y += m.amp * Math.sin(2 * Math.PI * m.f * t) * Math.exp(-t / m.tau);
+    x[i] = y;
+    peak = Math.max(peak, Math.abs(y));
+  }
+  for (let i = 0; i < n; i++) x[i] /= peak || 1;
+  return x;
+}
+
+// ---- the pendulum ---------------------------------------------------------------------------------
+function period(rm, P = PENDULUM) {
+  const I = P.M * P.rM * P.rM + P.m * rm * rm, k = P.g * (P.M * P.rM - P.m * rm);
+  return k > 0 ? 2 * Math.PI * Math.sqrt(I / k) : Infinity;
+}
+// where the weight sits for a tempo (beats a minute): the root of m r² + K m r + M r_M (r_M − K) = 0,
+// K = g (T / 2π)², T two beats
+function weightAt(bpm, P = PENDULUM) {
+  const T = 120 / bpm, K = P.g * (T / (2 * Math.PI)) ** 2;
+  const a = P.m, b = K * P.m, c = P.M * P.rM * (P.rM - K);
+  return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+}
+
+// ---- the beats ------------------------------------------------------------------------------------
+// The beats from `from` (inclusive) to `to` (exclusive) of a metronome whose beat k0 fell at t0,
+// at most `limit` of them, as { t, k, beat }: k counts the beats, beat is where k falls in the bar
+// (0 the first, which rings the bell; 1 for every beat with no bar)
+function beatsBetween(t0, bpm, perBar, from, to, k0 = 0, limit = Infinity) {
+  const dt = 60 / bpm, out = [];
+  for (let j = Math.max(0, Math.ceil((from - t0) / dt - 1e-9)); t0 + j * dt < to && out.length < limit; j++) {
+    const k = k0 + j;
+    out.push({ t: t0 + j * dt, k, beat: perBar > 0 ? k % perBar : 1 });
+  }
+  return out;
+}
+// the tempo from taps (times in seconds): the median of the last few intervals, if they agree
+function tapTempo(taps) {
+  const d = taps.slice(-6).map((t, i, a) => (i ? t - a[i - 1] : 0)).slice(1).filter((x) => x > 0.2 && x < 2.5);
+  if (d.length < 2) return null;
+  d.sort((a, b) => a - b);
+  const mid = d[d.length >> 1];
+  return Math.min(TEMPO.max, Math.max(TEMPO.min, Math.round(60 / mid)));
+}
+// the pendulum's angle at time t, as a fraction of its swing (−1 … 1): at an end on each beat
+const swing = (t, t0, bpm) => Math.cos((Math.PI * (t - t0) * bpm) / 60);
+
+return { WOOD, STEEL, TICK, BELL, PENDULUM, TEMPO, beamRoots, modes, contactSpectrum, strike, period, weightAt, beatsBetween, tapTempo, swing };
+})();
+
+// ---- shared/layout.js
+const __m7 = (() => {
 
 // layout.js — the layout of every pedal page, after Forte's (github.com/jdthaler/forte,
 // shared/layout.js): the page fills the screen, with nothing to scroll but the panels themselves.
@@ -1332,7 +1682,7 @@ const __m6 = (() => {
 //            rack, rather than in the views' stage, its toggle there too)
 //   groups = [{ key, name, el }]
 //   share  = the views' share of the height at first (0.6); store = { get(k, d), set(k, v) }
-//   returns { showViews(names | null), viewNames(), tourSlot, arrange() }
+//   returns { showViews(names | null), viewNames(), viewShown(key), setView(key, on), tourSlot, arrange() }
 
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const CHEVRON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6"/></svg>';
@@ -1556,6 +1906,9 @@ function createLayout({ id, h, store, app, header, rack, views, groups, dock, sh
     tourSlot,
     arrange,
     viewNames: () => all.map((v) => v.name),
+    // one view on or off, by its key, as its toggle does (a MIDI pedal shows the tuner)
+    viewShown: (key) => !!all.find((v) => v.key === key)?.shown(),
+    setView(key, on) { if (!all.some((v) => v.key === key) || touring) return; prefs.views[key] = on; save(); apply(); },
     showViews(names) { touring = names ? new Set(names.map((n) => n.toLowerCase())) : null; apply(); },
   };
 }
@@ -1564,7 +1917,7 @@ return { createLayout };
 })();
 
 // ---- shared/treadle.js
-const __m7 = (() => {
+const __m8 = (() => {
 const { toUnit, fromUnit, fmt } = __m1;
 // treadle.js — a rocker pedal on a pedal's face, for the control a foot rocks (the Wah's Rocker):
 // the treadle seen from the side, its rubber on top, rocking on its axle over the cast base, heel
@@ -1655,7 +2008,7 @@ return { tiltOf, treadleFor };
 })();
 
 // ---- shared/registry.js
-const __m8 = (() => {
+const __m9 = (() => {
 
 // registry.js — every pedal: the landing page, the menus and the tests read this list.
 //   id: the folder; name; version (semver, bumped only at a release: CLAUDE.md);
@@ -1849,7 +2202,7 @@ return { PHUZZBOX_VERSION, pluginName, SOURCE, SECTIONS, PEDALS, byId };
 })();
 
 // ---- buffer/src/buffer-params.js
-const __m10 = (() => {
+const __m11 = (() => {
 
 // buffer-params.js — the Buffer's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -1915,7 +2268,7 @@ return { bass, recorded, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- shared/instruments.js
-const __m11 = (() => {
+const __m12 = (() => {
 
 // instruments.js — the two instruments a page can be set up for, bass and guitar: their open
 // strings, the tuner's range for each, the test instrument's riff, and the pickup each pedal that
@@ -1970,9 +2323,9 @@ return { INSTRUMENTS, instrument, GUITAR_PICKUP, RIFFS, INSTRUMENT_KEY, paramsKe
 })();
 
 // ---- buffer/src/buffer-pedal.js
-const __m9 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m10;
-const { GUITAR_PICKUP } = __m11;
+const __m10 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m11;
+const { GUITAR_PICKUP } = __m12;
 // buffer-pedal.js — the Buffer's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -1992,8 +2345,8 @@ return { PEDAL };
 })();
 
 // ---- phuzz/src/phuzz-params.js
-const __m13 = (() => {
-const { bass, recorded } = __m10;
+const __m14 = (() => {
+const { bass, recorded } = __m11;
 // phuzz-params.js — the Phuzz's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
 
@@ -2058,9 +2411,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- phuzz/src/phuzz-pedal.js
-const __m12 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m13;
-const { GUITAR_PICKUP } = __m11;
+const __m13 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m14;
+const { GUITAR_PICKUP } = __m12;
 // phuzz-pedal.js — the Phuzz's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2080,8 +2433,8 @@ return { PEDAL };
 })();
 
 // ---- wah/src/wah-params.js
-const __m15 = (() => {
-const { bass, recorded } = __m10;
+const __m16 = (() => {
+const { bass, recorded } = __m11;
 // wah-params.js — the Wah's controls. Values in SI units; `scale` shows them in friendlier ones.
 // The parts are the inductor wah's as Holters and Zölzer (DAFx 2011) list them; the sweep
 // capacitor starts at 22 nF for bass, where the original's 10 nF sweeps a guitar's range.
@@ -2173,9 +2526,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- wah/src/wah-pedal.js
-const __m14 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m15;
-const { GUITAR_PICKUP } = __m11;
+const __m15 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m16;
+const { GUITAR_PICKUP } = __m12;
 // wah-pedal.js — the Wah's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2197,8 +2550,8 @@ return { PEDAL };
 })();
 
 // ---- preamp/src/preamp-params.js
-const __m17 = (() => {
-const { bass, recorded } = __m10;
+const __m18 = (() => {
+const { bass, recorded } = __m11;
 // preamp-params.js — the Tube Preamp's controls. Values in SI units; `scale` shows them in friendlier
 // ones. The bass and how it is plugged in are the Buffer's (the same pickup circuit drives this input).
 
@@ -2265,9 +2618,9 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- preamp/src/preamp-pedal.js
-const __m16 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m17;
-const { GUITAR_PICKUP } = __m11;
+const __m17 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m18;
+const { GUITAR_PICKUP } = __m12;
 // preamp-pedal.js — the Tube Preamp's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2287,7 +2640,7 @@ return { PEDAL };
 })();
 
 // ---- transformer/src/transformer-params.js
-const __m19 = (() => {
+const __m20 = (() => {
 
 // transformer-params.js — the Output Transformer's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -2332,8 +2685,8 @@ return { MATERIALS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- transformer/src/transformer-pedal.js
-const __m18 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m19;
+const __m19 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m20;
 // transformer-pedal.js — the Output Transformer's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2354,7 +2707,7 @@ return { PEDAL };
 })();
 
 // ---- opto/src/opto-params.js
-const __m21 = (() => {
+const __m22 = (() => {
 
 // opto-params.js — the Opto Compressor's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The fixed parts (the 47 kΩ series resistor, the driver's gain, the cell's
@@ -2414,8 +2767,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- opto/src/opto-pedal.js
-const __m20 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m21;
+const __m21 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m22;
 // opto-pedal.js — the Opto Compressor's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2433,7 +2786,7 @@ return { PEDAL };
 })();
 
 // ---- cabinet/src/cabinet-params.js
-const __m23 = (() => {
+const __m24 = (() => {
 
 // cabinet-params.js — the Speaker Cabinet's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The bass drivers are Thiele–Small parameters typical of a 10-inch or a 15-inch
@@ -2517,8 +2870,8 @@ return { GROUPS, GUITAR, PRESETS, KEEP };
 })();
 
 // ---- cabinet/src/cabinet-pedal.js
-const __m22 = (() => {
-const { GROUPS, PRESETS, KEEP, GUITAR } = __m23;
+const __m23 = (() => {
+const { GROUPS, PRESETS, KEEP, GUITAR } = __m24;
 // cabinet-pedal.js — the Speaker Cabinet's descriptor: everything a host needs to run it without
 // its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2537,7 +2890,7 @@ return { PEDAL };
 })();
 
 // ---- envelope/src/envelope-params.js
-const __m25 = (() => {
+const __m26 = (() => {
 
 // envelope-params.js — the Envelope Filter's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The filter is a state-variable filter whose two integrators' resistors are
@@ -2600,8 +2953,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- envelope/src/envelope-pedal.js
-const __m24 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m25;
+const __m25 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m26;
 // envelope-pedal.js — the Envelope Filter's descriptor: everything a host needs to run it without
 // its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2620,7 +2973,7 @@ return { PEDAL };
 })();
 
 // ---- octave/src/octave-params.js
-const __m27 = (() => {
+const __m28 = (() => {
 
 // octave-params.js — the Octave Down's controls. Values in SI units; `scale` shows them in
 // friendlier ones. The circuit is the analog octave divider: a tracking filter, a comparator with
@@ -2664,8 +3017,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- octave/src/octave-pedal.js
-const __m26 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m27;
+const __m27 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m28;
 // octave-pedal.js — the Octave Down's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2684,7 +3037,7 @@ return { PEDAL };
 })();
 
 // ---- spring/src/spring-params.js
-const __m29 = (() => {
+const __m30 = (() => {
 
 // spring-params.js — the Spring Reverb's controls. Values in SI units; `scale` shows them in
 // friendlier ones. A reverb tank: helical steel springs hung between magnetic beads, one bead
@@ -2735,8 +3088,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- spring/src/spring-pedal.js
-const __m28 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m29;
+const __m29 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m30;
 // spring-pedal.js — the Spring Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -2754,7 +3107,7 @@ return { PEDAL };
 })();
 
 // ---- openair/src/openair-params.js
-const __m31 = (() => {
+const __m32 = (() => {
 
 // openair-params.js — Open Air's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -2795,8 +3148,8 @@ return { GROUNDS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- openair/src/openair-pedal.js
-const __m30 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m31;
+const __m31 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m32;
 // openair-pedal.js — Open Air's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2817,7 +3170,7 @@ return { PEDAL };
 })();
 
 // ---- sabine/src/sabine-params.js
-const __m33 = (() => {
+const __m34 = (() => {
 
 // sabine-params.js — Sabine's Room's controls. Values in SI units.
 
@@ -2861,8 +3214,8 @@ return { WALLS, FLOORS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- sabine/src/sabine-pedal.js
-const __m32 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m33;
+const __m33 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m34;
 // sabine-pedal.js — Sabine's Room's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2883,7 +3236,7 @@ return { PEDAL };
 })();
 
 // ---- rubens/src/rubens-params.js
-const __m35 = (() => {
+const __m36 = (() => {
 
 // rubens-params.js — Rubens' Tube's controls. Values in SI units.
 
@@ -2923,8 +3276,8 @@ return { GASES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- rubens/src/rubens-pedal.js
-const __m34 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m35;
+const __m35 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m36;
 // rubens-pedal.js — Rubens' Tube's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -2945,7 +3298,7 @@ return { PEDAL };
 })();
 
 // ---- helmholtz/src/helmholtz-params.js
-const __m37 = (() => {
+const __m38 = (() => {
 
 // helmholtz-params.js — Helmholtz's Resonators' controls. Values in SI units.
 
@@ -2980,8 +3333,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- helmholtz/src/helmholtz-pedal.js
-const __m36 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m37;
+const __m37 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m38;
 // helmholtz-pedal.js — Helmholtz's Resonators' descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3002,7 +3355,7 @@ return { PEDAL };
 })();
 
 // ---- echo/src/echo-params.js
-const __m39 = (() => {
+const __m40 = (() => {
 
 // echo-params.js — the Tape Echo's controls. Values in SI units; `scale` shows them in friendlier
 // ones. A loop of tape passes a record head and three playback heads; the echoes are the distances
@@ -3069,8 +3422,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- echo/src/echo-pedal.js
-const __m38 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m39;
+const __m39 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m40;
 // echo-pedal.js — the Tape Echo's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3081,6 +3434,12 @@ const PEDAL = {
   description: 'A tape loop past a record head and three playback heads: echoes from distance over speed, coloured by the tape\'s magnetisation and the heads\' losses',
   groups: GROUPS, presets: PRESETS, keep: KEEP,
   guitar: {}, // the same for a guitar as for a bass
+  // tap tempo (shared/midi.js): the tape's speed that brings the last head heard round once a beat,
+  // its distance over the beat, as far as the capstan's 5 to 40 cm/s reach
+  tap: (P, beat) => {
+    const d = Math.max(...String(P.heads).split('').map((k) => P[`head${k}`]));
+    return { speed: Math.min(0.4, Math.max(0.05, d / beat)) };
+  },
   wasm: { binary: () => new URL('../wasm/echo.wasm', location.href).href },
 };
 
@@ -3088,7 +3447,7 @@ return { PEDAL };
 })();
 
 // ---- rotary/src/rotary-params.js
-const __m41 = (() => {
+const __m42 = (() => {
 
 // rotary-params.js — the Rotary Speaker's controls. Values in SI units (rotation rates in hertz,
 // shown in rpm; angles in radians, shown in degrees). A horn and a drum spin in a cabinet past two
@@ -3161,8 +3520,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- rotary/src/rotary-pedal.js
-const __m40 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m41;
+const __m41 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m42;
 // rotary-pedal.js — the Rotary Speaker's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3180,7 +3539,7 @@ return { PEDAL };
 })();
 
 // ---- plate/src/plate-params.js
-const __m43 = (() => {
+const __m44 = (() => {
 
 // plate-params.js — the Plate Reverb's controls. Values in SI units. A steel plate, 2 m by 1 m and
 // half a millimetre thick, hung in a frame: a driver shakes it, two contact pickups listen.
@@ -3237,8 +3596,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- plate/src/plate-pedal.js
-const __m42 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m43;
+const __m43 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m44;
 // plate-pedal.js — the Plate Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3256,7 +3615,7 @@ return { PEDAL };
 })();
 
 // ---- sympathetic/src/sympathetic-params.js
-const __m45 = (() => {
+const __m46 = (() => {
 
 // sympathetic-params.js — the Sympathetic Strings' controls. Values in SI units. A frame of steel
 // strings tuned to a scale, all across one bridge; a driver moves the bridge with your bass, and a
@@ -3319,8 +3678,8 @@ return { KEYS, SCALES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- sympathetic/src/sympathetic-pedal.js
-const __m44 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m45;
+const __m45 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m46;
 // sympathetic-pedal.js — the Sympathetic Strings' descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3338,7 +3697,7 @@ return { PEDAL };
 })();
 
 // ---- blackhole/src/blackhole-params.js
-const __m47 = (() => {
+const __m48 = (() => {
 
 // blackhole-params.js — the Black Hole's controls. Values in SI units, and the hole's mass in suns:
 // your bass perturbs a spinning black hole, and you hear it ring in its quasinormal modes.
@@ -3383,8 +3742,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- blackhole/src/blackhole-pedal.js
-const __m46 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m47;
+const __m47 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m48;
 // blackhole-pedal.js — the Black Hole's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3402,7 +3761,7 @@ return { PEDAL };
 })();
 
 // ---- doppler/src/doppler-params.js
-const __m49 = (() => {
+const __m50 = (() => {
 
 // doppler-params.js — the Doppler's controls. Values in SI units: a source plays your bass as it
 // passes you on a straight road, again and again, and you hear it at its retarded time.
@@ -3450,8 +3809,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- doppler/src/doppler-pedal.js
-const __m48 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m49;
+const __m49 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m50;
 // doppler-pedal.js — the Doppler's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3469,7 +3828,7 @@ return { PEDAL };
 })();
 
 // ---- bandgap/src/bandgap-params.js
-const __m51 = (() => {
+const __m52 = (() => {
 
 // bandgap-params.js — the Bandgap's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3531,8 +3890,8 @@ return { DIODES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- bandgap/src/bandgap-pedal.js
-const __m50 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m51;
+const __m51 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m52;
 // bandgap-pedal.js — the Bandgap's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3551,7 +3910,7 @@ return { PEDAL };
 })();
 
 // ---- michelson/src/michelson-params.js
-const __m53 = (() => {
+const __m54 = (() => {
 
 // michelson-params.js — the Michelson Interferometer's controls. Values in SI units; `scale` shows
 // them in friendlier ones.
@@ -3608,8 +3967,8 @@ return { SOURCES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- michelson/src/michelson-pedal.js
-const __m52 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m53;
+const __m53 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m54;
 // michelson-pedal.js — the Michelson Interferometer's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3628,7 +3987,7 @@ return { PEDAL };
 })();
 
 // ---- lampvibe/src/lampvibe-params.js
-const __m55 = (() => {
+const __m56 = (() => {
 
 // lampvibe-params.js — the Lamp Vibe's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -3679,8 +4038,8 @@ return { BULBS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- lampvibe/src/lampvibe-pedal.js
-const __m54 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m55;
+const __m55 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m56;
 // lampvibe-pedal.js — the Lamp Vibe's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3692,6 +4051,8 @@ const PEDAL = {
   groups: GROUPS, presets: PRESETS, keep: KEEP,
   // a guitar: nothing changes (the input buffer barely loads a pickup)
   guitar: {},
+  // tap tempo (shared/midi.js): one sweep of the lamp a beat, within the oscillator's 0.5 to 12 Hz
+  tap: (P, beat) => ({ speed: Math.min(12, Math.max(0.5, 1 / beat)) }),
   wasm: { binary: () => new URL('../wasm/lampvibe.wasm', location.href).href },
 };
 
@@ -3699,7 +4060,7 @@ return { PEDAL };
 })();
 
 // ---- cable/src/cable-params.js
-const __m57 = (() => {
+const __m58 = (() => {
 
 // cable-params.js — the Transatlantic Cable's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -3752,8 +4113,8 @@ return { CABLES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- cable/src/cable-pedal.js
-const __m56 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m57;
+const __m57 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m58;
 // cable-pedal.js — the Transatlantic Cable's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3772,7 +4133,7 @@ return { PEDAL };
 })();
 
 // ---- ringmod/src/ringmod-params.js
-const __m59 = (() => {
+const __m60 = (() => {
 
 // ringmod-params.js — the Ring Modulator's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3828,8 +4189,8 @@ return { DIODES, WAVES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- ringmod/src/ringmod-pedal.js
-const __m58 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m59;
+const __m59 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m60;
 // ringmod-pedal.js — the Ring Modulator's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3850,7 +4211,7 @@ return { PEDAL };
 })();
 
 // ---- radio/src/radio-params.js
-const __m61 = (() => {
+const __m62 = (() => {
 
 // radio-params.js — the Crystal Radio's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3908,8 +4269,8 @@ return { DIODES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- radio/src/radio-pedal.js
-const __m60 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m61;
+const __m61 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m62;
 // radio-pedal.js — the Crystal Radio's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3930,7 +4291,7 @@ return { PEDAL };
 })();
 
 // ---- tunnel/src/tunnel-params.js
-const __m63 = (() => {
+const __m64 = (() => {
 
 // tunnel-params.js — the Tunnel Diode's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3979,8 +4340,8 @@ return { CIRCUITS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- tunnel/src/tunnel-pedal.js
-const __m62 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m63;
+const __m63 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m64;
 // tunnel-pedal.js — the Tunnel Diode's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -4001,7 +4362,7 @@ return { PEDAL };
 })();
 
 // ---- bbd/src/bbd-params.js
-const __m65 = (() => {
+const __m66 = (() => {
 
 // bbd-params.js — the Bucket Brigade's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -4054,8 +4415,8 @@ return { CHIPS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- bbd/src/bbd-pedal.js
-const __m64 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m65;
+const __m65 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m66;
 // bbd-pedal.js — the Bucket Brigade's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -4075,7 +4436,7 @@ return { PEDAL };
 })();
 
 // ---- neon/src/neon-params.js
-const __m67 = (() => {
+const __m68 = (() => {
 
 // neon-params.js — the Neon Tremolo's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -4130,8 +4491,8 @@ return { GASES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- neon/src/neon-pedal.js
-const __m66 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m67;
+const __m67 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m68;
 // neon-pedal.js — the Neon Tremolo's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -4151,7 +4512,7 @@ return { PEDAL };
 })();
 
 // ---- lens/src/lens-params.js
-const __m69 = (() => {
+const __m70 = (() => {
 
 // lens-params.js — the Gravitational Lens's controls. Values in SI units, and the lens's mass in
 // suns: your bass, a wave from far behind a point mass, bent round it on its way to you.
@@ -4193,8 +4554,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- lens/src/lens-pedal.js
-const __m68 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m69;
+const __m69 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m70;
 // lens-pedal.js — the Gravitational Lens's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -4219,39 +4580,40 @@ const { params, defaults, fmt, toUnit, fromUnit, nativeValue, fromNative } = __m
 const { Tuner, OPEN_STRINGS } = __m2;
 const { INTERFACES, byInterface, fullScaleVolts } = __m3;
 const { midiPanel } = __m4;
-const { createLayout } = __m6;
-const { treadleFor } = __m7;
-const { PEDALS, SECTIONS } = __m8;
-const { PEDAL: BUFFER } = __m9;
-const { PEDAL: PHUZZ } = __m12;
-const { PEDAL: WAH } = __m14;
-const { PEDAL: PREAMP } = __m16;
-const { PEDAL: TRANSFORMER } = __m18;
-const { PEDAL: OPTO } = __m20;
-const { PEDAL: CABINET } = __m22;
-const { PEDAL: ENVELOPE } = __m24;
-const { PEDAL: OCTAVE } = __m26;
-const { PEDAL: SPRING } = __m28;
-const { PEDAL: OPENAIR } = __m30;
-const { PEDAL: SABINE } = __m32;
-const { PEDAL: RUBENS } = __m34;
-const { PEDAL: HELMHOLTZ } = __m36;
-const { PEDAL: ECHO } = __m38;
-const { PEDAL: ROTARY } = __m40;
-const { PEDAL: PLATE } = __m42;
-const { PEDAL: SYMPATHETIC } = __m44;
-const { PEDAL: BLACKHOLE } = __m46;
-const { PEDAL: DOPPLER } = __m48;
-const { PEDAL: BANDGAP } = __m50;
-const { PEDAL: MICHELSON } = __m52;
-const { PEDAL: LAMPVIBE } = __m54;
-const { PEDAL: CABLE } = __m56;
-const { PEDAL: RINGMOD } = __m58;
-const { PEDAL: RADIO } = __m60;
-const { PEDAL: TUNNEL } = __m62;
-const { PEDAL: BBD } = __m64;
-const { PEDAL: NEON } = __m66;
-const { PEDAL: LENS } = __m68;
+const { tapTempo } = __m6;
+const { createLayout } = __m7;
+const { treadleFor } = __m8;
+const { PEDALS, SECTIONS } = __m9;
+const { PEDAL: BUFFER } = __m10;
+const { PEDAL: PHUZZ } = __m13;
+const { PEDAL: WAH } = __m15;
+const { PEDAL: PREAMP } = __m17;
+const { PEDAL: TRANSFORMER } = __m19;
+const { PEDAL: OPTO } = __m21;
+const { PEDAL: CABINET } = __m23;
+const { PEDAL: ENVELOPE } = __m25;
+const { PEDAL: OCTAVE } = __m27;
+const { PEDAL: SPRING } = __m29;
+const { PEDAL: OPENAIR } = __m31;
+const { PEDAL: SABINE } = __m33;
+const { PEDAL: RUBENS } = __m35;
+const { PEDAL: HELMHOLTZ } = __m37;
+const { PEDAL: ECHO } = __m39;
+const { PEDAL: ROTARY } = __m41;
+const { PEDAL: PLATE } = __m43;
+const { PEDAL: SYMPATHETIC } = __m45;
+const { PEDAL: BLACKHOLE } = __m47;
+const { PEDAL: DOPPLER } = __m49;
+const { PEDAL: BANDGAP } = __m51;
+const { PEDAL: MICHELSON } = __m53;
+const { PEDAL: LAMPVIBE } = __m55;
+const { PEDAL: CABLE } = __m57;
+const { PEDAL: RINGMOD } = __m59;
+const { PEDAL: RADIO } = __m61;
+const { PEDAL: TUNNEL } = __m63;
+const { PEDAL: BBD } = __m65;
+const { PEDAL: NEON } = __m67;
+const { PEDAL: LENS } = __m69;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -4261,6 +4623,7 @@ const { PEDAL: LENS } = __m68;
 // The plugins show the same window for their one pedal (native/plugin/editor.h): describe() says
 // host 'plugin', and the window leaves out what the host does (the audio, the pedal menu, MIDI),
 // takes the parameters as the plugin's numbers, and follows the host's automation in poll().
+
 
 
 
@@ -4508,14 +4871,19 @@ async function main(info, carry = {}) {
     get: (k, d) => (k in midiSaved ? midiSaved[k] : d),
     set: (k, v) => { midiSaved[k] = v; call('store', 'midi', midiSaved); },
   };
+  const taps = [];
+  let appLayout = null;
   const midi = midiPanel({ PEDAL, h, store: midiStore, key: `phuzzbox.${PEDAL.id}`, ui: {
     setVolume, bypassed: () => !!audio.bypass, setBypass, muted: () => muted, setMute,
+    // the tuner pedal: muted, the tuner shown; tap tempo: the pedal's own tempo, if it has one
+    tuning: () => muted, setTuning: (on) => { setMute(on); if (on) appLayout?.setView('tuner', true); },
+    tap: () => { const t = performance.now() / 1000; if (taps.length && t - taps.at(-1) > 2.5) taps.length = 0; taps.push(t); const bpm = tapTempo(taps); if (bpm && PEDAL.tap) for (const [id, v] of Object.entries(PEDAL.tap(P, 60 / bpm))) set(id, v); return bpm; },
     value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
   } });
   window.phuzzMidi = (status, d1, d2) => midi.feed([status, d1, d2]); // the card's status names the inputs instead
-  const midiStatus = midi.el.querySelector('.midi-status'), midiHelp = midi.el.querySelector('.midi-help');
+  const midiHelp = midi.el.querySelector('.midi-help');
   for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
-  midiHelp.textContent = 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and set it to Control Change mode. The app listens to every MIDI input. Learn, then move a pedal, teaches a row that pedal.';
+  midiHelp.textContent = 'A MIDI foot controller works the pedal: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and put it in Control Change mode. The app listens to every MIDI input. The drawing says what each of the FC-300\'s pedals does here; Learn, then move a pedal, teaches a row that pedal.';
 
   midi.el.classList.add('group');
   // on one screen, as the site's pages and Forte's: the pedal at the left, the tuner, the
@@ -4526,9 +4894,9 @@ async function main(info, carry = {}) {
     get: (k, d) => (k in layoutSaved ? layoutSaved[k] : d),
     set: (k, v) => { layoutSaved[k] = v; call('store', 'layout', layoutSaved); },
   };
-  createLayout({ id: PEDAL.id, h, store: layoutStore, app, header, share: 0.36,
+  appLayout = createLayout({ id: PEDAL.id, h, store: layoutStore, app, header, share: 0.36,
     rack: h('aside', { class: 'rack', 'data-view': 'Pedal' }, face),
-    views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }],
+    views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }, ...(plugin ? [] : [{ key: 'fc300', name: 'FC-300', card: midi.view, on: false, rack: true }])],
     // a plugin's audio and MIDI are the host's (its MIDI pedals are mapped in the plugin: the FC-300's numbers)
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
@@ -4622,7 +4990,7 @@ async function main(info, carry = {}) {
     meterOut.set(r.out, r.out / audio.fullScale > 0.98);
     cpu.textContent = `CPU ${(100 * r.cpu).toFixed(1)}%`;
     const ports = (r.midi ?? []).join(', ');
-    if (ports !== midiPorts) { midiPorts = ports; midiStatus.textContent = ports ? `listening to ${ports}` : 'no MIDI input: plug in the interface'; }
+    if (ports !== midiPorts) { midiPorts = ports; midi.setStatus(ports ? `listening to ${ports}` : 'no MIDI input: plug in the interface'); }
     if (r.measured === -1) wasMeasuring = true;
     else if (wasMeasuring) {
       wasMeasuring = false;
