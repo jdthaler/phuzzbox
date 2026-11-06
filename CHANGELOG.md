@@ -11,6 +11,179 @@ Versions change only when `main` is released to `live`, the branch the site is p
 each pull request into `main` leaves a note in `changes/` (`changes/README.md`), and
 `node tools/release.mjs` gathers them into one entry here, bumping each version once.
 
+## 2026-11-06 — the Bandgap overdrive; the Bucket Brigade; the Transatlantic Cable; the FC-300 laid out for playing live; Helmholtz's Resonators; the Lamp Vibe; the Gravitational Lens; the Michelson Interferometer; the Neon Tremolo; Open Air; the Crystal Radio; the Ring Modulator; Rubens' Tube; Sabine's Room; the Output Transformer; the Tunnel Diode; the views' readouts read whole
+
+### PhuzzBox 0.6.0
+- A switch among several choices can be a knob on a pedal's face, turned through its positions
+  by dragging or the arrow keys, as the Bandgap's Diodes switch is.
+- The release test lets a pedal waiting for its first release (a `new` note) be missing from the
+  changelog until the release writes it.
+- **A live layout for the FC-300**: out of the box a Roland FC-300 in Control Change mode now plays
+  each page as a pedal on a board: number pedal 1 and the toe switch under expression pedal 2 the
+  footswitch, number pedals 2–10 the pedal's switch (the Rotary's Fast) and then its presets,
+  CTL 1 a tuner pedal (the output muted and the tuner shown until pressed again), CTL 2 tap tempo,
+  expression pedal 1 the volume and expression pedal 2 the pedal's expression control, now on
+  every pedal. A page that kept the old defaults untouched takes the new layout.
+- **FC-300 view** under the pedal: the board drawn with what each of its pedals does on this page,
+  lit while it is on and flashing as it arrives; the same drawing heads the MIDI pedals card, where
+  a pedal's rows now name the FC-300's pedal.
+- **Footswitch types**: a switch can toggle on each press (the new default, which never gets out of
+  step with the screen), follow its latching pedal's light, or be momentary.
+- **Pedalboard**: number pedals 1–8 switch the board's pedals in and out, 9 the metronome; EXP 2
+  rocks the pedal chosen under the board's menus (EXP rocks) and its toe switch turns it on and
+  off; tap tempo reaches every pedal on the board with a tempo; a program change picks a board.
+- **Foot controller** notes in How it works: setting up the FC-300 and the layouts.
+- The app has the live layout and the FC-300 view too.
+- An Optics section on the landing page and in the menu.
+- Circuit diagrams can draw a neon lamp.
+- A pedal whose name won't do for a file gives its plugins a name of their own (`plugin.name` in
+  the registry): clap-wrapper's build commands broke on the apostrophe in Sabine's Room. A test
+  keeps every plugin's name to letters, digits, spaces, dots and hyphens.
+- Circuit diagrams can draw a tunnel diode (`shared/schematic.js`).
+- **The views' readouts read whole:** the live numbers under a view (the Phuzz's operating points,
+  the Spring Reverb's springs, the Plate Reverb's driver and pickups, …) wrap onto more lines where
+  the card has room, instead of being cut to "…" on one line on nearly every pedal at a desktop's
+  size. In a short card they keep to one line as before, and hovering shows each whole. The room
+  they take holds steady as their numbers change, so the plots above don't jump.
+- A slow-motion view's title stays on one line beside its speed, pause and replay buttons, and its
+  clock line shrinks to fit a narrow card instead of running off both sides.
+
+### Wah 0.3.1
+- Its notes give the FC-300's new layout: the toe switch under expression pedal 2 switches it in.
+
+### Output Transformer 0.1.0
+- **Output Transformer**, a new pedal: the iron at the end of a valve amplifier, between the
+  output valves and the speaker, its core magnetised round the hysteresis loop of Jiles and
+  Atherton's theory. Three published cores, iron, 50 % nickel and permalloy; Faraday's law makes
+  the flux a note needs go as its voltage over its frequency, so the low notes saturate it first.
+  Drive, plate resistance, core area and level; views of the core's loop and of the flux each note
+  needs, a tour, and its plugins.
+
+### Bandgap 0.1.0
+- **Bandgap**, a new pedal: an op-amp overdrive whose diodes you choose by their bandgap,
+  germanium, Schottky, silicon, and red, green and blue LEDs that clip at their photons' energy
+  (E = hc/λ) and glow on the page as they do. The op-amp has its gain–bandwidth, slew rate and
+  rails (LM308, µA741 or TL072); the diodes feel the temperature. Views of the diodes' curves and
+  of the response, a tour, and its plugins.
+
+### Transatlantic Cable 0.1.0
+- **Transatlantic Cable**, a new pedal: your bass down 1 to 200 km of the 1858 or 1866 Atlantic
+  telegraph cable or a telephone pair, by the telegrapher's equations. Unloaded, Kelvin's law of
+  squares smears it; loading coils every 1.83 km clear it up to their cutoff; Heaviside's
+  distortionless loading delays it whole, and with the far end open, echoes it. Views along the
+  cable, of its response and of a volt arriving, a tour, and its plugins.
+
+### Ring Modulator 0.1.0
+- **Ring Modulator**, a new pedal: four diodes in a ring between two centre-tapped transformers,
+  switched by a sine, triangle or square carrier, so every note comes out as its sum and difference
+  with the carrier, the radio engineer's heterodyne. A weak carrier makes it a smooth multiplier, a
+  mismatched diode leaks the carrier, and small transformers cut the low end. Views of the ring
+  and of its sidebands, a tour, and its plugins.
+
+### Crystal Radio 0.1.0
+- **Crystal Radio**, a new pedal: your bass broadcast as an AM station and heard on a crystal set,
+  a tuned coil, a point-contact diode and an earphone. A faint station comes through the square
+  law, squared, with each note's second harmonic; a strong one comes out straight; a sharp tuned
+  circuit cuts the treble; a long RC clips diagonally; the next station whistles at 10 kHz.
+  Germanium, Schottky or silicon detectors. Views of the detector's law and of the dial, a tour,
+  and its plugins.
+
+### Tunnel Diode 0.1.0
+- **Tunnel Diode**, a new pedal: Esaki's germanium tunnel diode, Sze's three currents fitted to the
+  GE manual's typical 1 mA diode, whose current falls between its peak and its valley. With a load
+  steeper than its negative resistance it is a switch with memory, a Schmitt trigger that turns
+  every note that reaches its threshold into a square wave; with an inductor, a relaxation
+  oscillator your bass plays. Views of the diode's curve with its load line and of the switch's
+  loop, a tour, and its plugins.
+
+### Lamp Vibe 0.1.0
+- **Tap tempo**: a tap sets the oscillator to one sweep a beat.
+- **Lamp Vibe**, a new pedal: a slow oscillator dims and brightens a small tungsten lamp, whose
+  filament heats by its current and cools by radiating, and whose black-body glow lights four
+  photocells, each the resistor of an all-pass stage. Chorus (two sweeping notches) or vibrato;
+  three bulbs, from a grain of wheat to a 5 W panel bulb that can't keep up; the cells' lifetime.
+  Views of the lamp, its glow against the cells' response and the stages' phase, a tour, and its
+  plugins.
+
+### Neon Tremolo 0.1.0
+- **Neon Tremolo**, a new pedal: a neon lamp flashing in a relaxation oscillator, its striking
+  voltage from Paschen's law for neon, helium or argon and the cathode's γ, its flashes lighting a
+  photocell that ducks the bass. Too small a resistor and the glow never goes out; too low a supply
+  and the lamp never strikes. Views of the lamp and of Paschen's curve, a tour, and its plugins.
+
+### Michelson Interferometer 0.1.0
+- **Michelson Interferometer**, a new pedal in a new Optics section: a laser split into two arms,
+  one mirror moved by your bass, so the fringes sweeping past a photodiode fold the wave every half
+  wavelength. HeNe, green and violet lasers, a sodium lamp whose two lines beat, and a white LED
+  coherent over a few micrometres; a piezo or loudspeaker mount; drifting air. Views of the rings,
+  the fringe and the mount, a tour, and its plugins.
+
+### Cabinet 0.3.1
+- The box's clock line fits its card.
+
+### Spring Reverb 0.3.1
+- The echoes' time axis labels every 100 or 200 ms where every 50 ms would run together, and The
+  springs puts *drive* and *pickup* up its margins where the clock's line would run into them.
+
+### Tape Echo 0.4.0
+- **Tap tempo**: a tap sets the tape's speed so the last head heard comes round once a beat.
+- The tape loop's head delays drop a line where two heads sit close enough for their labels to
+  run together.
+
+### Bucket Brigade 0.1.0
+- **Bucket Brigade**, a new pedal: a bucket-brigade delay, a chain of 512 to 4096 capacitors
+  passing the bass along as charge at a clock, sampled and held, with the charges left behind at
+  each transfer smearing the top. A swinging clock bends the pitch for chorus and vibrato, feedback
+  makes a flanger or echoes, and a slow clock with open filters lets aliases through. Views of the
+  chain's charges and of its response, a tour, and its plugins.
+
+### Open Air 0.1.0
+- **Open Air**, a new pedal: your bass heard across open ground. The air absorbs its treble by
+  ISO 9613-1, more the farther, the drier and the colder; the ground's reflection, by Weyl and van
+  der Pol's formula over a ground whose impedance follows Miki's law from its flow resistivity,
+  digs a dip into the bass's range: 190 Hz over fresh snow, 500 Hz over grass, 1.6 kHz over a dirt
+  road, and a comb over asphalt. Distance, ground, humidity, temperature and level, and the heights
+  of the bass and your ears; views of the response and of the ground's reflection, a tour, and
+  its plugins.
+
+### Sabine's Room 0.1.0
+- **Sabine's Room**, a new pedal: your bass in a room you build. The direct sound and the first 64
+  reflections by Allen and Berkley's image method, then the reverberation in each octave from
+  125 Hz to 4 kHz, dying away in Eyring's time from the room's size, its walls, its floor, its
+  audience and the air's absorption, at the diffuse field's level, so that past the critical
+  distance you hear more room than bass. Length, walls, audience, distance and level, with width,
+  height, floor and humidity; views of each octave's decay and of the echogram, a tour, and its
+  plugins, named Sabine Room.
+
+### Rubens' Tube 0.1.0
+- **Rubens' Tube**, a new pedal: your bass through a loudspeaker into a closed pipe of propane or
+  methane, heard by a microphone inside. The pipe's modes, a whole number of half wavelengths along
+  it, with Kirchhoff's losses to its walls, driven by Gardner, Gee and Dix's measured speaker, whose
+  cone damps the lowest of them. Length, gas, drive, microphone and level, with the bore and the gas
+  pressure; views of the response and of the flames over the standing wave, a tour, and its
+  plugins, named Rubens Tube.
+
+### Helmholtz's Resonators 0.1.0
+- **Helmholtz's Resonators**, a new pedal: your bass heard through one of Helmholtz's ten glass
+  resonators held to your ear, from the measurements he gave of them: the air in its neck a mass on
+  the spring of the air inside, ringing out the partial of each note that falls on it. Resonator,
+  opening, other ear and level, with the air's temperature; views of the ten resonators' responses
+  and of Koenig's manometric flames, a tour, and its plugins, named Helmholtz Resonators.
+
+### Plate Reverb 0.3.1
+- The plate's clock line fits its card.
+
+### Black Hole 0.3.1
+- The test masses' clock line fits its card.
+
+### Gravitational Lens 0.1.0
+- **Gravitational Lens**, a new pedal: your bass as a wave from far behind a point mass of 1 to
+  1000 suns, convolved with no latency with the lens's impulse response from wave optics (the
+  second derivative of the area of the lens plane arriving before each time). Two images beat into
+  a comb, the second Hilbert-transformed, and the longest waves go round the lens untouched; an
+  Optics switch plays geometric optics alone, causally. Views of the lens plane, the arrivals and
+  the response, a tour, and its plugins.
+
 ## 2026-11-01 — bends, fret dots and the iPad; every page checked in a browser; the footswitch doesn't jump; plugins to download; the rig at the foot of the page, and a metronome; the Wah's rocker, and a slimmer front page
 
 ### PhuzzBox 0.5.0
