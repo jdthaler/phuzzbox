@@ -164,8 +164,9 @@ A MIDI foot controller works in the app as on the pages: the app listens to ever
 which the app has not), each pedal keeping its own mappings.
 
 Download it, or the plugins, from the Plugins tab of How it works on any page (`plugins/README.md`
-says how to install them); CI builds it on every pull request that changes `native/` too (the `native` workflow's
-`PhuzzBox-app-macos-15` artifact).
+says how to install them). CI builds it on every release to `live`, and whenever the `native`
+workflow is started by hand from the Actions tab (its `PhuzzBox-app-macos-15` artifact); pull
+requests build the plugins on Linux only.
 The app isn't notarised, so after unzipping it, clear the quarantine flag macOS puts on downloads
 (`xattr -dr com.apple.quarantine PhuzzBox.app`), then open it. macOS asks once for the
 microphone: that permission covers the interface's inputs too.
