@@ -296,6 +296,9 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
 .mrow input[type="number"] { width: 62px; }
 .mrow input[type="checkbox"] { accent-color: var(--accent); }
 .mrow select { min-width: 0; max-width: 100%; }
+/* a long preset's name in a row's menu never widens the card past the screen */
+.midi, .midi-maps, .mrow { min-width: 0; }
+.mrow select[aria-label="What it moves"] { flex: 0 1 auto; width: 16em; max-width: 100%; text-overflow: ellipsis; }
 .mrow .arrow { color: var(--ink-2); }
 .mrow .learn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .midi-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
@@ -1444,7 +1447,8 @@ function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
     for (const b of boards) for (const c of b.cells) {
       if (c.travel) { const v = value.get(c.cc); c.travel.style.setProperty('--x', v == null ? 0.5 : v / 127); continue; }
       const ts = map.of(c.cc);
-      c.what.textContent = ts.length ? ts.map(short).join(' + ') : '–';
+      const what = ts.length ? ts.map(short).join(' + ') : '–';
+      if (c.what.textContent !== what) c.what.textContent = what; // unchanged, left alone: the page doesn't lay out again
       c.line.title = `${nameOf(c.cc)}, CC ${c.cc}: ${ts.length ? ts.map(short).join(' and ') : 'nothing yet (Learn teaches it)'}`;
       c.line.classList.toggle('free', !ts.length);
       const on = ts.map(isOn).filter((x) => x !== null);

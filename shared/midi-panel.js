@@ -144,7 +144,8 @@ export function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
     for (const b of boards) for (const c of b.cells) {
       if (c.travel) { const v = value.get(c.cc); c.travel.style.setProperty('--x', v == null ? 0.5 : v / 127); continue; }
       const ts = map.of(c.cc);
-      c.what.textContent = ts.length ? ts.map(short).join(' + ') : '–';
+      const what = ts.length ? ts.map(short).join(' + ') : '–';
+      if (c.what.textContent !== what) c.what.textContent = what; // unchanged, left alone: the page doesn't lay out again
       c.line.title = `${nameOf(c.cc)}, CC ${c.cc}: ${ts.length ? ts.map(short).join(' and ') : 'nothing yet (Learn teaches it)'}`;
       c.line.classList.toggle('free', !ts.length);
       const on = ts.map(isOn).filter((x) => x !== null);

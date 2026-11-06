@@ -287,6 +287,9 @@ dialog.notes::backdrop { background: rgb(0 0 0 / 0.6); }
 .mrow input[type="number"] { width: 62px; }
 .mrow input[type="checkbox"] { accent-color: var(--accent); }
 .mrow select { min-width: 0; max-width: 100%; }
+/* a long preset's name in a row's menu never widens the card past the screen */
+.midi, .midi-maps, .mrow { min-width: 0; }
+.mrow select[aria-label="What it moves"] { flex: 0 1 auto; width: 16em; max-width: 100%; text-overflow: ellipsis; }
 .mrow .arrow { color: var(--ink-2); }
 .mrow .learn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .midi-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
