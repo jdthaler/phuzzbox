@@ -12,6 +12,7 @@ import { params, defaults, fmt, toUnit, fromUnit, nativeValue, fromNative } from
 import { Tuner, OPEN_STRINGS } from '../../shared/tuner.js';
 import { INTERFACES, byInterface, fullScaleVolts } from '../../shared/interfaces.js';
 import { midiPanel } from '../../shared/midi-panel.js';
+import { tapTempo } from '../../shared/metronome.js';
 import { createLayout } from '../../shared/layout.js';
 import { treadleFor } from '../../shared/treadle.js';
 import { PEDALS, SECTIONS } from '../../shared/registry.js';
@@ -254,14 +255,19 @@ async function main(info, carry = {}) {
     get: (k, d) => (k in midiSaved ? midiSaved[k] : d),
     set: (k, v) => { midiSaved[k] = v; call('store', 'midi', midiSaved); },
   };
+  const taps = [];
+  let appLayout = null;
   const midi = midiPanel({ PEDAL, h, store: midiStore, key: `phuzzbox.${PEDAL.id}`, ui: {
     setVolume, bypassed: () => !!audio.bypass, setBypass, muted: () => muted, setMute,
+    // the tuner pedal: muted, the tuner shown; tap tempo: the pedal's own tempo, if it has one
+    tuning: () => muted, setTuning: (on) => { setMute(on); if (on) appLayout?.setView('tuner', true); },
+    tap: () => { const t = performance.now() / 1000; if (taps.length && t - taps.at(-1) > 2.5) taps.length = 0; taps.push(t); const bpm = tapTempo(taps); if (bpm && PEDAL.tap) for (const [id, v] of Object.entries(PEDAL.tap(P, 60 / bpm))) set(id, v); return bpm; },
     value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
   } });
   window.phuzzMidi = (status, d1, d2) => midi.feed([status, d1, d2]); // the card's status names the inputs instead
-  const midiStatus = midi.el.querySelector('.midi-status'), midiHelp = midi.el.querySelector('.midi-help');
+  const midiHelp = midi.el.querySelector('.midi-help');
   for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
-  midiHelp.textContent = 'A MIDI foot controller moves the controls below: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and set it to Control Change mode. The app listens to every MIDI input. Learn, then move a pedal, teaches a row that pedal.';
+  midiHelp.textContent = 'A MIDI foot controller works the pedal: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and put it in Control Change mode. The app listens to every MIDI input. The drawing says what each of the FC-300\'s pedals does here; Learn, then move a pedal, teaches a row that pedal.';
 
   midi.el.classList.add('group');
   // on one screen, as the site's pages and Forte's: the pedal at the left, the tuner, the
@@ -272,9 +278,9 @@ async function main(info, carry = {}) {
     get: (k, d) => (k in layoutSaved ? layoutSaved[k] : d),
     set: (k, v) => { layoutSaved[k] = v; call('store', 'layout', layoutSaved); },
   };
-  createLayout({ id: PEDAL.id, h, store: layoutStore, app, header, share: 0.36,
+  appLayout = createLayout({ id: PEDAL.id, h, store: layoutStore, app, header, share: 0.36,
     rack: h('aside', { class: 'rack', 'data-view': 'Pedal' }, face),
-    views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }],
+    views: [{ key: 'tuner', name: 'Tuner', card: tunerCard, on: true, rack: true }, ...(plugin ? [] : [{ key: 'fc300', name: 'FC-300', card: midi.view, on: false, rack: true }])],
     // a plugin's audio and MIDI are the host's (its MIDI pedals are mapped in the plugin: the FC-300's numbers)
     groups: plugin ? groupList : [{ key: 'audio', name: 'Audio', el: audioGroup }, { key: 'rig', name: 'Rig', el: rigGroup }, ...groupList, { key: 'midi', name: 'MIDI pedals', el: midi.el }],
     dock: h('footer', { class: 'dock app-foot' }, `${PEDAL.name} ${info.version} · PhuzzBox · physics, not samples · Space is the footswitch`) });
@@ -368,7 +374,7 @@ async function main(info, carry = {}) {
     meterOut.set(r.out, r.out / audio.fullScale > 0.98);
     cpu.textContent = `CPU ${(100 * r.cpu).toFixed(1)}%`;
     const ports = (r.midi ?? []).join(', ');
-    if (ports !== midiPorts) { midiPorts = ports; midiStatus.textContent = ports ? `listening to ${ports}` : 'no MIDI input: plug in the interface'; }
+    if (ports !== midiPorts) { midiPorts = ports; midi.setStatus(ports ? `listening to ${ports}` : 'no MIDI input: plug in the interface'); }
     if (r.measured === -1) wasMeasuring = true;
     else if (wasMeasuring) {
       wasMeasuring = false;

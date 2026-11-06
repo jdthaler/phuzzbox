@@ -102,6 +102,12 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    wah from its circuit, by the nodal DK method in `phuzzbox/dk.h`, swept low for bass) for the
    expression pedal to rock. The app (`native/app/`) is to forward its MIDI to the page with
    `window.phuzzMidi(status, d1, d2)`.
+   For playing live with the FC-300, done 2026-11-06 when Jesse's arrived: a **live layout** in
+   place of the factory defaults (`midi/README.md`): the footswitch on number pedal 1 and EXP 2's
+   toe, the presets on 2–10, the tuner on CTL 1 and tap tempo on CTL 2 (the Tape Echo's tape speed
+   and the Lamp Vibe's sweep take the beat), an expression control for every pedal; on the
+   Pedalboard, number pedals 1–8 the board's pedals; and an **FC-300** view under the pedal
+   drawing what each of its pedals does, lit while it is on. To try on Jesse's board.
    For every pedal, done 2026-11-01: **How it works** as Forte's (the README in a dialog, with
    contents and tabs for the test bass's and the new tuner's notes) and a **physics tour** of
    each pedal (`shared/tour.js`), checked by `test/tour-tests.mjs`; a new pedal brings its tour.

@@ -1,7 +1,8 @@
 // notes.js — How it works: a README rendered in a dialog, as Forte's pages have it, so the physics
 // is one tap from the pedal. On a pedal's page the dialog has a tab for the pedal's own README and
 // one for each thing every page has: the test bass (testbass/README.md) and guitar
-// (testguitar/README.md), the tuner (tuner/README.md), the metronome (metronome/README.md), the rig
+// (testguitar/README.md), the tuner (tuner/README.md), the metronome (metronome/README.md), a MIDI
+// foot controller (midi/README.md), the rig
 // at the foot of the page (rig/README.md), the scope (scope/README.md) and the spectrum (spectrum/README.md), and the
 // plugins (plugins/README.md, under the downloads: the pedal's on its page, every pedal's and the
 // app's everywhere, from shared/plugins.js). The landing page opens all but the pedal's.
@@ -9,11 +10,11 @@
 // sources elsewhere (papers, standards), never to the repository for information (Jesse,
 // 2026-11-01): a link to another README opens its notes (the tab, or that pedal's page), a link to
 // any other file of the repository is left as plain text, and the credits link to the source.
-// Hashes open it straight away: …/#about (the pedal), #testbass, #testguitar, #tuner, #metronome, #rig, #scope, #spectrum, #plugins.
+// Hashes open it straight away: …/#about (the pedal), #testbass, #testguitar, #tuner, #metronome, #midi, #rig, #scope, #spectrum, #plugins.
 //
 //   const notes = howItWorks({ pedal: { id, name, version } });   // on a pedal's page
 //   notes.button(key?, label?)        a "How it works" button (for the header, or for one of them)
-//   notes.open('pedal' | 'testbass' | 'testguitar' | 'tuner' | 'metronome' | 'rig' | 'scope' | 'spectrum' | 'plugins')
+//   notes.open('pedal' | 'testbass' | 'testguitar' | 'tuner' | 'metronome' | 'midi' | 'rig' | 'scope' | 'spectrum' | 'plugins')
 
 import { renderMarkdown } from './markdown.js';
 import { downloads, latestRelease, releaseLine, APP } from './plugins.js';
@@ -39,6 +40,7 @@ export function howItWorks({ pedal = null } = {}) {
     { key: 'testguitar', hash: '#testguitar', name: 'Test guitar', dir: 'testguitar/' },
     { key: 'tuner', hash: '#tuner', name: 'Tuner', dir: 'tuner/' },
     { key: 'metronome', hash: '#metronome', name: 'Metronome', dir: 'metronome/' },
+    { key: 'midi', hash: '#midi', name: 'Foot controller', dir: 'midi/' },
     { key: 'rig', hash: '#rig', name: 'Rig', dir: 'rig/' },
     { key: 'scope', hash: '#scope', name: 'Scope', dir: 'scope/' },
     { key: 'spectrum', hash: '#spectrum', name: 'Spectrum', dir: 'spectrum/' },

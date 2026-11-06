@@ -120,12 +120,12 @@ export function controlFor(p, get, put) {
 let pageIs;
 export const pageReady = new Promise((r) => { pageIs = r; });
 
-export function createPedal({ PEDAL, worklet, views = [], rack: more = null, load = null }) {
+export function createPedal({ PEDAL, worklet, views = [], rack: more = null, load = null, midi: midiMore = null }) {
   const reg = byId(PEDAL.id) ?? {};
   const all = params(PEDAL.groups);
   const key = `phuzzbox.${PEDAL.id}`;
   // the player's instrument, bass or guitar (shared/instruments.js): each keeps its own settings
-  const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: store.get('phuzzbox.channel', 0), mute: false,
+  const state = { bypass: store.get(`${key}.bypass`, false), tuning: false, source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: store.get('phuzzbox.channel', 0), mute: false,
     instrument: instrument(store.get(INSTRUMENT_KEY, 'bass')).id, fretless: store.get('phuzzbox.fretless', false) === true };
   const ownDefaults = () => instrumentDefaults(PEDAL, defaults(PEDAL.groups), state.instrument);
   const saveP = () => store.set(paramsKey(PEDAL.id, state.instrument), P);
@@ -416,14 +416,38 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   rigFold.addEventListener('click', () => { setRigOpen(rigBody.hidden); rigFold.blur(); });
   const dock = h('footer', { class: 'dock' }, h('section', { class: 'rig', 'aria-label': 'Rig' }, rigBar, rigBody));
 
-  // MIDI foot controllers (shared/midi-panel.js): what each control change moves
-  const midi = midiPanel({ PEDAL, h, store, key, ui: {
+  // MIDI foot controllers (shared/midi-panel.js): what each control change moves, and the FC-300
+  // drawn under the pedal with what each of its pedals does here (a page such as the Pedalboard
+  // adds its own targets: midiMore)
+  const midi = midiPanel({ PEDAL, h, store, key, defaults: midiMore?.defaults, ui: {
     setVolume: (g) => { volInput.value = g; setVolume(g); }, bypassed: () => state.bypass, setBypass, muted: () => state.mute, setMute,
     value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
+    tuning: () => state.tuning, setTuning, tap,
+    metronome: () => metronome.running(), setMetronome: (on) => { if (on !== metronome.running()) { if (on) { layout?.setView('metronome', true); metronome.play(); } else metronome.stop(); } },
+    about: () => notes.open('midi'), extra: midiMore, program: midiMore?.program,
   } });
   midi.el.classList.add('group');
   groupList.push({ key: 'midi', name: 'MIDI pedals', el: midi.el });
+  viewList.push({ key: 'fc300', name: 'FC-300', card: midi.view, on: false, rack: true });
   api.midi = midi;
+  // the tuner pedal: the output muted and the tuner shown until it is pressed again, when the tuner
+  // goes back as it was
+  let tunerWasShown = true;
+  function setTuning(on) {
+    if (on === state.tuning) return;
+    state.tuning = on;
+    if (on) { tunerWasShown = layout.viewShown('tuner'); layout.setView('tuner', true); } else if (!tunerWasShown) layout.setView('tuner', false);
+    setMute(on);
+  }
+  // tap tempo: the metronome's tempo, and the pedal's own if it has one (the Tape Echo's speed,
+  // the Lamp Vibe's: its descriptor's tap(P, seconds a beat))
+  function tap() {
+    const bpm = metronome.tap();
+    if (!bpm) return null;
+    if (PEDAL.tap) for (const [id, v] of Object.entries(PEDAL.tap(P, 60 / bpm))) set(id, v);
+    midiMore?.tap?.(60 / bpm);
+    return bpm;
+  }
 
   let layout = null;
   setRigOpen(store.get('phuzzbox.rigOpen', store.get('phuzzbox.bassOpen', true)));
@@ -704,6 +728,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   // the tuner, ten times a second
   function setMute(on) {
     state.mute = on;
+    if (!on) state.tuning = false;
     send({ type: 'mute', on });
     muteBtn.setAttribute('aria-pressed', String(on));
     muteBtn.textContent = on ? 'Muted: unmute' : 'Mute';
