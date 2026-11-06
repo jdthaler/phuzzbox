@@ -1,0 +1,22 @@
+{"slug": "bbd",
+ "params": [
+  {"id":"clock","kind":"continuous","min":5000,"max":200000,"step":0,"log":true,"def":100000},
+  {"id":"rate","kind":"continuous","min":0.05,"max":10,"step":0,"log":true,"def":0.8},
+  {"id":"depth","kind":"continuous","min":0,"max":0.5,"step":0,"log":false,"def":0.15},
+  {"id":"feedback","kind":"continuous","min":-0.95,"max":0.95,"step":0,"log":false,"def":0},
+  {"id":"mix","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.5},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":3.7},
+  {"id":"stages","kind":"choice","options":["512","1024","2048","4096"],"def":"1024"},
+  {"id":"cti","kind":"continuous","min":0,"max":0.001,"step":0,"log":false,"def":0.0001},
+  {"id":"filter","kind":"continuous","min":2000,"max":20000,"step":0,"log":true,"def":8000}
+ ],
+ "presets": [
+  {"name":"Chorus","values":{"clock":100000,"rate":0.8,"depth":0.15,"feedback":0,"mix":0.5,"level":3.7,"stages":"1024","cti":0.0001,"filter":8000}},
+  {"name":"Vibrato","values":{"clock":100000,"rate":5,"depth":0.2,"feedback":0,"mix":1,"level":0,"stages":"1024","cti":0.0001,"filter":8000}},
+  {"name":"Flanger","values":{"clock":150000,"rate":0.15,"depth":0.45,"feedback":0.7,"mix":0.5,"level":4.6,"stages":"512","cti":0.0001,"filter":8000}},
+  {"name":"Negative flanger","values":{"clock":150000,"rate":0.15,"depth":0.45,"feedback":-0.7,"mix":0.5,"level":1.4,"stages":"512","cti":0.0001,"filter":8000}},
+  {"name":"Slapback","values":{"clock":30000,"rate":0.8,"depth":0,"feedback":0,"mix":0.4,"level":3,"stages":"4096","cti":0.0001,"filter":6000}},
+  {"name":"Dark echoes","values":{"clock":12000,"rate":0.5,"depth":0.02,"feedback":0.55,"mix":0.4,"level":1.7,"stages":"4096","cti":0.0001,"filter":4000}},
+  {"name":"Aliasing","values":{"clock":8000,"rate":0.8,"depth":0,"feedback":0.3,"mix":0.5,"level":2.9,"stages":"4096","cti":0.0001,"filter":20000}},
+  {"name":"Leaky chain","values":{"clock":40000,"rate":0.8,"depth":0.05,"feedback":0,"mix":0.5,"level":3.3,"stages":"4096","cti":0.0005,"filter":8000}}
+ ]}

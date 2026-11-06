@@ -1,0 +1,17 @@
+{"slug": "lens",
+ "params": [
+  {"id":"mass","kind":"continuous","min":1,"max":1000,"step":0,"log":true,"def":100},
+  {"id":"offset","kind":"continuous","min":0.02,"max":3,"step":0,"log":true,"def":0.5},
+  {"id":"optics","kind":"choice","options":["waves","rays"],"def":"waves"},
+  {"id":"redshift","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":-4.9}
+ ],
+ "presets": [
+  {"name":"A star of 100 suns","values":{"mass":100,"offset":0.5,"optics":"waves","redshift":0,"level":-4.9}},
+  {"name":"Nearly aligned: an Einstein ring","values":{"mass":100,"offset":0.05,"optics":"waves","redshift":0,"level":-8.4}},
+  {"name":"Rays: geometric optics","values":{"mass":100,"offset":0.5,"optics":"rays","redshift":0,"level":-5.4}},
+  {"name":"A light lens: 3 suns","values":{"mass":3,"offset":0.5,"optics":"waves","redshift":0,"level":-0.5}},
+  {"name":"A heavy lens: 1000 suns","values":{"mass":1000,"offset":1,"optics":"waves","redshift":0,"level":-1.4}},
+  {"name":"Far off the axis","values":{"mass":100,"offset":2,"optics":"waves","redshift":0,"level":-0.3}},
+  {"name":"A distant lens: z = 1","values":{"mass":100,"offset":0.5,"optics":"waves","redshift":1,"level":-3.2}}
+ ]}

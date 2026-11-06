@@ -1,0 +1,18 @@
+{"slug": "rubens",
+ "params": [
+  {"id":"length","kind":"continuous","min":0.5,"max":4,"step":0,"log":true,"def":1.524},
+  {"id":"gas","kind":"choice","options":["propane","methane"],"def":"propane"},
+  {"id":"drive","kind":"continuous","min":1,"max":100,"step":0,"log":true,"def":10},
+  {"id":"mic","kind":"continuous","min":0,"max":100,"step":0,"log":false,"def":100},
+  {"id":"level","kind":"continuous","min":-36,"max":24,"step":0,"log":false,"def":-7.9},
+  {"id":"diameter","kind":"continuous","min":2,"max":15,"step":0,"log":true,"def":5.2},
+  {"id":"pressure","kind":"continuous","min":100,"max":2000,"step":0,"log":true,"def":500}
+ ],
+ "presets": [
+  {"name":"Gardner's tube","values":{"length":1.524,"gas":"propane","drive":10,"mic":100,"level":-7.9,"diameter":5.2,"pressure":500}},
+  {"name":"Natural gas","values":{"length":1.524,"gas":"methane","drive":10,"mic":100,"level":-5.6,"diameter":5.2,"pressure":500}},
+  {"name":"Mid-tube microphone","values":{"length":1.524,"gas":"propane","drive":10,"mic":50,"level":-5.2,"diameter":5.2,"pressure":500}},
+  {"name":"Long tube","values":{"length":3.5,"gas":"propane","drive":10,"mic":100,"level":-1.6,"diameter":5.2,"pressure":500}},
+  {"name":"Wide bore","values":{"length":1.524,"gas":"propane","drive":10,"mic":100,"level":-1.6,"diameter":10.2,"pressure":500}},
+  {"name":"Short tube","values":{"length":0.6,"gas":"propane","drive":10,"mic":75,"level":3.1,"diameter":5.2,"pressure":500}}
+ ]}

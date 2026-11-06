@@ -151,25 +151,18 @@ response to draw, and the filter's response from an active bass, far lower than 
 
 ## Playing it with your feet
 
-The page listens to MIDI foot controllers through Web MIDI (Chrome and Edge). For a Roland FC-300:
-connect its MIDI OUT to a USB MIDI interface (a Roland UM-ONE mk2 with its switch on TAB needs no
-driver on a Mac), put the FC-300 in Control Change mode, open the page and press **Connect MIDI**.
-As it leaves the factory the FC-300 sends (owner's manual, pp. 21–22):
+The page listens to MIDI foot controllers through Web MIDI (Chrome and Edge), and is laid out for a
+Roland FC-300 in Control Change mode (the [foot controller's notes](../midi/README.md) say how to
+set one up). Its second expression pedal (CC 1, 0–127) is the **Rocker**, and the switch under its
+toe (CC 83) the footswitch, as on a wah you press the toe down to switch in; the first expression
+pedal (CC 7) is a volume pedal. Number pedal 1 is the footswitch too, 2–10 the presets in order,
+CTL 1 the tuner and CTL 2 tap tempo. The **FC-300** toggle under the pedal draws the board with
+what each of its pedals does.
 
-| FC-300 | sends | moves, by default |
-|---|---|---|
-| expression pedal 1 | CC 7, 0–127 | the volume, through a volume pedal's audio taper |
-| expression pedal 2 | CC 1, 0–127 | the Rocker |
-| number pedal 1 | CC 65, latching | the footswitch (127 engaged) |
-| number pedal 2 | CC 66, latching | the tuner's mute |
-| number pedals 3–10 | CC 67–74, latching | nothing yet: teach them |
-| CTL 1–2 | CC 80–81, momentary | nothing yet: teach them (set the row to momentary) |
-
-To teach a pedal another control, press **Learn** on a row (or **+ Add a pedal**) and move the
-pedal; pick the control it moves from the row's menu. **reverse** turns an expression pedal round;
-a footswitch row says whether it latches (127, then 0) or is momentary (127 while held). The map is
-kept in your browser, one per pedal page. The plugins listen too: their MIDI input moves Rocker,
-Volume pedal and Bypass by the same defaults.
+To teach a pedal another control, press **Learn** on a row in **MIDI pedals** (or **+ Add a pedal**)
+and move the pedal; pick the control it moves from the row's menu. **reverse** turns an expression
+pedal round. The map is kept in your browser, one per pedal page. The plugins listen too: their
+MIDI input moves Rocker, Volume pedal and Bypass by the FC-300's numbers.
 
 ## Auto: rocked by how hard you play
 

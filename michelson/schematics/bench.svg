@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="The interferometer: a beam split into two arms, one mirror moved by the bass">
+<title>The interferometer: a beam split into two arms, one mirror moved by the bass</title>
+<rect width="600" height="380" rx="10" fill="#151518" stroke="#2b2a30"/>
+<rect x="20" y="170" width="100" height="40" rx="6" fill="none" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="70" y="194" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">light</text>
+<path d="M120 190 L252 190" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M244.8 193.48 L252 190 L244.8 186.52" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M252 218 L308 162" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="324" y="232" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">beam splitter</text>
+<path d="M280 190 L492 190" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M484.8 193.48 L492 190 L484.8 186.52" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="496" y="150" width="12" height="80" rx="6" fill="none" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="524" y="198" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">fixed mirror</text>
+<text x="390" y="176" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">arm 1</text>
+<path d="M280 190 L280 68" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M283.48 75.2 L280 68 L276.52 75.2" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="240" y="52" width="80" height="12" rx="6" fill="none" stroke="#fb923c" stroke-width="1.6"/>
+<rect x="240" y="12" width="80" height="32" rx="6" fill="none" stroke="#fb923c" stroke-width="1.6"/>
+<text x="280" y="32" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="400">actuator</text>
+<text x="296" y="128" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">arm 2</text>
+<text x="332" y="64" text-anchor="start" fill="#fb923c" font-size="11" font-weight="400">mirror: moves x</text>
+<circle cx="480" cy="28" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="480" y="18" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">in</text>
+<path d="M480 28 L320 28" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M280 190 L280 292" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M276.52 284.8 L280 292 L283.48 284.8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="240" y="292" width="80" height="40" rx="6" fill="none" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="280" y="316" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">photodiode</text>
+<path d="M320 312 L480 312" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="480" cy="312" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="480" y="302" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">out</text>
+<text x="20" y="358" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">paths differ by 2 (d + x): bright when that is a whole number of wavelengths</text>
+</svg>

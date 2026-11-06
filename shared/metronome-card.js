@@ -4,8 +4,9 @@
 // (not through the pedal), and a pendulum whose sliding weight sits where the tempo puts it.
 //
 //   const m = metronomeCard({ h, store, about, audio: async () => ({ ctx, out }) })
-//   m.card is the card; m.stop() stops it. audio() starts the page's sound if it isn't on and gives
-//   its AudioContext and the node to play into.
+//   m.card is the card; m.play() and m.stop() start and stop it, m.tap() taps the tempo (as a MIDI
+//   pedal does: shared/midi-panel.js) and m.bpm() is the tempo. audio() starts the page's sound if
+//   it isn't on and gives its AudioContext and the node to play into.
 
 import { strike, TICK, BELL, TEMPO, PENDULUM, weightAt, beatsBetween, tapTempo, swing } from './metronome.js';
 
@@ -133,17 +134,21 @@ export function metronomeCard({ h, store, about, audio }) {
   bpmInput.addEventListener('change', () => setBpm(bpmInput.value));
   slower.addEventListener('click', (e) => { setBpm(S.bpm - (e.shiftKey ? 5 : 1)); slower.blur(); });
   faster.addEventListener('click', (e) => { setBpm(S.bpm + (e.shiftKey ? 5 : 1)); faster.blur(); });
+  // a tap, from the button or a MIDI pedal (shared/midi-panel.js): the tempo once there are two
+  // beats to time, which it returns
   const taps = [];
-  tapBtn.addEventListener('click', () => {
+  function tap() {
     const t = performance.now() / 1000;
     if (taps.length && t - taps.at(-1) > 2.5) taps.length = 0;
     taps.push(t);
     const bpm = tapTempo(taps);
     if (bpm) setBpm(bpm);
-  });
+    return bpm;
+  }
+  tapBtn.addEventListener('click', () => { tap(); tapBtn.blur(); });
   barSel.addEventListener('change', () => { retime(true); S.perBar = +barSel.value; save(); drawDots(); barSel.blur(); });
   level.addEventListener('input', () => { S.level = +level.value; save(); if (gain) gain.gain.setTargetAtTime(S.level * S.level, ctx.currentTime, 0.01); });
 
   placeWeight(); lean(0); drawDots();
-  return { card, stop, running: () => !!timer };
+  return { card, play, stop, tap, running: () => !!timer, bpm: () => S.bpm };
 }

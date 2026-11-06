@@ -19,8 +19,10 @@ const pkg = JSON.parse(readFileSync(`${root}package.json`, 'utf8'));
 check(SEMVER.test(PHUZZBOX_VERSION) && pkg.version === PHUZZBOX_VERSION, `PhuzzBox's version is one in package.json and registry.js (${PHUZZBOX_VERSION})`);
 const log = readFileSync(`${root}CHANGELOG.md`, 'utf8');
 check(log.includes(`### PhuzzBox ${PHUZZBOX_VERSION}\n`), `CHANGELOG.md has PhuzzBox ${PHUZZBOX_VERSION}`);
+// a pedal waiting for its first release (a `new` note) has its version but isn't in the changelog yet
+const unreleased = new Set(notes.flatMap((n) => n.sections.filter((x) => x.kind === 'new').map((x) => x.name)));
 for (const p of PEDALS.filter((q) => q.ready)) {
-  check(SEMVER.test(p.version ?? '') && log.includes(`### ${p.name} ${p.version}\n`), `CHANGELOG.md has ${p.name} ${p.version}`);
+  check(SEMVER.test(p.version ?? '') && (unreleased.has(p.name) || log.includes(`### ${p.name} ${p.version}\n`)), `CHANGELOG.md has ${p.name} ${p.version}${unreleased.has(p.name) ? ' (or its first release is waiting in changes/)' : ''}`);
   const cmake = readFileSync(`${root}native/pedals/${p.id}/${p.id}-info.cmake`, 'utf8');
   check(cmake.includes(`set(PHUZZ_VERSION ${p.version})`), `${p.name}: the plugins carry its version`);
 }

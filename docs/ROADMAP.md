@@ -23,8 +23,8 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    first stage) as one circuit of 20 nodes, three Dempwolf–Zölzer triodes with grid current, the
    Yeh–Smith tone stack, the supply rail through its dropper, by the DK method (`phuzzbox/dk.h`
    gained triodes and current sources); tested against an independent JavaScript model
-   (`test/preamp-circuit.mjs`). The output transformer, which the first plan put here, waits for
-   a power-amp pedal, where it belongs.
+   (`test/preamp-circuit.mjs`). The output transformer, which the first plan put here, became a
+   pedal of its own in the second wave (the Output Transformer).
    The **Opto Compressor** landed 2026-11-01: an electroluminescent panel lit by a driver that
    hears the signal after the cell (or before it), and a photocell from rate equations for its
    free and trapped electrons (Rose 1951), tuned to the LA-2A's published timing (attack 10 ms,
@@ -102,6 +102,12 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    wah from its circuit, by the nodal DK method in `phuzzbox/dk.h`, swept low for bass) for the
    expression pedal to rock. The app (`native/app/`) is to forward its MIDI to the page with
    `window.phuzzMidi(status, d1, d2)`.
+   For playing live with the FC-300, done 2026-11-06 when Jesse's arrived: a **live layout** in
+   place of the factory defaults (`midi/README.md`): the footswitch on number pedal 1 and EXP 2's
+   toe, the presets on 2–10, the tuner on CTL 1 and tap tempo on CTL 2 (the Tape Echo's tape speed
+   and the Lamp Vibe's sweep take the beat), an expression control for every pedal; on the
+   Pedalboard, number pedals 1–8 the board's pedals; and an **FC-300** view under the pedal
+   drawing what each of its pedals does, lit while it is on. To try on Jesse's board.
    For every pedal, done 2026-11-01: **How it works** as Forte's (the README in a dialog, with
    contents and tabs for the test bass's and the new tuner's notes) and a **physics tour** of
    each pedal (`shared/tour.js`), checked by `test/tour-tests.mjs`; a new pedal brings its tour.
@@ -116,6 +122,115 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
 4. **Time and space**: spring reverb (Forte's springs), plate reverb, tape echo, rotary speaker.
 5. **The rest**: envelope filter, octave down, sympathetic strings, black hole, Doppler; a
    hardware pedal (Electrosmith Daisy Seed) if wanted.
+6. **The second wave** (Jesse, 2026-11-05: at least double the pedals, favouring physics
+   principles and experiments). In order: Bandgap Overdrive, Michelson Interferometer, Lamp Vibe,
+   Transatlantic Cable, Ring Modulator, Bucket Brigade, Talk Box, Neon Tremolo, Power Amp,
+   Gravitational Lens, Sabine's Room, Atmospheres, Rubens' Tube, Tunnel Diode, Crystal Radio;
+   spares Scanner Vibrato and Gong.
+   The **Bandgap** landed 2026-11-05: a non-inverting op-amp stage (a one-pole, slew-limited
+   macromodel with soft rails: LM308, µA741, TL072) into a pair of diodes to ground, each family by
+   Shockley's equation with SPICE's temperature law, the LEDs' turn-on from their photons' energy;
+   integrated by TR-BDF2 with Newton at 4× oversampling; tested against an independent integration
+   of the same equations, the small-signal response from complex impedances, Shockley's closed
+   forms and the temperature coefficient's.
+   The **Michelson Interferometer** landed 2026-11-05: a beam split into two arms, one mirror on a
+   piezo stack or a loudspeaker cone that the bass drives, the detector's light from each source's
+   spectral lines (Gaussian in wavenumber, their visibility its Fourier transform), the air's drift
+   an Ornstein–Uhlenbeck process; first-order antiderivative antialiasing at 4× oversampling;
+   tested against each spectrum integrated numerically, Bessel functions (Jacobi–Anger), the
+   mount's equation of motion and the drift's variance and memory.
+   The **Lamp Vibe** landed 2026-11-05: an oscillator dims a tungsten lamp whose filament (sized
+   from its rating; Forsythe and Watson's resistivity, Parker and Abbott's free-electron
+   emissivity) heats by its current and cools by radiating; its Planck glow, weighted by the
+   cadmium-sulphide cells' response, frees electrons that recombine with each other; each cell is
+   the resistor of a phase-splitter all-pass stage. Tested against the power balance solved by
+   Newton's method, its time constant from the balance's slope, the glow integrated over frequency,
+   Davisson and Weeks's emissivity, the stages' arctangents and the vibrato's Δf = (1/2π) dφ/dt.
+   The **Transatlantic Cable** landed 2026-11-05: the telegrapher's equations for the 1858 and 1866
+   Atlantic cables (R, L and C from their cores' copper and gutta-percha) and a telephone pair,
+   solved as a ladder of sections by the trapezoidal rule (a tridiagonal system each sample), with
+   loading coils every 1.83 km, or Heaviside's distortionless loading solved exactly as two waves
+   reflected at each end. Tested against the line's ABCD matrices, the ladder's chained sections,
+   its step response by Talbot's inversion of the Laplace transform, Thomson's Fourier series for
+   the law of squares, and Heaviside's bounce diagram.
+   The **Ring Modulator** landed 2026-11-05: four diodes in a ring between two centre-tapped
+   transformers, the carrier into the input transformer's centre tap, the ring's three equations
+   solved by Newton's method each step and the transformers' magnetising inductances by the
+   trapezoidal rule. Tested against the closed form tanh w = tanh u tanh vc for an unloaded ring,
+   the ring's node equations solved independently, the switching function's Fourier series for the
+   sidebands, the carrier's leak in the transformers' periodic steady state, and the low cut from
+   complex impedances.
+   The **Bucket Brigade** landed 2026-11-05: a bucket-brigade delay, its chain of 512 to 4096
+   capacitors clocked at a phase that runs on at the oversampled rate, with third-order Butterworth
+   filters either side and the charges left behind at each transfer as the negative binomial filter
+   ((1 − ε)/(1 − εz⁻¹))^N. Tested against the filters from their poles, the transfer loss summed term
+   by term, the sampling theorem's aliases, the feedback comb, and the pitch a swinging clock bends,
+   found by counting its cycles.
+   The **Neon Tremolo** landed 2026-11-05 (ahead of the Talk Box, whose vocal-tract data were
+   harder to verify): Pearson and Anson's relaxation oscillator, a neon lamp across a capacitor
+   charged through R, its strike from Paschen's law (Townsend's A and B for neon, helium and
+   argon, and the cathode's γ), its burning voltage the normal glow's cathode fall, its flashes
+   lighting a cadmium-sulphide cell in a divider. The oscillator is solved exactly, stretch by
+   stretch. Tested against Townsend's breakdown condition solved numerically, the curve's minimum
+   found by search, the oscillator by Runge–Kutta, the period in closed form, and the cell.
+   The **Gravitational Lens** landed 2026-11-05: the bass as a wave from far behind a point mass
+   of 1 to 1000 suns. Its impulse response is the second derivative of the area of the lens
+   plane arriving before each time, worked out by quadrature at sparse taps and interpolated,
+   and convolved with no latency (uniformly partitioned FFT, new kernels built a little each
+   block and crossfaded). Geometric optics alone, causally, through two allpass chains a quarter
+   cycle apart. Tested against Takahashi and Nakamura's exact amplification factor (eq. 17, a
+   complex Γ and ₁F₁ in JavaScript), their geometric-optics limit, Paczyński's magnification, and
+   the area integrated the other way round.
+   The **Crystal Radio** landed 2026-11-05: the bass as an AM station (overmodulation cuts the
+   carrier off), a tuned circuit of Q about the station, a point-contact diode into the earphone's
+   R and bypass C, and the next station 10 kHz up. Worked in the complex envelope: the diode's
+   current averaged over the carrier's cycle is Is(e^(−V/nVT) I0(A/nVT) − 1), the earphone by
+   BDF2 with Newton (on the logarithm where the exponential dominates), at 4× oversampling. Tested
+   against the whole set simulated at radio frequency with no envelope, the square and peak laws,
+   the square law's m/4, the onset of diagonal clipping, and the tuned circuit's bandwidth.
+   The **Tunnel Diode** landed 2026-11-05: Sze's tunnelling, excess and diffusion currents fitted
+   to the GE manual's typical 1 mA germanium diode, through a load (a switch with memory when the
+   load is steeper than the diode's −152 Ω) or a load and an inductor (a relaxation oscillator).
+   Backward Euler at 4× oversampling, each step's root found by marching from the diode's voltage
+   in the direction it moves, so it keeps its branch until the branch ends. Tested against the fit
+   by Newton in all three unknowns, the thresholds from the load line's turning points, the switch
+   without capacitance as a map, and the oscillator's period integrated along each branch.
+   The **Power Amp** landed 2026-11-05 as the **Output Transformer**: the output valves as a linear
+   source behind their plate resistance, into a transformer (Hammond's 1750L impedances, 4.2 kΩ to
+   4 Ω) whose core follows Jiles and Atherton's 1986 equation, with three published fits: their own
+   iron, a 50 % nickel–iron and a permalloy (a silicon-steel fit with α Ms/3a over 1 ratchets in
+   minor loops, so it is out). The flux by the trapezoidal rule, the field by Newton, the
+   magnetisation by exact solutions of the equation linearised in the effective field, at 2×
+   oversampling. Tested against the loop and the stage integrated by Runge–Kutta, the small-signal
+   highpass from the reversible susceptibility, and Faraday's law.
+   **Atmospheres** landed 2026-11-05 as **Open Air**: a source and a listener over flat ground, the
+   direct path and the ground's reflection, each through ISO 9613-1's absorption; the ground's
+   impedance by Miki's law from Piercy and Embleton's flow resistivities, and its reflection by Weyl
+   and van der Pol's formula (the Faddeeva function by Weideman's rational approximation). Played
+   as the minimum-phase filter with the response's magnitude (the model is not quite causal), 4096
+   taps at 48 kHz in a partitioned convolution with no latency. Tested against ISO 9613-2's table,
+   w(z) integrated by Runge–Kutta, the hard ground's interference nulls, and the filter's magnitude.
+   **Sabine's Room** landed 2026-11-05: a shoebox room with Hall's absorption coefficients in six
+   octaves and ISO 9613-1's air, the direct sound and the first 64 reflections by Allen and
+   Berkley's image method as taps on a complementary band split, then in each octave a 16-line
+   Hadamard feedback delay network decaying in Eyring's time, fed through twelfth-order Butterworth
+   bands so that octaves don't leak into each other, scaled to the diffuse field's 4π c/V. Tested
+   against the images found again by mirroring, the networks' decay and power, each octave's T30
+   in the impulse response, and the critical distance in a steady sound.
+   **Rubens' Tube** landed 2026-11-05: a pipe of propane or methane (NIST's properties) closed by a
+   loudspeaker, Gardner, Gee and Dix's driver, and a cap: the pipe's plane-wave modes below its
+   first cross mode with Kirchhoff's losses to the walls, coupled to the cone's mass, suspension and
+   back EMF, all integrated together by the trapezoidal rule; a microphone along the pipe, and a
+   view of the flames by Bernoulli's mean flow. Tested against the pipe as a transmission line in
+   closed form driven by the same speaker, the speaker's damping of the lowest modes, the middle's
+   missing odd modes, and the engine against the model.
+   **Helmholtz's Resonators** landed 2026-11-05: Helmholtz's ten glass resonators from his own table
+   (Ellis's translation, Appendix II), each a Helmholtz resonator by Rienstra and Hirschberg with an
+   orifice's end correction and the neck that gives his measured coefficient, losing its energy to
+   radiation and to Kirchhoff's viscous boundary layer in the neck; ten trapezoidal state-variable
+   filters, the one at your ear heard beside the other ear's bass; a view of Koenig's manometric
+   flames. Tested against his formula, the monopole's radiation Q, the driven oscillator and the
+   engine against the model.
 
 ## The standalone app
 

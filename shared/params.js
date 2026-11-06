@@ -42,12 +42,15 @@ export function fromNative(p, v) {
 }
 
 // Position 0..1 along a knob (log parameters in log(value)), and back, snapped to `step`.
+// A choice turns as a rotary switch: its options spread evenly along the knob.
 export function toUnit(p, v) {
+  if (p.type === 'select') return Math.max(0, p.options.findIndex(([x]) => x === v)) / Math.max(1, p.options.length - 1);
   if (p.log) return Math.log(v / p.min) / Math.log(p.max / p.min);
   return (v - p.min) / (p.max - p.min);
 }
 export function fromUnit(p, x) {
   x = Math.min(1, Math.max(0, x));
+  if (p.type === 'select') return p.options[Math.round(x * (p.options.length - 1))][0];
   let v = p.log ? p.min * (p.max / p.min) ** x : p.min + x * (p.max - p.min);
   if (p.step) v = p.min + Math.round((v - p.min) / p.step) * p.step;
   return Math.min(p.max, Math.max(p.min, v));

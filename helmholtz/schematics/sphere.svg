@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="300" viewBox="0 0 680 300" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="A Helmholtz resonator: a glass sphere of volume V whose short neck of radius r faces the sound, the air in the neck a mass moving on the spring of the air inside, and a second opening held to the ear; beside it, the same as a mass on a spring driven by the pressure outside">
+<title>A Helmholtz resonator: a glass sphere of volume V whose short neck of radius r faces the sound, the air in the neck a mass moving on the spring of the air inside, and a second opening held to the ear; beside it, the same as a mass on a spring driven by the pressure outside</title>
+<rect width="680" height="300" rx="10" fill="#151518" stroke="#2b2a30"/>
+<path d="M302.39 166.39 L300.38 174.38 L297.61 182.15 L294.08 189.6 L289.84 196.67 L284.93 203.29 L279.4 209.4 L273.29 214.93 L266.67 219.84 L259.6 224.08 L252.15 227.61 L244.38 230.38 L236.39 232.39 L228.23 233.6 L220 234 L211.77 233.6 L203.61 232.39 L195.62 230.38 L187.85 227.61 L180.4 224.08 L173.33 219.84 L166.71 214.93 L160.6 209.4 L155.07 203.29 L150.16 196.67 L145.92 189.6 L142.39 182.15 L139.62 174.38" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M139.62 125.62 L142.39 117.85 L145.92 110.4 L150.16 103.33 L155.07 96.71 L160.6 90.6 L166.71 85.07 L173.33 80.16 L180.4 75.92 L187.85 72.39 L195.62 69.62 L203.61 67.61 L211.77 66.4 L220 66 L228.23 66.4 L236.39 67.61 L244.38 69.62 L252.15 72.39 L259.6 75.92 L266.67 80.16 L273.29 85.07 L279.4 90.6 L284.93 96.71 L289.84 103.33 L294.08 110.4 L297.61 117.85 L300.38 125.62 L302.39 133.61" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M137.68 133 L112 133" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M137.68 167 L112 167" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="113.99999999999999" y="136" width="24" height="28" rx="6" fill="none" stroke="#fb923c" stroke-width="1.6"/>
+<text x="104" y="102" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">neck: r, ℓ</text>
+<text x="220" y="154" text-anchor="middle" fill="#9b958b" font-size="13" font-weight="400">V</text>
+<text x="220" y="262" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">glass sphere</text>
+<path d="M304 140 L332 140" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M304 160 L332 160" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="338" y="152" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">ear</text>
+<path d="M24 118 L100 134" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M92.23 135.92 L100 134 L93.67 129.11" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M24 150 L100 150" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M92.8 153.48 L100 150 L92.8 146.52" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M24 182 L100 166" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M93.67 170.89 L100 166 L92.23 164.08" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="24" y="98" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">pex</text>
+<text x="540" y="32" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">the same, a mass on a spring</text>
+<rect x="490" y="128" width="44" height="44" rx="6" fill="none" stroke="#fb923c" stroke-width="1.6"/>
+<text x="512" y="154" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">m</text>
+<text x="512" y="204" text-anchor="middle" fill="#9b958b" font-size="10" font-weight="400">ρ(ℓ + 2δ)Sn</text>
+<path d="M534 150 L536.67 138 L539.33 162 L542 138 L544.67 162 L547.33 138 L550 162 L552.67 138 L555.33 162 L558 138 L560.67 162 L563.33 138 L566 162 L568.67 138 L571.33 162 L574 138 L576.67 162 L579.33 138 L582 162 L584.67 138 L587.33 162 L590 138 L592.67 162 L595.33 138 L598 150" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M598 110 L598 190" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="566" y="112" text-anchor="middle" fill="#9b958b" font-size="10" font-weight="400">ρc²Sn²/V</text>
+<path d="M410 150 L488 150" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M480.8 153.48 L488 150 L480.8 146.52" fill="none" stroke="#9b958b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="408" y="132" text-anchor="start" fill="#9b958b" font-size="10" font-weight="400">pex Sn</text>
+<text x="540" y="268" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">ω0² = Sn c²/((ℓ + 2δ) V)</text>
+</svg>

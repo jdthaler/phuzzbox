@@ -1,0 +1,19 @@
+{"slug": "tunnel",
+ "params": [
+  {"id":"drive","kind":"continuous","min":0.3,"max":30,"step":0,"log":true,"def":2},
+  {"id":"bias","kind":"continuous","min":0,"max":1.5,"step":0,"log":false,"def":0.76},
+  {"id":"load","kind":"continuous","min":10,"max":3300,"step":0,"log":true,"def":1000},
+  {"id":"inductor","kind":"continuous","min":0.05,"max":5,"step":0,"log":true,"def":0.5},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":-4.3},
+  {"id":"circuit","kind":"choice","options":["switch","oscillator"],"def":"switch"}
+ ],
+ "presets": [
+  {"name":"A switch with memory","values":{"drive":2,"bias":0.76,"load":1000,"level":-4.3,"circuit":"switch","inductor":0.5}},
+  {"name":"Narrow memory","values":{"drive":2,"bias":0.346,"load":330,"level":-7,"circuit":"switch","inductor":0.5}},
+  {"name":"Wide memory","values":{"drive":5,"bias":1.42,"load":2200,"level":-4.7,"circuit":"switch","inductor":0.5}},
+  {"name":"Lopsided","values":{"drive":2,"bias":0.9,"load":1000,"level":-4.6,"circuit":"switch","inductor":0.5}},
+  {"name":"No memory","values":{"drive":0.5,"bias":0.2,"load":120,"level":1.2,"circuit":"switch","inductor":0.5}},
+  {"name":"Relaxation oscillator","values":{"drive":0.3,"bias":0.2,"load":20,"level":-11.2,"circuit":"oscillator","inductor":0.5}},
+  {"name":"Gated buzz","values":{"drive":1,"bias":0.05,"load":20,"level":-4.5,"circuit":"oscillator","inductor":0.5}},
+  {"name":"Low drone","values":{"drive":0.3,"bias":0.2,"load":20,"level":-4.3,"circuit":"oscillator","inductor":5}}
+ ]}

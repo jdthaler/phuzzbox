@@ -1,14 +1,18 @@
 // registry.js — every pedal: the landing page, the menus and the tests read this list.
 //   id: the folder; name; version (semver, bumped only at a release: CLAUDE.md);
 //   ready: playable; blurb: one line for the landing page; after: what it is modelled on;
-//   plugin: { code } the AU subtype (four characters, unique);
+//   plugin: { code, name? } the AU subtype (four characters, unique), and the plugins' file and AU
+//   name where the pedal's name won't do for one (pluginName: an apostrophe breaks clap-wrapper's
+//   build commands);
 //   enclosure: [its colour, the ink printed on it], as its page's style.css has them;
 //   section: the physics it is made of (SECTIONS), which groups it on the landing page and in the
 //   menu, in the order PEDALS lists them
 
-export const PHUZZBOX_VERSION = '0.5.0';
+export const PHUZZBOX_VERSION = '0.6.0';
 // the site's credits link to the source; the only link to GitHub on the site (Jesse, 2026-11-01):
 // everything a reader needs is on the site itself, in How it works
+// the name of a pedal's plugin files and its AU: letters, digits, spaces, dots and hyphens only
+export const pluginName = (p) => p.plugin?.name ?? p.name;
 export const SOURCE = 'https://github.com/jdthaler/phuzzbox';
 
 // the pedals by the physics they are made of: the landing page's sections and the menu's, in this order
@@ -17,6 +21,8 @@ export const SECTIONS = [
     blurb: 'Kirchhoff\'s laws with real parts: a pickup\'s coil, germanium transistors, a wah\'s inductor, triodes, and the comparator and flip-flops of an octave divider, solved node by node every sample.' },
   { id: 'light', title: 'Light and photocells', short: 'Light',
     blurb: 'A light and a cadmium-sulphide cell: the signal lights a glowing panel or an LED, the cell\'s resistance follows the light, slowly, and remembers how long it was lit.' },
+  { id: 'optics', title: 'Optics', short: 'Optics',
+    blurb: 'Light as a wave: an interferometer whose mirror your bass moves, its fringes sweeping past a photodiode half a wavelength at a time.' },
   { id: 'vibration', title: 'Vibrating steel, paper and air', short: 'Vibration',
     blurb: 'Waves in solids and in air: a loudspeaker\'s cone on its box of air, springs whose waves disperse into chirps, a steel plate\'s thousands of bending modes, and strings that ring in sympathy.' },
   { id: 'motion', title: 'Motion and delay', short: 'Motion',
@@ -37,7 +43,7 @@ export const PEDALS = [
     blurb: 'Ebers–Moll transistors that drift with temperature, a sagging battery, and an input that loads your pickup.',
   },
   {
-    id: 'wah', section: 'circuits', name: 'Wah', version: '0.3.0', ready: true, plugin: { code: 'Wahh' }, enclosure: ['#2b2b2e', '#f2efe8'],
+    id: 'wah', section: 'circuits', name: 'Wah', version: '0.3.1', ready: true, plugin: { code: 'Wahh' }, enclosure: ['#2b2b2e', '#f2efe8'],
     after: 'the inductor wah of the late 1960s, swept low for bass',
     blurb: 'Two transistors and a coil resonating with a capacitor; your foot, or a MIDI expression pedal, turns the pot that sets how hard the loop pushes back.',
   },
@@ -47,12 +53,57 @@ export const PEDALS = [
     blurb: 'Three 12AX7 triodes that conduct at the grid when pushed, a cathode follower, and the passive tone stack that scoops the middle.',
   },
   {
+    id: 'transformer', section: 'circuits', name: 'Output Transformer', version: '0.1.0', ready: true, plugin: { code: 'Xfmr' }, enclosure: ['#2e2a26', '#e8b46a'],
+    after: 'the iron of a valve amplifier\'s output stage, after Jiles and Atherton\'s theory of hysteresis (1986)',
+    blurb: 'Your bass through the iron core of a valve amp\'s output transformer, magnetised round its hysteresis loop: the low notes, which need the most flux, saturate it first.',
+  },
+  {
+    id: 'bandgap', section: 'circuits', name: 'Bandgap', version: '0.1.0', ready: true, plugin: { code: 'Bgap' }, enclosure: ['#22304a', '#e9f0ff'],
+    after: 'the op-amp distortions of the late 1970s, with LEDs for diodes',
+    blurb: 'An op-amp drives a pair of diodes to ground, and each turns on at its bandgap: germanium low, silicon higher, and LEDs at the energy of the light they give out.',
+  },
+  {
+    id: 'cable', section: 'circuits', name: 'Transatlantic Cable', version: '0.1.0', ready: true, plugin: { code: 'Cabl' }, enclosure: ['#1d3b4a', '#e8d9b0'],
+    after: 'the Atlantic telegraph cables of 1858 and 1866, and loaded telephone lines',
+    blurb: 'Your bass sent down a long cable: Kelvin\'s law of squares smears it, loading coils and Heaviside\'s distortionless line bring it back, and an open far end echoes.',
+  },
+  {
+    id: 'ringmod', section: 'circuits', name: 'Ring Modulator', version: '0.1.0', ready: true, plugin: { code: 'Ring' }, enclosure: ['#3e4a3d', '#f3ecd2'],
+    after: 'the diode-ring modulators of carrier telephony, and of the first synthesizers',
+    blurb: 'Four diodes between two transformers, switched by a carrier: the radio engineer\'s heterodyne, so every note comes out as its sum and difference with the carrier.',
+  },
+  {
+    id: 'radio', section: 'circuits', name: 'Crystal Radio', version: '0.1.0', ready: true, plugin: { code: 'CRad' }, enclosure: ['#5a3b22', '#f1e2c0'],
+    after: 'the crystal sets of the 1920s: a tuned coil, a cat\'s whisker on a crystal, and an earphone',
+    blurb: 'Your bass broadcast as an AM station and heard on a crystal set: a weak signal comes through the diode squared, a strong one straight, the tuned coil cuts the treble, and the next station whistles.',
+  },
+  {
+    id: 'tunnel', section: 'circuits', name: 'Tunnel Diode', version: '0.1.0', ready: true, plugin: { code: 'Tnnl' }, enclosure: ['#1f2723', '#9fe8b8'],
+    after: 'Esaki\'s germanium tunnel diode of 1958, and the switches and oscillators of the tunnel diode manuals',
+    blurb: 'A diode whose current falls as its voltage rises, because electrons tunnel through its junction: with a load it is a switch with memory that squares your bass, with an inductor an oscillator your bass plays.',
+  },
+  {
     id: 'opto', section: 'light', name: 'Opto Compressor', version: '0.2.0', ready: true, plugin: { code: 'Opto' }, enclosure: ['#8a9096', '#16181b'],
     after: 'the electro-optical leveling amplifiers of the 1960s',
     blurb: 'A glowing panel and a photocell with memory: the longer it is lit, the slower it lets go.',
   },
   {
-    id: 'cabinet', section: 'vibration', name: 'Cabinet', version: '0.3.0', ready: true, plugin: { code: 'Cabn' }, enclosure: ['#232326', '#ece8e1'],
+    id: 'lampvibe', section: 'light', name: 'Lamp Vibe', version: '0.1.0', ready: true, plugin: { code: 'LVib' }, enclosure: ['#3d2a4f', '#ffd27a'],
+    after: 'the photocell phase-shifters of the late 1960s',
+    blurb: 'A tungsten lamp that heats and cools with the oscillator, a black body whose glow four photocells turn into a sweeping phase.',
+  },
+  {
+    id: 'neon', section: 'light', name: 'Neon Tremolo', version: '0.1.0', ready: true, plugin: { code: 'Neon' }, enclosure: ['#262224', '#ff8a3d'],
+    after: 'Pearson and Anson\'s neon-lamp oscillator of 1921, and the lamp-and-photocell tremolos of guitar amplifiers',
+    blurb: 'A neon lamp flashing in a relaxation oscillator: Paschen\'s law sets the voltage it strikes at, and each flash lights a photocell that ducks the bass.',
+  },
+  {
+    id: 'michelson', section: 'optics', name: 'Michelson Interferometer', version: '0.1.0', ready: true, plugin: { code: 'Mich' }, enclosure: ['#16191e', '#ff6a5c'],
+    after: 'Michelson and Morley\'s interferometer (1887), and LIGO\'s',
+    blurb: 'A laser split into two arms and recombined: your bass moves one mirror, and the fringes sweeping past the detector fold the wave over, half a wavelength at a time.',
+  },
+  {
+    id: 'cabinet', section: 'vibration', name: 'Cabinet', version: '0.3.1', ready: true, plugin: { code: 'Cabn' }, enclosure: ['#232326', '#ece8e1'],
     after: '8×10 and 1×15 bass cabinets, and a guitar 4×12',
     blurb: 'A loudspeaker from its Thiele–Small parameters in a sealed or ported box, its cone running out of travel on low B.',
   },
@@ -67,14 +118,19 @@ export const PEDALS = [
     blurb: 'A comparator and two flip-flops that flip your bass\'s polarity once a cycle: an octave below, and two.',
   },
   {
-    id: 'spring', section: 'vibration', name: 'Spring Reverb', version: '0.3.0', ready: true, plugin: { code: 'Sprg' }, enclosure: ['#3a3f47', '#eef1f5'],
+    id: 'spring', section: 'vibration', name: 'Spring Reverb', version: '0.3.1', ready: true, plugin: { code: 'Sprg' }, enclosure: ['#3a3f47', '#eef1f5'],
     after: 'the reverb tanks of guitar and organ amplifiers',
     blurb: 'Steel springs from measured tanks, whose waves travel slower the higher they are: every echo comes back as a chirp.',
   },
   {
-    id: 'echo', section: 'motion', name: 'Tape Echo', version: '0.3.0', ready: true, plugin: { code: 'Tape' }, enclosure: ['#5a4632', '#f6eee2'],
+    id: 'echo', section: 'motion', name: 'Tape Echo', version: '0.4.0', ready: true, plugin: { code: 'Tape' }, enclosure: ['#5a4632', '#f6eee2'],
     after: 'the multi-head tape echoes of the 1970s',
     blurb: 'A loop of tape past a record head and three playback heads: every repeat recorded again, darker and more saturated, wavering with the capstan.',
+  },
+  {
+    id: 'bbd', section: 'motion', name: 'Bucket Brigade', version: '0.1.0', ready: true, plugin: { code: 'BBDl' }, enclosure: ['#3b2d5c', '#ece6ff'],
+    after: 'the bucket-brigade chorus, flanger and delay pedals of the late 1970s',
+    blurb: 'A chain of capacitors passing charges along at a clock: sampled, held and smeared on the way, the bass comes out late, and a wavering clock bends its pitch.',
   },
   {
     id: 'rotary', section: 'motion', name: 'Rotary Speaker', version: '0.2.0', ready: true, plugin: { code: 'Rtry' }, enclosure: ['#6b3a1e', '#f4e7d6'],
@@ -82,7 +138,27 @@ export const PEDALS = [
     blurb: 'A horn and a drum spinning past two microphones: the pitch rises as each comes toward you and falls as it goes, heard at the retarded time.',
   },
   {
-    id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
+    id: 'openair', section: 'vibration', name: 'Open Air', version: '0.1.0', ready: true, plugin: { code: 'OAir' }, enclosure: ['#3c5a3a', '#f2ecd8'],
+    after: 'outdoor acoustics: ISO 9613-1\'s absorption of sound by the air, and the ground\'s reflection by Weyl and van der Pol\'s formula',
+    blurb: 'Your bass heard across a field: the air soaks up its treble with distance, more when it is dry, and the ground\'s reflection, softer than a mirror, digs a dip into it that moves as you walk away.',
+  },
+  {
+    id: 'sabine', section: 'vibration', name: 'Sabine\'s Room', version: '0.1.0', ready: true, plugin: { code: 'Sabn', name: 'Sabine Room' }, enclosure: ['#4a3b2c', '#efe2c8'],
+    after: 'Wallace Sabine\'s measurements of reverberation at Harvard (1895–1900), and the image method of Allen and Berkley',
+    blurb: 'Your bass in a room you build: its early reflections by the image method, then its reverberation, dying away octave by octave as Sabine\'s law, in Eyring\'s form, says it must from the room\'s size, its walls and its audience.',
+  },
+  {
+    id: 'rubens', section: 'vibration', name: 'Rubens\' Tube', version: '0.1.0', ready: true, plugin: { code: 'Rubn', name: 'Rubens Tube' }, enclosure: ['#5a2c14', '#f8dcae'],
+    after: 'Heinrich Rubens\' flame tube (1905), and Gardner, Gee and Dix\'s measurements of one',
+    blurb: 'Your bass through a loudspeaker into a closed pipe of propane, heard inside: the pipe rings at its resonances, which the walls and the speaker damp, and its standing waves shape the flames along its top.',
+  },
+  {
+    id: 'helmholtz', section: 'vibration', name: 'Helmholtz\'s Resonators', version: '0.1.0', ready: true, plugin: { code: 'Hlmz', name: 'Helmholtz Resonators' }, enclosure: ['#b5893a', '#1e1608'],
+    after: 'the glass resonators Helmholtz held to his ear to hear the overtones in every tone (1863), and Koenig\'s flames',
+    blurb: 'Your bass through one of Helmholtz\'s ten glass resonators held to your ear: the air in its neck a mass on the spring of the air inside, ringing out the partial it is tuned to.',
+  },
+  {
+    id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.1', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
     after: 'the steel plate reverbs of 1960s studios',
     blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',
   },
@@ -92,9 +168,14 @@ export const PEDALS = [
     blurb: 'A frame of steel strings tuned to a key, all on one bridge your bass shakes: the strings whose partials your notes share ring along, a halo that follows the key.',
   },
   {
-    id: 'blackhole', section: 'gravity', name: 'Black Hole', version: '0.3.0', ready: true, plugin: { code: 'BHol' }, enclosure: ['#0d0d12', '#f3d9a4'],
+    id: 'blackhole', section: 'gravity', name: 'Black Hole', version: '0.3.1', ready: true, plugin: { code: 'BHol' }, enclosure: ['#0d0d12', '#f3d9a4'],
     after: 'the ringdown LIGO hears after a merger',
     blurb: 'Your bass perturbs a spinning black hole and it rings in its quasinormal modes: a thud without spin, a bell near the limit. Mass sets the pitch.',
+  },
+  {
+    id: 'lens', section: 'gravity', name: 'Gravitational Lens', version: '0.1.0', ready: true, plugin: { code: 'GLns' }, enclosure: ['#0b1026', '#cfe3ff'],
+    after: 'Einstein\'s lens of 1936, the twin quasar of 1979 and the wave optics of lensed gravitational waves',
+    blurb: 'Your bass from far behind a star or a black hole, bent round it: two images arrive, the second late and Hilbert-transformed, and the long waves diffract round the lens untouched.',
   },
   {
     id: 'doppler', section: 'motion', name: 'Doppler', version: '0.2.0', ready: true, plugin: { code: 'Dopp' }, enclosure: ['#1f4e5f', '#e9f3f5'],

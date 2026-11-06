@@ -110,9 +110,22 @@ export function schematic({ w, h, title = '' }) {
       });
       return api;
     },
+    // a neon lamp: two electrodes facing across a gap inside a glass bulb, the gas between them
+    neon(a, b, o) {
+      o = opts(o);
+      twoTerminal(a, b, o, 32, (L) => {
+        const c = L / 2;
+        parts.push(`<circle cx="${n(c)}" cy="0" r="${n(c)}" fill="none" stroke="${colour(o)}" stroke-width="1.6"/>`);
+        line([[0, 0], [c - 4, 0]], {}); line([[c + 4, 0], [L, 0]], {});
+        line([[c - 4, -8], [c - 4, 8]], { ...o, width: 2.4 }); line([[c + 4, -8], [c + 4, 8]], { ...o, width: 2.4 });
+        parts.push(`<circle cx="${n(c)}" cy="${n(-c * 0.55)}" r="2" fill="${colour(o)}"/>`);
+      });
+      return api;
+    },
+    // a diode (o.tunnel: a tunnel diode, its bar hooked back towards the anode)
     diode(a, b, o) {
       o = opts(o);
-      twoTerminal(a, b, o, 16, (L) => { line([[0, -8], [0, 8], [L, 0], [0, -8]], o); line([[L, -8], [L, 8]], o); });
+      twoTerminal(a, b, o, 16, (L) => { line([[0, -8], [0, 8], [L, 0], [0, -8]], o); line(o.tunnel ? [[L - 5, -8], [L, -8], [L, 8], [L - 5, 8]] : [[L, -8], [L, 8]], o); });
       return api;
     },
     // a pot from a to b, its wiper an arrow from the point w onto the track's middle (w level with

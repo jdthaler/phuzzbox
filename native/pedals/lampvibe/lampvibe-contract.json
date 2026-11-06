@@ -1,0 +1,20 @@
+{"slug": "lampvibe",
+ "params": [
+  {"id":"speed","kind":"continuous","min":0.5,"max":12,"step":0,"log":true,"def":2.5},
+  {"id":"intensity","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.7},
+  {"id":"level","kind":"continuous","min":-30,"max":12,"step":0,"log":false,"def":4.1},
+  {"id":"mode","kind":"choice","options":["chorus","vibrato"],"def":"chorus"},
+  {"id":"bulb","kind":"choice","options":["grain","pilot","panel"],"def":"pilot"},
+  {"id":"cell","kind":"continuous","min":0.002,"max":0.1,"step":0,"log":true,"def":0.015}
+ ],
+ "presets": [
+  {"name":"Chorus","values":{"speed":2.5,"intensity":0.7,"level":4.1,"mode":"chorus","bulb":"pilot","cell":0.015}},
+  {"name":"Vibrato","values":{"speed":5,"intensity":0.7,"level":0,"mode":"vibrato","bulb":"pilot","cell":0.015}},
+  {"name":"Slow throb","values":{"speed":0.8,"intensity":1,"level":2.2,"mode":"chorus","bulb":"pilot","cell":0.015}},
+  {"name":"Fast and shallow","values":{"speed":9,"intensity":0.5,"level":3.1,"mode":"chorus","bulb":"pilot","cell":0.015}},
+  {"name":"Lamp steady: the notches stand still","values":{"speed":2.5,"intensity":0,"level":7.8,"mode":"chorus","bulb":"pilot","cell":0.015}},
+  {"name":"Grain of wheat, quick","values":{"speed":6,"intensity":0.9,"level":4,"mode":"chorus","bulb":"grain","cell":0.015}},
+  {"name":"Panel bulb: the lamp can't keep up","values":{"speed":6,"intensity":0.9,"level":2.4,"mode":"chorus","bulb":"panel","cell":0.015}},
+  {"name":"Slow cells","values":{"speed":2.5,"intensity":0.7,"level":3.1,"mode":"chorus","bulb":"pilot","cell":0.06}},
+  {"name":"Seasick vibrato","values":{"speed":1.5,"intensity":1,"level":0,"mode":"vibrato","bulb":"pilot","cell":0.015}}
+ ]}

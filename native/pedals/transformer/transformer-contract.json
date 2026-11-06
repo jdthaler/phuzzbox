@@ -1,0 +1,17 @@
+{"slug": "transformer",
+ "params": [
+  {"id":"drive","kind":"continuous","min":30,"max":3000,"step":0,"log":true,"def":1000},
+  {"id":"source","kind":"continuous","min":300,"max":100000,"step":0,"log":true,"def":2000},
+  {"id":"area","kind":"continuous","min":0.0002,"max":0.005,"step":0,"log":true,"def":0.001},
+  {"id":"level","kind":"continuous","min":-24,"max":12,"step":0,"log":false,"def":1.7},
+  {"id":"material","kind":"choice","options":["iron","nickel","permalloy"],"def":"iron"}
+ ],
+ "presets": [
+  {"name":"Iron","values":{"drive":1000,"source":2000,"area":0.001,"level":1.7,"material":"iron"}},
+  {"name":"Big iron","values":{"drive":1000,"source":2000,"area":0.003,"level":0.7,"material":"iron"}},
+  {"name":"Small iron","values":{"drive":1000,"source":2000,"area":0.0003,"level":3.6,"material":"iron"}},
+  {"name":"Stiff source","values":{"drive":1000,"source":500,"area":0.001,"level":0.5,"material":"iron"}},
+  {"name":"Soft source","values":{"drive":1000,"source":20000,"area":0.001,"level":5.9,"material":"iron"}},
+  {"name":"50 % nickel","values":{"drive":1000,"source":2000,"area":0.0005,"level":0,"material":"nickel"}},
+  {"name":"Permalloy","values":{"drive":1000,"source":2000,"area":0.0005,"level":0,"material":"permalloy"}}
+ ]}

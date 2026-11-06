@@ -1,0 +1,26 @@
+{"slug": "bandgap",
+ "params": [
+  {"id":"drive","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.6},
+  {"id":"filter","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.2},
+  {"id":"level","kind":"continuous","min":-30,"max":12,"step":0,"log":false,"def":-14.5},
+  {"id":"diodes","kind":"choice","options":["ge","schottky","si","red","green","blue","none"],"def":"si"},
+  {"id":"perSide","kind":"choice","options":["one","two","asym"],"def":"one"},
+  {"id":"opamp","kind":"choice","options":["lm308","ua741","tl072"],"def":"lm308"},
+  {"id":"temp","kind":"continuous","min":-10,"max":50,"step":0,"log":false,"def":25},
+  {"id":"supply","kind":"continuous","min":9,"max":18,"step":0,"log":false,"def":9},
+  {"id":"lowCut","kind":"continuous","min":2.2e-7,"max":0.000022,"step":0,"log":true,"def":0.00001}
+ ],
+ "presets": [
+  {"name":"Silicon","values":{"drive":0.6,"filter":0.2,"level":-14.5,"diodes":"si","perSide":"one","opamp":"lm308","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"Germanium, soft and low","values":{"drive":0.6,"filter":0.2,"level":-9.1,"diodes":"ge","perSide":"one","opamp":"lm308","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"Red LEDs, open and loud","values":{"drive":0.6,"filter":0.2,"level":-21.4,"diodes":"red","perSide":"one","opamp":"lm308","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"Blue LEDs, barely clipping","values":{"drive":0.6,"filter":0.2,"level":-22.9,"diodes":"blue","perSide":"one","opamp":"lm308","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"No diodes: the rails","values":{"drive":0.6,"filter":0.2,"level":-23.5,"diodes":"none","perSide":"one","opamp":"lm308","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"Two each way","values":{"drive":0.6,"filter":0.2,"level":-18.8,"diodes":"si","perSide":"two","opamp":"lm308","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"Lopsided: one up, two down","values":{"drive":0.6,"filter":0.2,"level":-17.1,"diodes":"si","perSide":"asym","opamp":"lm308","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"Flat out, slow op-amp","values":{"drive":1,"filter":0,"level":-18.1,"diodes":"si","perSide":"one","opamp":"lm308","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"Flat out, fast op-amp","values":{"drive":1,"filter":0,"level":-18.1,"diodes":"si","perSide":"one","opamp":"tl072","temp":25,"supply":9,"lowCut":0.00001}},
+  {"name":"Bright, guitar-pedal low cut","values":{"drive":0.6,"filter":0.05,"level":-14.8,"diodes":"si","perSide":"one","opamp":"lm308","temp":25,"supply":9,"lowCut":0.0000022}},
+  {"name":"Cold stage (−5 °C)","values":{"drive":0.6,"filter":0.2,"level":-14.5,"diodes":"si","perSide":"one","opamp":"lm308","temp":-5,"supply":9,"lowCut":0.00001}},
+  {"name":"Hot stage (45 °C)","values":{"drive":0.6,"filter":0.2,"level":-14.5,"diodes":"si","perSide":"one","opamp":"lm308","temp":45,"supply":9,"lowCut":0.00001}}
+ ]}

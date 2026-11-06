@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="260" viewBox="0 0 520 260" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-label="The Tunnel Diode: the source through the load, and in the oscillator an inductor, into the diode">
+<title>The Tunnel Diode: the source through the load, and in the oscillator an inductor, into the diode</title>
+<rect width="520" height="260" rx="10" fill="#151518" stroke="#2b2a30"/>
+<circle cx="20" cy="60" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="20" y="50" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">Vs</text>
+<text x="20" y="108" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">Bias +</text>
+<text x="20" y="128" text-anchor="start" fill="#9b958b" font-size="11" font-weight="400">Drive × in</text>
+<path d="M20 60 L72 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M108 60 L160 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(72 60) rotate(0)"><path d="M0 0 L3 -6 L6 6 L9 -6 L12 6 L15 -6 L18 6 L21 -6 L24 6 L27 -6 L30 6 L33 -6 L36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="90" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">R</text>
+<text x="90" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">Load</text>
+<path d="M160 60 L212 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M248 60 L300 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(212 60) rotate(0)"><path d="M0 0 A4.5 4.5 0 0 1 9 0 A4.5 4.5 0 0 1 18 0 A4.5 4.5 0 0 1 27 0 A4.5 4.5 0 0 1 36 0" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="230" y="34" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">L</text>
+<text x="230" y="48" text-anchor="middle" fill="#9b958b" font-size="12" font-weight="400">the oscillator's</text>
+<path d="M300 60 L480 60" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="340" cy="60" r="3" fill="#ece8e1"/>
+<path d="M340 60 L340 122" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M340 138 L340 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(340 122) rotate(90)"><path d="M0 -8 L0 8 L16 0 L0 -8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 -8 L16 -8 L16 8 L11 8" fill="none" stroke="#fb923c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="354" y="127" text-anchor="start" fill="#fb923c" font-size="12" font-weight="400">D</text>
+<text x="354" y="141" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">1 mA Ge</text>
+<path d="M340 200 L340 208" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M331 208 L349 208" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M334.5 212 L345.5 212" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M338 216 L342 216" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="420" cy="60" r="3" fill="#ece8e1"/>
+<path d="M420 60 L420 126" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M420 134 L420 200" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(420 126) rotate(90)"><path d="M0 -10 L0 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 -10 L8 10" fill="none" stroke="#ece8e1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="434" y="127" text-anchor="start" fill="#ece8e1" font-size="12" font-weight="400">C</text>
+<text x="434" y="141" text-anchor="start" fill="#9b958b" font-size="12" font-weight="400">5 pF</text>
+<path d="M420 200 L420 208" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M411 208 L429 208" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M414.5 212 L425.5 212" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M418 216 L422 216" fill="none" stroke="#ece8e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="480" cy="60" r="4" fill="#151518" stroke="#ece8e1" stroke-width="1.6"/>
+<text x="480" y="50" text-anchor="middle" fill="#ece8e1" font-size="12" font-weight="400">V out</text>
+<text x="240" y="248" text-anchor="middle" fill="#9b958b" font-size="11" font-weight="400">Switch: L shorted. Oscillator: L in series, R under 152 Ω.</text>
+</svg>

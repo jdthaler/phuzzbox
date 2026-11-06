@@ -1,0 +1,23 @@
+{"slug": "neon",
+ "params": [
+  {"id":"rate","kind":"continuous","min":500000,"max":50000000,"step":0,"log":true,"def":4700000},
+  {"id":"supply","kind":"continuous","min":60,"max":400,"step":0,"log":false,"def":180},
+  {"id":"depth","kind":"continuous","min":0,"max":1,"step":0,"log":false,"def":0.9},
+  {"id":"level","kind":"continuous","min":-24,"max":24,"step":0,"log":false,"def":1.7},
+  {"id":"gas","kind":"choice","options":["ne","he","ar"],"def":"ne"},
+  {"id":"pd","kind":"continuous","min":0.3,"max":30,"step":0,"log":true,"def":3},
+  {"id":"gamma","kind":"continuous","min":0.01,"max":0.5,"step":0,"log":true,"def":0.3},
+  {"id":"cap","kind":"continuous","min":1e-8,"max":0.000001,"step":0,"log":true,"def":1e-7},
+  {"id":"cell","kind":"continuous","min":0.005,"max":0.2,"step":0,"log":true,"def":0.03}
+ ],
+ "presets": [
+  {"name":"Neon pulse","values":{"rate":4700000,"supply":180,"depth":0.9,"level":1.7,"gas":"ne","pd":3,"gamma":0.3,"cap":1e-7,"cell":0.03}},
+  {"name":"Fast flicker","values":{"rate":2200000,"supply":180,"depth":0.9,"level":4.7,"gas":"ne","pd":3,"gamma":0.3,"cap":4.7e-8,"cell":0.03}},
+  {"name":"Slow blink","values":{"rate":22000000,"supply":180,"depth":0.9,"level":0.9,"gas":"ne","pd":3,"gamma":0.3,"cap":1e-7,"cell":0.03}},
+  {"name":"Soft throb (slow cell)","values":{"rate":2200000,"supply":180,"depth":0.9,"level":4.7,"gas":"ne","pd":3,"gamma":0.3,"cap":2.2e-7,"cell":0.12}},
+  {"name":"Sharp chop (quick cell)","values":{"rate":2200000,"supply":180,"depth":0.9,"level":1.7,"gas":"ne","pd":3,"gamma":0.3,"cap":1e-7,"cell":0.008}},
+  {"name":"Helium lamp","values":{"rate":4700000,"supply":150,"depth":0.9,"level":1.5,"gas":"he","pd":10,"gamma":0.3,"cap":1e-7,"cell":0.03}},
+  {"name":"Argon lamp","values":{"rate":4700000,"supply":250,"depth":0.9,"level":3,"gas":"ar","pd":2,"gamma":0.3,"cap":1e-7,"cell":0.03}},
+  {"name":"Steady glow: R too small","values":{"rate":1000000,"supply":180,"depth":0.9,"level":9.6,"gas":"ne","pd":3,"gamma":0.3,"cap":1e-7,"cell":0.03}},
+  {"name":"Below the strike: dark","values":{"rate":4700000,"supply":130,"depth":0.9,"level":0.8,"gas":"ne","pd":3,"gamma":0.3,"cap":1e-7,"cell":0.03}}
+ ]}

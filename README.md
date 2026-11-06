@@ -15,16 +15,31 @@ captured profiles, no hand-drawn waveshapers. Vibe coded by Jesse Thaler.
 | ✅ | [Phuzz](phuzz/) | two-transistor germanium fuzz (1966) | Ebers–Moll transistors that drift with temperature, a sagging battery, an input that loads the pickup; solved by the nodal DK method at 4× oversampling |
 | ✅ | [Wah](wah/) | the inductor wah of the late 1960s, swept low for bass | two Ebers–Moll transistors and a 500 mH coil, solved node by node; a MIDI expression pedal rocks it |
 | ✅ | [Tube Preamp](preamp/) | the 1959 Fender Bassman's preamp | three 12AX7 triodes (Dempwolf–Zölzer, with grid conduction), the passive tone stack and its supply rail, solved node by node at up to 4× oversampling |
+| ✅ | [Output Transformer](transformer/) | the output transformer of a valve bass amplifier, after Jiles and Atherton's theory of hysteresis (1986) | the iron core between the output valves and the speaker, round its hysteresis loop: three published Jiles–Atherton fits, iron, 50 % nickel and permalloy; Faraday's law makes the low notes need the most flux, so they saturate it first |
+| ✅ | [Bandgap](bandgap/) | the op-amp and diode overdrives of the late 1970s on | an op-amp with its gain–bandwidth, slew rate and rails, into diodes by Shockley's equation: germanium, Schottky, silicon, and red, green and blue LEDs that clip at their photons' energy, E = hc/λ, and glow as they do |
+| ✅ | [Transatlantic Cable](cable/) | the Atlantic telegraph cables of 1858 and 1866, and loaded telephone lines | the telegrapher's equations: a ladder of the cable's resistance, inductance, capacitance and leakage, worked out from the cores' copper and gutta-percha; Kelvin's law of squares, loading coils and their cutoff, Heaviside's distortionless line and its echoes |
+| ✅ | [Ring Modulator](ringmod/) | the diode-ring modulators of carrier telephony, and of the first synthesizers | four diodes by Shockley's equation between two centre-tapped transformers, switched by a carrier: the heterodyne's sum and difference frequencies, tanh w = tanh u tanh vc below the knee, the carrier leaking through a mismatched diode, and the transformers' low cut |
+| ✅ | [Crystal Radio](radio/) | the crystal sets of the 1920s: a tuned coil, a cat's whisker on a crystal, and an earphone | your bass broadcast as an AM station and received: a tuned circuit whose Q is the bass's bandwidth, a point-contact diode averaged over the carrier's cycle by its Bessel function, square-law when the station is faint and a peak detector when it is strong, diagonal clipping, and the next station's 10 kHz whistle |
+| ✅ | [Tunnel Diode](tunnel/) | Esaki's germanium tunnel diode of 1958 and the GE manual's switches and oscillators | a diode whose current falls as its voltage rises, by tunnelling: Sze's three currents fitted to a 1 mA germanium diode; through a load steeper than its −152 Ω, a switch with memory that squares each note; with an inductor, a relaxation oscillator whose pitch goes as 1/L |
 | ✅ | [Opto Compressor](opto/) | the electro-optical leveling amplifiers of the 1960s | a glowing panel and a photocell whose free and trapped electrons set the attack (10 ms) and the program-dependent release |
+| ✅ | [Lamp Vibe](lampvibe/) | the photocell phase-shifters of the late 1960s | a tungsten lamp's filament heated by its current and cooled by radiating (Stefan–Boltzmann), its black-body glow (Planck) lighting four photocells, each the resistor of an all-pass stage: chorus notches or vibrato that lag the lamp, more for a bigger bulb |
+| ✅ | [Neon Tremolo](neon/) | Pearson and Anson's neon-lamp oscillator (1921) and the lamp-and-photocell tremolos of guitar amplifiers | a neon lamp flashing across a capacitor: Paschen's law for when the gas breaks down, the normal glow's cathode fall for where it burns, and the flashes lighting a photocell that ducks the bass |
+| ✅ | [Michelson Interferometer](michelson/) | Michelson and Morley's interferometer (1887), and LIGO's | a laser split into two arms, one mirror moved by your bass: the fringes sweeping past a photodiode fold the wave every half wavelength (Bessel functions, as FM); lasers, a sodium lamp's beating doublet and white light's micrometre of coherence, a piezo or a loudspeaker mount, drifting air |
 | ✅ | [Speaker Cabinet](cabinet/) | 8 × 10, 4 × 10, 2 × 10 and 1 × 15 bass cabinets | drivers from their Thiele–Small parameters, in a sealed or ported box, with the cones running out of travel on loud low notes |
 | ✅ | [Envelope Filter](envelope/) | the envelope-controlled filters of the 1970s | a state-variable filter whose resistors are photocells, lit by an LED that an envelope follower drives; the cells' electrons set how it sweeps and remembers |
 | ✅ | [Octave Down](octave/) | the analog octave dividers of the 1980s | a tracking filter, a comparator with hysteresis and two flip-flops that flip the bass's polarity every cycle or every other: one and two octaves down, with the real thing's warble and dropouts |
 | ✅ | [Spring Reverb](spring/) | the reverb tanks of guitar and organ amplifiers | steel springs from measured tanks as waves on a coil of wire, 2300 modes from their dispersion: every echo a chirp up to the transition frequency |
 | ✅ | [Tape Echo](echo/) | the multi-head tape echoes of the 1970s | a tape loop past a record head and three playback heads: the tape's anhysteretic magnetisation, the heads' spacing, coating and gap losses, the motor's pitch bend and the capstan's flutter |
+| ✅ | [Bucket Brigade](bbd/) | the bucket-brigade chorus, flanger and delay pedals of the late 1970s | a chain of capacitors passing charges along at a clock: the sampling theorem's aliases, the hold's sinc, the charges left behind as a negative binomial filter, and the pitch a swinging clock bends |
 | ✅ | [Rotary Speaker](rotary/) | the rotating-horn organ speakers of the 1960s | a horn and a drum turning past two microphones: each sound heard at its retarded time (the Doppler shift, exactly), a piston's directivity as its impulse response, motors with inertia |
+| ✅ | [Open Air](openair/) | outdoor acoustics: ISO 9613-1's absorption by the air, and the ground effect measured over fields since the 1970s | your bass across open ground: the air's absorption by ISO 9613-1, the ground's impedance by Miki's law from its flow resistivity, and its reflection by Weyl and van der Pol's formula, digging a dip into the bass's range that deepens as you walk away |
+| ✅ | [Sabine's Room](sabine/) | Wallace Sabine's measurements of reverberation at Harvard (1895–1900), and Allen and Berkley's image method | your bass in a room you build: the direct sound and the first 64 reflections by the image method, then the reverberation dying away in each octave in Eyring's time, from the room's size, its walls, its floor, its audience and its air |
+| ✅ | [Rubens' Tube](rubens/) | Rubens and Krigar-Menzel's flame tube (1905), and Gardner, Gee and Dix's measurements of its resonances | your bass through a loudspeaker into a closed pipe of propane: the pipe's modes with Kirchhoff's losses to its walls, the speaker damping the lowest, a microphone inside, and the flames over the standing wave by Bernoulli |
+| ✅ | [Helmholtz's Resonators](helmholtz/) | the glass resonators Helmholtz held to his ear to hear the partials of musical tones (1863), and Koenig's manometric flames | your bass through one of Helmholtz's ten glass spheres, from the measurements he gave of them: the air in its neck a mass on the spring of the air inside, losing its energy to radiation and to the neck's walls, ringing out the partial it is tuned to |
 | ✅ | [Plate Reverb](plate/) | the steel plate reverbs of 1960s studios | a steel plate 2 m by 1 m as Kirchhoff's thin plate: 6432 bending modes to 5 kHz, the highs arriving first, the steel's thermoelastic and radiation losses and a damper |
 | ✅ | [Sympathetic Strings](sympathetic/) | the sitar's sympathetic strings | stiff steel strings tuned to a key on one bridge your bass drives: Fletcher's stretched partials, Chaigne and Askenfelt's losses, ringing along with the notes whose harmonics they share |
 | ✅ | [Black Hole](blackhole/) | the ringdown LIGO hears after a merger | a spinning black hole your bass strikes: its four loudest quasinormal modes from Leaver's continued fractions (Forte's table), heard through their spin-weighted harmonics as h₊ and h×, from a thud without spin to a bell near the limit |
+| ✅ | [Gravitational Lens](lens/) | Einstein's lens of 1936, the twin quasar of 1979 and the wave optics of lensed gravitational waves | your bass as a wave from far behind a star or a black hole: two images from Fermat's principle, the second late and Hilbert-transformed, beating into a comb, and the longest waves diffracting round the lens untouched, from the exact wave-optics solution for a point mass |
 | ✅ | [Doppler](doppler/) | a car, a train, a jet going by | a source playing your bass on a straight road past you: each ear's retarded time solved exactly (a quadratic), the moving source's field integrated over each sample; above Mach 1 the cone, the boom and the approach heard backwards |
 | ✅ | [Pedalboard](board/) | every pedal here, in a chain | the pedals in series in one worklet; the ones whose circuits include their jacks feel the pickup or a buffered output, and drive the next input through a patch cable; true bypass rewires them |
 
@@ -118,13 +133,15 @@ bass's, the tuner's, the scope's and the spectrum's. **Tour** is a guided tour o
 have: a few steps, each setting the pedal up and playing the test bass through it while a card
 says what to listen for and which view to watch. Your own settings come back when it ends.
 
-**MIDI pedals.** A MIDI foot controller (a Roland FC-300 through a USB
-MIDI interface, in Control Change mode) works the page in Chrome or Edge: press **Connect MIDI** in
-the MIDI pedals card. Out of the box its expression pedal 1 (CC 7) is a volume pedal, expression
-pedal 2 (CC 1) the pedal's expression control (the Wah's rocker), number pedal 1 (CC 65) the
-footswitch and number pedal 2 (CC 66) the tuner's mute; **Learn** teaches any pedal any control.
-The plugins take the same CCs on their MIDI input ([shared/midi.js](shared/midi.js),
-`native/core/include/phuzzbox/midi.h`).
+**MIDI pedals.** A MIDI foot controller (a Roland FC-300 through a USB MIDI interface, in Control
+Change mode) plays the page in Chrome or Edge: press **Connect MIDI** in the MIDI pedals card. Out
+of the box it is laid out for playing live ([midi/README.md](midi/README.md)): expression pedal 1
+(CC 7) a volume pedal, expression pedal 2 (CC 1) the pedal's expression control and its toe switch
+the footswitch, number pedal 1 the footswitch and 2–10 the pedal's presets, CTL 1 the tuner and
+CTL 2 tap tempo. On the Pedalboard the number pedals switch the board's pedals in and out. The
+**FC-300** toggle under the pedal draws the board with what each pedal does there; **Learn** teaches
+any pedal any control. The plugins take the expression pedals and number pedal 1 on their MIDI input
+([shared/midi.js](shared/midi.js), `native/core/include/phuzzbox/midi.h`).
 
 Your settings stay in your browser.
 
@@ -143,12 +160,11 @@ with a cable from the interface's output back to its input. Settings are kept in
 `~/.config/phuzzbox` on Linux).
 
 A MIDI foot controller works in the app as on the pages: the app listens to every MIDI input
-(RtMidi), and its MIDI card maps the control changes with the FC-300's factory numbers to start
-(expression 1 the **Volume**, expression 2 the Wah's rocker, number pedals 1 and 2 the
-footswitch and the tuner's mute), each pedal keeping its own mappings.
+(RtMidi), and its MIDI card and **FC-300** view have the pages' live layout (all but the metronome,
+which the app has not), each pedal keeping its own mappings.
 
 Download it, or the plugins, from the Plugins tab of How it works on any page (`plugins/README.md`
-says how to install them); CI builds it on every pull request too (the `native` workflow's
+says how to install them); CI builds it on every pull request that changes `native/` too (the `native` workflow's
 `PhuzzBox-app-macos-15` artifact).
 The app isn't notarised, so after unzipping it, clear the quarantine flag macOS puts on downloads
 (`xattr -dr com.apple.quarantine PhuzzBox.app`), then open it. macOS asks once for the

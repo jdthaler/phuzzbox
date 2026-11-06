@@ -1,0 +1,21 @@
+{"slug": "cable",
+ "params": [
+  {"id":"length","kind":"continuous","min":1000,"max":200000,"step":0,"log":true,"def":100000},
+  {"id":"loading","kind":"choice","options":["none","coils","heaviside"],"def":"none"},
+  {"id":"repeater","kind":"continuous","min":-20,"max":80,"step":0,"log":false,"def":19.2},
+  {"id":"far","kind":"choice","options":["matched","open"],"def":"matched"},
+  {"id":"conductor","kind":"choice","options":["atlantic1858","atlantic1866","pair"],"def":"atlantic1858"},
+  {"id":"coil","kind":"continuous","min":0.022,"max":0.25,"step":0,"log":true,"def":0.088},
+  {"id":"inductance","kind":"continuous","min":0.01,"max":1,"step":0,"log":true,"def":0.1}
+ ],
+ "presets": [
+  {"name":"1858 cable, 100 km","values":{"length":100000,"loading":"none","repeater":19.2,"far":"matched","conductor":"atlantic1858","coil":0.088,"inductance":0.1}},
+  {"name":"1858 cable, 200 km, into a galvanometer","values":{"length":200000,"loading":"none","repeater":19,"far":"open","conductor":"atlantic1858","coil":0.088,"inductance":0.1}},
+  {"name":"1866 cable, 200 km","values":{"length":200000,"loading":"none","repeater":22.3,"far":"matched","conductor":"atlantic1866","coil":0.088,"inductance":0.1}},
+  {"name":"Telephone pair, 10 km","values":{"length":10000,"loading":"none","repeater":13.9,"far":"matched","conductor":"pair","coil":0.088,"inductance":0.1}},
+  {"name":"Telephone pair with coils, 30 km","values":{"length":30000,"loading":"coils","repeater":23.9,"far":"matched","conductor":"pair","coil":0.088,"inductance":0.1}},
+  {"name":"Heavy coils: a lower cutoff","values":{"length":30000,"loading":"coils","repeater":19.7,"far":"matched","conductor":"pair","coil":0.25,"inductance":0.1}},
+  {"name":"Heaviside: a clean delay","values":{"length":100000,"loading":"heaviside","repeater":0.7,"far":"matched","conductor":"atlantic1866","coil":0.088,"inductance":1}},
+  {"name":"Heaviside, far end open: echoes","values":{"length":100000,"loading":"heaviside","repeater":-8.7,"far":"open","conductor":"atlantic1866","coil":0.088,"inductance":1}},
+  {"name":"Heaviside on a telephone pair","values":{"length":10000,"loading":"heaviside","repeater":6.5,"far":"matched","conductor":"pair","coil":0.088,"inductance":1}}
+ ]}

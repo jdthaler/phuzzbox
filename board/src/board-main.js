@@ -3,7 +3,8 @@
 // jacks: what drives each one, what it drives, and the voltage there.
 
 import { createPedal, controlFor } from '../../shared/shell.js';
-import { params, defaults, fmt } from '../../shared/params.js';
+import { params, defaults, fmt, fromUnit } from '../../shared/params.js';
+import { FC300, expressionOf } from '../../shared/midi.js';
 import { fetchBytes } from '../../shared/wasm.js';
 import { spectrumView, scopeView } from '../../shared/views.js';
 import { PEDAL } from './board-pedal.js';
@@ -46,6 +47,11 @@ for (const s of chain) { s.uid ??= uid(); s.P = { ...defaults(BOARD_PEDALS[s.id]
 
 let api = null;
 const save = () => store.set(KEY, chain);
+// the pedal the expression pedal rocks: the one chosen on the board, else the first that names
+// a control for it (the Wah's rocker, the Radio's tuning), else the first
+let rockUid = store.get('phuzzbox.board.rock', null);
+const rocking = () => chain.find((s) => s.uid === rockUid) ?? chain.find((s) => BOARD_PEDALS[s.id].expression) ?? chain[0] ?? null;
+const redraw = { all: () => {}, knobs: new Map() }; // set by the rack: its cards drawn again, one card's knobs
 const sendChain = () => { save(); api?.send({ type: 'chain', slots: chain.map(({ uid: u, id, P, bypass }) => ({ uid: u, id, P, bypass })) }); emitChain(); };
 const chainListeners = [];
 const emitChain = () => chainListeners.forEach((fn) => fn());
@@ -57,15 +63,16 @@ function rack(a) {
     h('option', { value: '' }, 'Boards…'), ...Object.keys(BOARDS).map((n) => h('option', { value: n }, n)));
   const addSel = h('select', { 'aria-label': 'Add a pedal', onchange: () => { if (addSel.value && chain.length < MAX_SLOTS) { chain.push(slotOf(addSel.value)); draw(); sendChain(); } addSel.value = ''; } },
     h('option', { value: '' }, 'Add a pedal…'), ...Object.values(BOARD_PEDALS).map((d) => h('option', { value: d.id }, d.name)));
+  const rockSel = h('select', { 'aria-label': 'The pedal the expression pedal rocks', title: 'The pedal a MIDI expression pedal rocks (the FC-300\'s EXP 2), and its toe switch turns on and off', onchange: () => { rockUid = rockSel.value; store.set('phuzzbox.board.rock', rockUid); api.midi?.refresh(); rockSel.blur(); } });
   const el = h('section', { class: 'board' },
-    h('div', { class: 'board-tools' }, boardSel, addSel),
+    h('div', { class: 'board-tools' }, boardSel, addSel, h('label', { class: 'rock' }, 'EXP rocks', rockSel)),
     h('div', { class: 'board-end' }, 'your bass'), list, h('div', { class: 'board-end' }, 'the amp'));
 
   function card(s, i) {
     const D = BOARD_PEDALS[s.id], [enc, ink] = ENCLOSURES[s.id] ?? ['#333', '#eee'], mine = owned(D);
     const knobs = h('div', { class: 'knobs' });
     const put = (id, v) => { s.P[id] = v; save(); api.send({ type: 'slot', uid: s.uid, P: { [id]: v } }); emitChain(); };
-    for (const p of params(D.groups).filter((q) => q.perform && q.type !== 'select' && !mine.has(q.id))) knobs.append(controlFor(p, () => s.P[p.id], (v) => { put(p.id, v); refreshKnobs(); }));
+    for (const p of params(D.groups).filter((q) => q.perform && !mine.has(q.id))) knobs.append(controlFor(p, () => s.P[p.id], (v) => { put(p.id, v); refreshKnobs(); }));
     const refreshKnobs = () => { for (const k of knobs.children) k.refresh?.(); };
     const presetSel = h('select', { class: 'presets', 'aria-label': `${D.name} presets`, onchange: () => {
       const name = presetSel.value; presetSel.value = '';
@@ -87,17 +94,62 @@ function rack(a) {
       knobs.children.length ? knobs : null,
       h('div', { class: 'slot-foot' }, presetSel, led, foot));
     refreshKnobs();
+    redraw.knobs.set(s.uid, refreshKnobs);
     return c;
   }
   function draw() {
+    redraw.knobs.clear();
     list.replaceChildren(...chain.map(card));
+    const r = rocking();
+    rockSel.replaceChildren(...chain.map((s, i) => h('option', { value: s.uid }, `${i + 1}. ${BOARD_PEDALS[s.id].name}`)));
+    rockSel.value = r?.uid ?? '';
+    rockSel.disabled = !chain.length;
     addSel.disabled = chain.length >= MAX_SLOTS;
     if (!chain.length) list.append(h('li', { class: 'board-empty' }, 'No pedals: the bass goes straight to the amp. Add one, or pick a board.'));
   }
   draw();
+  redraw.all = draw;
   api.on('audio', sendChain);
   return el;
 }
+
+// A MIDI foot controller on the board (shared/midi.js, shared/midi-panel.js): each number pedal
+// the footswitch of a pedal on the board, the expression pedal the chosen pedal's expression
+// control and its toe switch that pedal's footswitch, tap tempo every pedal with a tempo, and a
+// program change one of the Boards.
+const slotName = (n) => (chain[n - 1] ? BOARD_PEDALS[chain[n - 1].id].name : null);
+const rockParam = (s) => s && params(BOARD_PEDALS[s.id].groups).find((p) => p.id === expressionOf(BOARD_PEDALS[s.id]));
+const putParams = (s, P) => { Object.assign(s.P, P); save(); api.send({ type: 'slot', uid: s.uid, P }); redraw.knobs.get(s.uid)?.(); emitChain(); };
+const engage = (s, on) => { if (s && s.bypass === on) { s.bypass = !on; redraw.all(); sendChain(); } };
+const boardMidi = {
+  targets: [
+    ...Array.from({ length: MAX_SLOTS }, (_, k) => ({ id: `slot:${k + 1}`, label: `Pedal ${k + 1} on the board`, kind: 'switch', short: () => slotName(k + 1) ?? '–' })),
+    { id: 'rocker', label: 'The rocked pedal\'s expression control', kind: 'continuous', short: () => { const s = rocking(), p = rockParam(s); return p ? `${BOARD_PEDALS[s.id].name}: ${p.label}` : '(no pedal)'; } },
+    { id: 'rocker-switch', label: 'The rocked pedal on/off', kind: 'switch', short: () => (rocking() ? BOARD_PEDALS[rocking().id].name : '(no pedal)') },
+  ],
+  isOn(id) {
+    const s = id === 'rocker-switch' ? rocking() : chain[+id.split(':')[1] - 1];
+    return !!s && !s.bypass;
+  },
+  act(a) {
+    if (a.target === 'rocker') { const s = rocking(), p = rockParam(s); if (p) putParams(s, { [p.id]: fromUnit(p, a.value) }); return; }
+    engage(a.target === 'rocker-switch' ? rocking() : chain[+a.target.split(':')[1] - 1], a.on);
+  },
+  // the FC-300 on the board: EXP 1 the volume, EXP 2 the rocked pedal and its toe switch that
+  // pedal's footswitch, number pedals 1–8 the board's pedals in order, 9 the metronome, CTL 1 the
+  // tuner and CTL 2 tap tempo
+  defaults: () => [
+    { cc: FC300.exp1, target: 'volume', mode: 'latch' }, { cc: FC300.exp2, target: 'rocker', mode: 'latch' },
+    ...Array.from({ length: MAX_SLOTS }, (_, k) => ({ cc: FC300.pedals[k], target: `slot:${k + 1}`, mode: 'toggle' })),
+    { cc: FC300.pedals[8], target: 'metronome', mode: 'toggle' },
+    { cc: FC300.ctl[0], target: 'tuner', mode: 'toggle' }, { cc: FC300.ctl[1], target: 'tap', mode: 'toggle' },
+    { cc: FC300.expSw[1], target: 'rocker-switch', mode: 'toggle' },
+  ].map((m) => ({ channel: 0, invert: false, ...m })),
+  // a program change (the FC-300 in Standard mode): the board of that number
+  program(n) { const name = Object.keys(BOARDS)[n]; if (name) { chain = boardOf(name); redraw.all(); sendChain(); } },
+  // tap tempo: each pedal with a tempo of its own (the Tape Echo, the Lamp Vibe) takes the beat
+  tap(beat) { for (const s of chain) { const D = BOARD_PEDALS[s.id]; if (D.tap) putParams(s, D.tap(s.P, beat)); } },
+};
 
 // The chain: each jack, what drives it and what it drives, and the peak voltage there.
 const jacksView = {
@@ -139,7 +191,7 @@ const BOARD_SCOPE = 'the voltage at the bass (dashed) and at the amp (solid) as 
 const BOARD_SPECTRUM = 'what the bass sends (dashed) and what reaches the amp (solid), in dB of volts. The green line is the note you are playing, and the ticks its harmonics.';
 
 createPedal({
-  PEDAL, worklet: new URL('./board-worklet.js', import.meta.url), rack,
+  PEDAL, worklet: new URL('./board-worklet.js', import.meta.url), rack, midi: boardMidi,
   views: [jacksView, spectrumView({ caption: BOARD_SPECTRUM }), scopeView({ caption: BOARD_SCOPE })],
   // every pedal's WebAssembly, so any can go on the board without a pause
   load: async () => ({ pedals: Object.fromEntries(await Promise.all(Object.values(BOARD_PEDALS).map(async (d) => [d.id, await fetchBytes(d.wasm.binary())]))) }),

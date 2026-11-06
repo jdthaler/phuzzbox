@@ -94,7 +94,7 @@ export function knobFor(p, get, put) {
   dial.addEventListener('dblclick', () => put(p.def));
   dial.addEventListener('keydown', (e) => {
     const step = { ArrowUp: 0.02, ArrowRight: 0.02, ArrowDown: -0.02, ArrowLeft: -0.02 }[e.key];
-    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + step * (e.shiftKey ? 0.25 : 1))); }
+    if (step) { e.preventDefault(); e.stopPropagation(); put(fromUnit(p, toUnit(p, get()) + (p.type === 'select' ? Math.sign(step) / (p.options.length - 1) : step * (e.shiftKey ? 0.25 : 1)))); }
   });
   return el;
 }
@@ -120,12 +120,12 @@ export function controlFor(p, get, put) {
 let pageIs;
 export const pageReady = new Promise((r) => { pageIs = r; });
 
-export function createPedal({ PEDAL, worklet, views = [], rack: more = null, load = null }) {
+export function createPedal({ PEDAL, worklet, views = [], rack: more = null, load = null, midi: midiMore = null }) {
   const reg = byId(PEDAL.id) ?? {};
   const all = params(PEDAL.groups);
   const key = `phuzzbox.${PEDAL.id}`;
   // the player's instrument, bass or guitar (shared/instruments.js): each keeps its own settings
-  const state = { bypass: store.get(`${key}.bypass`, false), source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: store.get('phuzzbox.channel', 0), mute: false,
+  const state = { bypass: store.get(`${key}.bypass`, false), tuning: false, source: 'bass', fullScale: store.get('phuzzbox.fullScale', 1), volume: store.get('phuzzbox.volume', 0.8), channel: store.get('phuzzbox.channel', 0), mute: false,
     instrument: instrument(store.get(INSTRUMENT_KEY, 'bass')).id, fretless: store.get('phuzzbox.fretless', false) === true };
   const ownDefaults = () => instrumentDefaults(PEDAL, defaults(PEDAL.groups), state.instrument);
   const saveP = () => store.set(paramsKey(PEDAL.id, state.instrument), P);
@@ -232,6 +232,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
         v.about ? [' ', h('button', { type: 'button', class: 'link', onclick: () => notes.open(v.about) }, `How the ${v.title.toLowerCase()} works`)] : null) : null);
     viewList.push({ key: v.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: v.title, card, on: v.perform ?? i < 2 });
     v.mount(holder, api);
+    fitLegend(card);
   });
 
   // the test bass or guitar, pinned below while it is the input
@@ -415,21 +416,45 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   rigFold.addEventListener('click', () => { setRigOpen(rigBody.hidden); rigFold.blur(); });
   const dock = h('footer', { class: 'dock' }, h('section', { class: 'rig', 'aria-label': 'Rig' }, rigBar, rigBody));
 
-  // MIDI foot controllers (shared/midi-panel.js): what each control change moves
-  const midi = midiPanel({ PEDAL, h, store, key, ui: {
+  // MIDI foot controllers (shared/midi-panel.js): what each control change moves, and the FC-300
+  // drawn under the pedal with what each of its pedals does here (a page such as the Pedalboard
+  // adds its own targets: midiMore)
+  const midi = midiPanel({ PEDAL, h, store, key, defaults: midiMore?.defaults, ui: {
     setVolume: (g) => { volInput.value = g; setVolume(g); }, bypassed: () => state.bypass, setBypass, muted: () => state.mute, setMute,
     value: (id) => P[id], set, presets: Object.keys(PEDAL.presets ?? {}), applyPreset,
+    tuning: () => state.tuning, setTuning, tap,
+    metronome: () => metronome.running(), setMetronome: (on) => { if (on !== metronome.running()) { if (on) { layout?.setView('metronome', true); metronome.play(); } else metronome.stop(); } },
+    about: () => notes.open('midi'), extra: midiMore, program: midiMore?.program,
   } });
   midi.el.classList.add('group');
   groupList.push({ key: 'midi', name: 'MIDI pedals', el: midi.el });
+  viewList.push({ key: 'fc300', name: 'FC-300', card: midi.view, on: false, rack: true });
   api.midi = midi;
+  // the tuner pedal: the output muted and the tuner shown until it is pressed again, when the tuner
+  // goes back as it was
+  let tunerWasShown = true;
+  function setTuning(on) {
+    if (on === state.tuning) return;
+    state.tuning = on;
+    if (on) { tunerWasShown = layout.viewShown('tuner'); layout.setView('tuner', true); } else if (!tunerWasShown) layout.setView('tuner', false);
+    setMute(on);
+  }
+  // tap tempo: the metronome's tempo, and the pedal's own if it has one (the Tape Echo's speed,
+  // the Lamp Vibe's: its descriptor's tap(P, seconds a beat))
+  function tap() {
+    const bpm = metronome.tap();
+    if (!bpm) return null;
+    if (PEDAL.tap) for (const [id, v] of Object.entries(PEDAL.tap(P, 60 / bpm))) set(id, v);
+    midiMore?.tap?.(60 / bpm);
+    return bpm;
+  }
 
   let layout = null;
   setRigOpen(store.get('phuzzbox.rigOpen', store.get('phuzzbox.bassOpen', true)));
   layout = createLayout({ id: PEDAL.id, h, store, app, header, rack, views: viewList, groups: groupList, dock });
   api.layout = layout;
 
-  for (const p of all.filter((q) => q.perform && q.type !== 'select')) knobs.append(controlFor(p, () => P[p.id], (v) => set(p.id, v)));
+  for (const p of all.filter((q) => q.perform)) knobs.append(controlFor(p, () => P[p.id], (v) => set(p.id, v)));
 
   // ---- state
   function refresh() {
@@ -494,6 +519,34 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     send({ type: 'bypass', on });
   }
 
+
+  // A view's legend under its canvas: its readouts wrap onto more lines when the card has room for
+  // them (up to a third of its height), and otherwise keep to one line with each entry cut short
+  // (shared/pedal.css). The room it takes only grows while the card keeps its size, so numbers that
+  // change every frame don't make the canvas jump; an entry still cut shows whole on hover.
+  function fitLegend(card) {
+    let size = '', need = 0, queued = false, watched = null;
+    const fit = () => {
+      queued = false;
+      const lg = card.querySelector(':scope > .legend');
+      if (!lg || !card.clientHeight) return;
+      if (lg !== watched) { watched = lg; changes.observe(lg, { childList: true, subtree: true, characterData: true }); }
+      const now = `${card.clientWidth}x${card.clientHeight}`;
+      if (now !== size) { size = now; need = 0; }
+      lg.classList.remove('one-line');
+      lg.style.height = '';
+      need = Math.max(need, lg.scrollHeight);
+      const wrap = need <= card.clientHeight / 3;
+      lg.classList.toggle('one-line', !wrap);
+      lg.style.height = wrap ? `${need}px` : '';
+      lg.title = lg.textContent.replace(/\s+/g, ' ').trim();
+    };
+    const later = () => { if (!queued) { queued = true; requestAnimationFrame(fit); } };
+    const changes = new MutationObserver(later);
+    new MutationObserver(later).observe(card, { childList: true });
+    new ResizeObserver(later).observe(card);
+    later();
+  }
 
   function meter(label) {
     const bar = h('span', { class: 'bar' });
@@ -675,6 +728,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   // the tuner, ten times a second
   function setMute(on) {
     state.mute = on;
+    if (!on) state.tuning = false;
     send({ type: 'mute', on });
     muteBtn.setAttribute('aria-pressed', String(on));
     muteBtn.textContent = on ? 'Muted: unmute' : 'Mute';
