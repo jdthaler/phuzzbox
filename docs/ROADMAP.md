@@ -218,6 +218,13 @@ same C++. The full write-up is the [PhuzzBox plan](https://claude.ai/artifact/A2
    view of the flames by Bernoulli's mean flow. Tested against the pipe as a transmission line in
    closed form driven by the same speaker, the speaker's damping of the lowest modes, the middle's
    missing odd modes, and the engine against the model.
+   **Helmholtz's Resonators** landed 2026-11-05: Helmholtz's ten glass resonators from his own table
+   (Ellis's translation, Appendix II), each a Helmholtz resonator by Rienstra and Hirschberg with an
+   orifice's end correction and the neck that gives his measured coefficient, losing its energy to
+   radiation and to Kirchhoff's viscous boundary layer in the neck; ten trapezoidal state-variable
+   filters, the one at your ear heard beside the other ear's bass; a view of Koenig's manometric
+   flames. Tested against his formula, the monopole's radiation Q, the driven oscillator and the
+   engine against the model.
 
 ## The standalone app
 

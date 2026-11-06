@@ -1,0 +1,17 @@
+{"slug": "helmholtz",
+ "params": [
+  {"id":"glass","kind":"continuous","min":1,"max":10,"step":1,"log":false,"def":1},
+  {"id":"opening","kind":"continuous","min":30,"max":150,"step":0,"log":true,"def":100},
+  {"id":"ear","kind":"continuous","min":-60,"max":0,"step":0,"log":false,"def":0},
+  {"id":"level","kind":"continuous","min":-60,"max":12,"step":0,"log":false,"def":-11.4},
+  {"id":"temperature","kind":"continuous","min":-10,"max":40,"step":0,"log":false,"def":20}
+ ],
+ "presets": [
+  {"name":"His largest","values":{"glass":1,"opening":100,"ear":0,"level":-11.4,"temperature":20}},
+  {"name":"Tuned to A","values":{"glass":1,"opening":112.6,"ear":0,"level":-29.3,"temperature":20}},
+  {"name":"Narrowed","values":{"glass":1,"opening":70,"ear":0,"level":-27.1,"temperature":20}},
+  {"name":"A middle one","values":{"glass":5,"opening":100,"ear":0,"level":-11.8,"temperature":20}},
+  {"name":"His smallest","values":{"glass":10,"opening":100,"ear":0,"level":-9.5,"temperature":20}},
+  {"name":"Both ears plugged","values":{"glass":1,"opening":100,"ear":-60,"level":-10.4,"temperature":20}},
+  {"name":"A cold room","values":{"glass":1,"opening":100,"ear":0,"level":-14.9,"temperature":0}}
+ ]}

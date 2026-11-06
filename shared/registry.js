@@ -153,6 +153,11 @@ export const PEDALS = [
     blurb: 'Your bass through a loudspeaker into a closed pipe of propane, heard inside: the pipe rings at its resonances, which the walls and the speaker damp, and its standing waves shape the flames along its top.',
   },
   {
+    id: 'helmholtz', section: 'vibration', name: 'Helmholtz\'s Resonators', version: '0.1.0', ready: true, plugin: { code: 'Hlmz', name: 'Helmholtz Resonators' }, enclosure: ['#b5893a', '#1e1608'],
+    after: 'the glass resonators Helmholtz held to his ear to hear the overtones in every tone (1863), and Koenig\'s flames',
+    blurb: 'Your bass through one of Helmholtz\'s ten glass resonators held to your ear: the air in its neck a mass on the spring of the air inside, ringing out the partial it is tuned to.',
+  },
+  {
     id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
     after: 'the steel plate reverbs of 1960s studios',
     blurb: 'A sheet of steel two metres long, shaken in the middle and heard near its ends: thousands of bending modes, the highs arriving first and dying soonest.',

@@ -794,6 +794,10 @@ body.one-screen .card .canvas.springs { flex: 1 1 0; height: auto; min-height: 1
 /* Rubens' Tube's enclosure: the dark brown of a gas pipe's rust, its ink a flame's pale orange */
 :root[data-pedal="rubens"] { --enclosure: #5a2c14; --enclosure-ink: #f8dcae; }
 
+/* ---- helmholtz/style.css */
+/* Helmholtz's Resonators' enclosure: the brass of Koenig's resonators, its ink their lacquer's black */
+:root[data-pedal="helmholtz"] { --enclosure: #b5893a; --enclosure-ink: #1e1608; }
+
 /* ---- plate/style.css */
 /* the Plate Reverb's enclosure: the grey of a plate's steel frame */
 :root[data-pedal="plate"] { --enclosure: #c9c6bd; --enclosure-ink: #1d1f22; }
@@ -1806,6 +1810,11 @@ const PEDALS = [
     id: 'rubens', section: 'vibration', name: 'Rubens\' Tube', version: '0.1.0', ready: true, plugin: { code: 'Rubn', name: 'Rubens Tube' }, enclosure: ['#5a2c14', '#f8dcae'],
     after: 'Heinrich Rubens\' flame tube (1905), and Gardner, Gee and Dix\'s measurements of one',
     blurb: 'Your bass through a loudspeaker into a closed pipe of propane, heard inside: the pipe rings at its resonances, which the walls and the speaker damp, and its standing waves shape the flames along its top.',
+  },
+  {
+    id: 'helmholtz', section: 'vibration', name: 'Helmholtz\'s Resonators', version: '0.1.0', ready: true, plugin: { code: 'Hlmz', name: 'Helmholtz Resonators' }, enclosure: ['#b5893a', '#1e1608'],
+    after: 'the glass resonators Helmholtz held to his ear to hear the overtones in every tone (1863), and Koenig\'s flames',
+    blurb: 'Your bass through one of Helmholtz\'s ten glass resonators held to your ear: the air in its neck a mass on the spring of the air inside, ringing out the partial it is tuned to.',
   },
   {
     id: 'plate', section: 'vibration', name: 'Plate Reverb', version: '0.3.0', ready: true, plugin: { code: 'Plat' }, enclosure: ['#c9c6bd', '#1d1f22'],
@@ -2935,8 +2944,65 @@ const PEDAL = {
 return { PEDAL };
 })();
 
-// ---- echo/src/echo-params.js
+// ---- helmholtz/src/helmholtz-params.js
 const __m37 = (() => {
+
+// helmholtz-params.js — Helmholtz's Resonators' controls. Values in SI units.
+
+const ear = [
+  { id: 'glass', label: 'Resonator', min: 1, max: 10, def: 1, step: 1, unit: '', decimals: 0, perform: true, hint: 'Which of Helmholtz\'s ten glass resonators is at your ear: from the largest, a sphere 154 mm across ringing at 204.5 Hz, to the smallest, 43 mm across and ringing at 920.2 Hz (at 20 °C). An expression pedal steps through them.' },
+  { id: 'opening', label: 'Opening', min: 30, max: 150, def: 100, log: true, unit: '%', decimals: 1, perform: true, hint: 'The opening\'s diameter, against Helmholtz\'s. Narrowing it lowers the pitch and, down to about 70 %, sharpens it: the largest resonator rings at 163 Hz with a Q of 124 at 70 %, against 204.5 Hz and 105 as he made it. Narrower still, the friction of the neck\'s walls wins: at 30 %, a Q of 43.' },
+  { id: 'ear', label: 'Other ear', min: -60, max: 0, def: 0, unit: 'dB', decimals: 0, perform: true, hint: 'Your other ear, open to the room: the bass as it is, beside what the resonator brings to the ear it plugs. At −60 dB, off.' },
+  { id: 'level', label: 'Level', min: -60, max: 12, def: -11.4, unit: 'dB', decimals: 1, perform: true, hint: 'The output. At 0 dB the bass far below the resonance comes out as it went in, and at the resonance Q times louder.' },
+];
+const air = [
+  { id: 'temperature', label: 'Temperature', min: -10, max: 40, def: 20, unit: '°C', decimals: 0, hint: 'The air\'s: sound travels at 343.2 m/s at 20 °C and 331.3 m/s at 0 °C, and every resonator\'s pitch moves with it, 3.5 % between the two.' },
+];
+
+const GROUPS = [
+  { name: 'The resonator', params: ear },
+  { name: 'The air', params: air },
+];
+
+const stock = { glass: 1, opening: 100, ear: 0, level: -11.4, temperature: 20 };
+const PRESETS = {
+  'His largest': { ...stock },
+  'Tuned to A': { ...stock, opening: 112.6, level: -29.3 },
+  'Narrowed': { ...stock, opening: 70, level: -27.1 },
+  'A middle one': { ...stock, glass: 5, level: -11.8 },
+  'His smallest': { ...stock, glass: 10, level: -9.5 },
+  'Both ears plugged': { ...stock, ear: -60, level: -10.4 },
+  'A cold room': { ...stock, temperature: 0, level: -14.9 },
+};
+const KEEP = [];
+
+return { GROUPS, PRESETS, KEEP };
+})();
+
+// ---- helmholtz/src/helmholtz-pedal.js
+const __m36 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m37;
+// helmholtz-pedal.js — Helmholtz's Resonators' descriptor: everything a host needs to run it without its
+// page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
+
+
+const PEDAL = {
+  id: 'helmholtz',
+  name: 'Helmholtz\'s Resonators',
+  description: 'Your bass heard through one of Helmholtz\'s glass resonators held to your ear, the air in its neck a mass on the spring of the air inside: the partial it is tuned to brays out of the note, as Helmholtz heard the overtones of every tone',
+  groups: GROUPS, presets: PRESETS, keep: KEEP,
+  // a guitar: nothing changes
+  guitar: {},
+  // the parameter an expression pedal moves (shared/midi.js maps MIDI CC 1 to it unless taught)
+  expression: 'glass',
+  wasm: { binary: () => new URL('../wasm/helmholtz.wasm', location.href).href },
+};
+
+return { PEDAL };
+})();
+
+// ---- echo/src/echo-params.js
+const __m39 = (() => {
 
 // echo-params.js — the Tape Echo's controls. Values in SI units; `scale` shows them in friendlier
 // ones. A loop of tape passes a record head and three playback heads; the echoes are the distances
@@ -3003,8 +3069,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- echo/src/echo-pedal.js
-const __m36 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m37;
+const __m38 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m39;
 // echo-pedal.js — the Tape Echo's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3022,7 +3088,7 @@ return { PEDAL };
 })();
 
 // ---- rotary/src/rotary-params.js
-const __m39 = (() => {
+const __m41 = (() => {
 
 // rotary-params.js — the Rotary Speaker's controls. Values in SI units (rotation rates in hertz,
 // shown in rpm; angles in radians, shown in degrees). A horn and a drum spin in a cabinet past two
@@ -3095,8 +3161,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- rotary/src/rotary-pedal.js
-const __m38 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m39;
+const __m40 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m41;
 // rotary-pedal.js — the Rotary Speaker's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3114,7 +3180,7 @@ return { PEDAL };
 })();
 
 // ---- plate/src/plate-params.js
-const __m41 = (() => {
+const __m43 = (() => {
 
 // plate-params.js — the Plate Reverb's controls. Values in SI units. A steel plate, 2 m by 1 m and
 // half a millimetre thick, hung in a frame: a driver shakes it, two contact pickups listen.
@@ -3171,8 +3237,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- plate/src/plate-pedal.js
-const __m40 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m41;
+const __m42 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m43;
 // plate-pedal.js — the Plate Reverb's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3190,7 +3256,7 @@ return { PEDAL };
 })();
 
 // ---- sympathetic/src/sympathetic-params.js
-const __m43 = (() => {
+const __m45 = (() => {
 
 // sympathetic-params.js — the Sympathetic Strings' controls. Values in SI units. A frame of steel
 // strings tuned to a scale, all across one bridge; a driver moves the bridge with your bass, and a
@@ -3253,8 +3319,8 @@ return { KEYS, SCALES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- sympathetic/src/sympathetic-pedal.js
-const __m42 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m43;
+const __m44 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m45;
 // sympathetic-pedal.js — the Sympathetic Strings' descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3272,7 +3338,7 @@ return { PEDAL };
 })();
 
 // ---- blackhole/src/blackhole-params.js
-const __m45 = (() => {
+const __m47 = (() => {
 
 // blackhole-params.js — the Black Hole's controls. Values in SI units, and the hole's mass in suns:
 // your bass perturbs a spinning black hole, and you hear it ring in its quasinormal modes.
@@ -3317,8 +3383,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- blackhole/src/blackhole-pedal.js
-const __m44 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m45;
+const __m46 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m47;
 // blackhole-pedal.js — the Black Hole's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3336,7 +3402,7 @@ return { PEDAL };
 })();
 
 // ---- doppler/src/doppler-params.js
-const __m47 = (() => {
+const __m49 = (() => {
 
 // doppler-params.js — the Doppler's controls. Values in SI units: a source plays your bass as it
 // passes you on a straight road, again and again, and you hear it at its retarded time.
@@ -3384,8 +3450,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- doppler/src/doppler-pedal.js
-const __m46 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m47;
+const __m48 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m49;
 // doppler-pedal.js — the Doppler's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3403,7 +3469,7 @@ return { PEDAL };
 })();
 
 // ---- bandgap/src/bandgap-params.js
-const __m49 = (() => {
+const __m51 = (() => {
 
 // bandgap-params.js — the Bandgap's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3465,8 +3531,8 @@ return { DIODES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- bandgap/src/bandgap-pedal.js
-const __m48 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m49;
+const __m50 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m51;
 // bandgap-pedal.js — the Bandgap's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3485,7 +3551,7 @@ return { PEDAL };
 })();
 
 // ---- michelson/src/michelson-params.js
-const __m51 = (() => {
+const __m53 = (() => {
 
 // michelson-params.js — the Michelson Interferometer's controls. Values in SI units; `scale` shows
 // them in friendlier ones.
@@ -3542,8 +3608,8 @@ return { SOURCES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- michelson/src/michelson-pedal.js
-const __m50 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m51;
+const __m52 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m53;
 // michelson-pedal.js — the Michelson Interferometer's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3562,7 +3628,7 @@ return { PEDAL };
 })();
 
 // ---- lampvibe/src/lampvibe-params.js
-const __m53 = (() => {
+const __m55 = (() => {
 
 // lampvibe-params.js — the Lamp Vibe's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -3613,8 +3679,8 @@ return { BULBS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- lampvibe/src/lampvibe-pedal.js
-const __m52 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m53;
+const __m54 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m55;
 // lampvibe-pedal.js — the Lamp Vibe's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3633,7 +3699,7 @@ return { PEDAL };
 })();
 
 // ---- cable/src/cable-params.js
-const __m55 = (() => {
+const __m57 = (() => {
 
 // cable-params.js — the Transatlantic Cable's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -3686,8 +3752,8 @@ return { CABLES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- cable/src/cable-pedal.js
-const __m54 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m55;
+const __m56 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m57;
 // cable-pedal.js — the Transatlantic Cable's descriptor: everything a host needs to run it
 // without its page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -3706,7 +3772,7 @@ return { PEDAL };
 })();
 
 // ---- ringmod/src/ringmod-params.js
-const __m57 = (() => {
+const __m59 = (() => {
 
 // ringmod-params.js — the Ring Modulator's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3762,8 +3828,8 @@ return { DIODES, WAVES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- ringmod/src/ringmod-pedal.js
-const __m56 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m57;
+const __m58 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m59;
 // ringmod-pedal.js — the Ring Modulator's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3784,7 +3850,7 @@ return { PEDAL };
 })();
 
 // ---- radio/src/radio-params.js
-const __m59 = (() => {
+const __m61 = (() => {
 
 // radio-params.js — the Crystal Radio's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3842,8 +3908,8 @@ return { DIODES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- radio/src/radio-pedal.js
-const __m58 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m59;
+const __m60 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m61;
 // radio-pedal.js — the Crystal Radio's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3864,7 +3930,7 @@ return { PEDAL };
 })();
 
 // ---- tunnel/src/tunnel-params.js
-const __m61 = (() => {
+const __m63 = (() => {
 
 // tunnel-params.js — the Tunnel Diode's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3913,8 +3979,8 @@ return { CIRCUITS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- tunnel/src/tunnel-pedal.js
-const __m60 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m61;
+const __m62 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m63;
 // tunnel-pedal.js — the Tunnel Diode's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -3935,7 +4001,7 @@ return { PEDAL };
 })();
 
 // ---- bbd/src/bbd-params.js
-const __m63 = (() => {
+const __m65 = (() => {
 
 // bbd-params.js — the Bucket Brigade's controls. Values in SI units; `scale` shows them in friendlier ones.
 
@@ -3988,8 +4054,8 @@ return { CHIPS, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- bbd/src/bbd-pedal.js
-const __m62 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m63;
+const __m64 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m65;
 // bbd-pedal.js — the Bucket Brigade's descriptor: everything a host needs to run it without its page.
 // Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs (the C++ tables).
 
@@ -4009,7 +4075,7 @@ return { PEDAL };
 })();
 
 // ---- neon/src/neon-params.js
-const __m65 = (() => {
+const __m67 = (() => {
 
 // neon-params.js — the Neon Tremolo's controls. Values in SI units; `scale` shows them in
 // friendlier ones.
@@ -4064,8 +4130,8 @@ return { GASES, GROUPS, PRESETS, KEEP };
 })();
 
 // ---- neon/src/neon-pedal.js
-const __m64 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m65;
+const __m66 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m67;
 // neon-pedal.js — the Neon Tremolo's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -4085,7 +4151,7 @@ return { PEDAL };
 })();
 
 // ---- lens/src/lens-params.js
-const __m67 = (() => {
+const __m69 = (() => {
 
 // lens-params.js — the Gravitational Lens's controls. Values in SI units, and the lens's mass in
 // suns: your bass, a wave from far behind a point mass, bent round it on its way to you.
@@ -4127,8 +4193,8 @@ return { GROUPS, PRESETS, KEEP };
 })();
 
 // ---- lens/src/lens-pedal.js
-const __m66 = (() => {
-const { GROUPS, PRESETS, KEEP } = __m67;
+const __m68 = (() => {
+const { GROUPS, PRESETS, KEEP } = __m69;
 // lens-pedal.js — the Gravitational Lens's descriptor: everything a host needs to run it without its
 // page. Imported by the page, the Node tests and tools, and tools/gen-native-params.mjs.
 
@@ -4169,22 +4235,23 @@ const { PEDAL: SPRING } = __m28;
 const { PEDAL: OPENAIR } = __m30;
 const { PEDAL: SABINE } = __m32;
 const { PEDAL: RUBENS } = __m34;
-const { PEDAL: ECHO } = __m36;
-const { PEDAL: ROTARY } = __m38;
-const { PEDAL: PLATE } = __m40;
-const { PEDAL: SYMPATHETIC } = __m42;
-const { PEDAL: BLACKHOLE } = __m44;
-const { PEDAL: DOPPLER } = __m46;
-const { PEDAL: BANDGAP } = __m48;
-const { PEDAL: MICHELSON } = __m50;
-const { PEDAL: LAMPVIBE } = __m52;
-const { PEDAL: CABLE } = __m54;
-const { PEDAL: RINGMOD } = __m56;
-const { PEDAL: RADIO } = __m58;
-const { PEDAL: TUNNEL } = __m60;
-const { PEDAL: BBD } = __m62;
-const { PEDAL: NEON } = __m64;
-const { PEDAL: LENS } = __m66;
+const { PEDAL: HELMHOLTZ } = __m36;
+const { PEDAL: ECHO } = __m38;
+const { PEDAL: ROTARY } = __m40;
+const { PEDAL: PLATE } = __m42;
+const { PEDAL: SYMPATHETIC } = __m44;
+const { PEDAL: BLACKHOLE } = __m46;
+const { PEDAL: DOPPLER } = __m48;
+const { PEDAL: BANDGAP } = __m50;
+const { PEDAL: MICHELSON } = __m52;
+const { PEDAL: LAMPVIBE } = __m54;
+const { PEDAL: CABLE } = __m56;
+const { PEDAL: RINGMOD } = __m58;
+const { PEDAL: RADIO } = __m60;
+const { PEDAL: TUNNEL } = __m62;
+const { PEDAL: BBD } = __m64;
+const { PEDAL: NEON } = __m66;
+const { PEDAL: LENS } = __m68;
 // app.js — the PhuzzBox app's window: the pedal's face, the tuner, the audio settings and the
 // Controls, drawn from the same descriptors and modules as the site's page (shell.js), talking to
 // the program through window.phuzz(method, …args) (main.cpp's Program::call). It runs in the
@@ -4232,7 +4299,8 @@ const { PEDAL: LENS } = __m66;
 
 
 
-const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, TRANSFORMER, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, OPENAIR, SABINE, RUBENS, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
+
+const DESCRIPTORS = Object.fromEntries([BUFFER, PHUZZ, WAH, PREAMP, TRANSFORMER, OPTO, CABINET, ENVELOPE, OCTAVE, SPRING, OPENAIR, SABINE, RUBENS, HELMHOLTZ, ECHO, ROTARY, PLATE, SYMPATHETIC, BLACKHOLE, DOPPLER, BANDGAP, MICHELSON, LAMPVIBE, CABLE, RINGMOD, RADIO, TUNNEL, BBD, NEON, LENS].map((d) => [d.id, d]));
 
 const call = (...args) => window.phuzz(...args);
 const h = (tag, attrs = {}, ...kids) => {
