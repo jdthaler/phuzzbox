@@ -74,7 +74,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .native-passed
-          key: native-passed-${{ matrix.os }}-${{ hashFiles('native/**', '.github/workflows/native.yml', 'tools/package-plugins.sh', 'tools/plugin-release.mjs', 'shared/plugins.js', 'shared/registry.js', 'plugins/README.md', 'LICENSE', 'THIRD-PARTY-NOTICES.md') }}
+          key: native-passed-${{ matrix.os }}-${{ hashFiles('native/**', '.github/workflows/native.yml', 'package.json', 'tools/package-plugins.sh', 'tools/plugin-release.mjs', 'shared/plugins.js', 'shared/registry.js', 'plugins/README.md', 'LICENSE', 'THIRD-PARTY-NOTICES.md') }}
           lookup-only: true
       - name: Skip what a green run built
         if: steps.passed.outputs.cache-hit == 'true' && github.ref != 'refs/heads/live'
