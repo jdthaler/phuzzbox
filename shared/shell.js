@@ -425,7 +425,10 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
     tuning: () => state.tuning, setTuning, tap,
     metronome: () => metronome.running(), setMetronome: (on) => { if (on !== metronome.running()) { if (on) { layout?.setView('metronome', true); metronome.play(); } else metronome.stop(); } },
     about: () => notes.open('midi'), extra: midiMore, program: midiMore?.program,
+    showView: () => layout?.setView('fc300', !layout.viewShown('fc300')),
   } });
+  // MIDI in the top bar, beside Start audio: a foot controller is turned on where the sound is
+  startBtn.before(midi.chip);
   midi.el.classList.add('group');
   groupList.push({ key: 'midi', name: 'MIDI pedals', el: midi.el });
   viewList.push({ key: 'fc300', name: 'FC-300', card: midi.view, on: false, rack: true });
