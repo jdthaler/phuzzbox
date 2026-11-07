@@ -25,7 +25,7 @@ as it comes.
    1–5 or 6–10 (their lights are red for 1–5, green for 6–10). Most of what you need is on 1–5 and
    the control pedals.
 4. **Connect the page.** In Chrome or Edge (Safari has no Web MIDI), open any pedal and press
-   **Connect MIDI** in the rig's bar at the foot of the page, beside **In**; the browser asks once
+   **Connect MIDI** in the bar at the top of the page, beside **Start audio**; the browser asks once
    to use your MIDI devices: allow it. The button then names what it hears (**MIDI: UM-ONE**), its
    lamp flashing as each pedal arrives, and every page connects by itself from then on; press it
    again for the FC-300 drawing under the pedal. If you blocked MIDI once, allow it again from the

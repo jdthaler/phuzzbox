@@ -659,7 +659,7 @@ body.perform .rack-toggles { display: flex; }
 .rig-io { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); min-width: 0; }
 .rig-io select { max-width: 220px; text-overflow: ellipsis; color: var(--ink); }
 .rig-bar .fold[aria-expanded="false"] svg { transform: rotate(180deg); }
-/* MIDI in the rig's bar: Connect MIDI, then what it hears, its lamp lit while connected and
+/* MIDI in the top bar: Connect MIDI, then what it hears, its lamp lit while connected and
    flashing as each message arrives */
 .midi-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; font-size: 12px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .midi-chip span { overflow: hidden; text-overflow: ellipsis; }
@@ -1326,7 +1326,7 @@ const { fromUnit } = __m1;
 //          and if the page has them: tuning(), setTuning(on), tap() (→ the tempo, or null),
 //          metronome(), setMetronome(on), program(n) (a program change; else the n-th preset),
 //          extra: { targets, isOn(id), act(action) } (the Pedalboard's own) }
-//   midi.el is the card, midi.view the FC-300 view's card, midi.chip MIDI's button for the rig's bar
+//   midi.el is the card, midi.view the FC-300 view's card, midi.chip MIDI's button for the top bar
 //   (ui.showView() shows the FC-300 view when it is pressed once MIDI is connected).
 
 
@@ -1347,7 +1347,7 @@ function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   const webMidi = !!navigator.requestMIDIAccess;
   const connectBtn = h('button', { type: 'button', class: 'ghost', hidden: !webMidi, onclick: () => connect() }, 'Connect MIDI');
   const viewConnect = h('button', { type: 'button', class: 'ghost fc-connect', hidden: !webMidi, onclick: () => { connect(); viewConnect.blur(); } }, 'Connect MIDI');
-  // MIDI in the rig's bar, beside the audio's In and Out: Connect MIDI until the page hears MIDI,
+  // MIDI in the top bar, beside Start audio: Connect MIDI until the page hears MIDI,
   // then what it hears, lit as each message arrives (a press shows the FC-300 under the pedal)
   const chipLed = h('i', { class: 'midi-led', 'aria-hidden': 'true' }), chipText = h('span', {}, webMidi ? 'Connect MIDI' : 'MIDI');
   const chip = h('button', { type: 'button', class: 'ghost midi-chip', title: webMidi ? 'Connect a MIDI foot controller (an FC-300 through a USB MIDI interface)' : 'MIDI needs Chrome or Edge: Safari has no Web MIDI',
@@ -1523,7 +1523,7 @@ function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   }
   // the app's window has no Web MIDI; its program hands the page the bytes
   window.phuzzMidi = (s, d1, d2) => { setStatus('from the app'); feed([s, d1, d2]); };
-  // what the page hears, in the card, the view and the rig's bar (short: the inputs' names)
+  // what the page hears, in the card, the view and the top bar (short: the inputs' names)
   function setStatus(s, short = null) {
     status.textContent = s; viewStatus.textContent = s;
     if (short) chipText.textContent = short;

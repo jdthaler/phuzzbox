@@ -1,7 +1,7 @@
 # MIDI easy to turn on
 
 ### PhuzzBox (patch)
-- **Connect MIDI in the rig's bar**, beside In: MIDI's button was only in the MIDI pedals card at
+- **Connect MIDI in the top bar**, beside Start audio: MIDI's button was only in the MIDI pedals card at
   the foot of Controls, out of sight. It now names the input it hears (MIDI: UM-ONE), flashes as
   each message arrives, and shows the FC-300 under the pedal when pressed again; the FC-300 view
   has a Connect MIDI button too.
@@ -9,4 +9,4 @@
   says how to allow it again.
 
 ### Wah (patch)
-- Its notes point to Connect MIDI in the rig's bar.
+- Its notes point to Connect MIDI in the top bar.

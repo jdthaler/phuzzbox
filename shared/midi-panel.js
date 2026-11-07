@@ -11,7 +11,7 @@
 //          and if the page has them: tuning(), setTuning(on), tap() (→ the tempo, or null),
 //          metronome(), setMetronome(on), program(n) (a program change; else the n-th preset),
 //          extra: { targets, isOn(id), act(action) } (the Pedalboard's own) }
-//   midi.el is the card, midi.view the FC-300 view's card, midi.chip MIDI's button for the rig's bar
+//   midi.el is the card, midi.view the FC-300 view's card, midi.chip MIDI's button for the top bar
 //   (ui.showView() shows the FC-300 view when it is pressed once MIDI is connected).
 
 import { MidiMap, FC300, isLegacy, audioTaper, SWITCH_MODES } from './midi.js';
@@ -33,7 +33,7 @@ export function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   const webMidi = !!navigator.requestMIDIAccess;
   const connectBtn = h('button', { type: 'button', class: 'ghost', hidden: !webMidi, onclick: () => connect() }, 'Connect MIDI');
   const viewConnect = h('button', { type: 'button', class: 'ghost fc-connect', hidden: !webMidi, onclick: () => { connect(); viewConnect.blur(); } }, 'Connect MIDI');
-  // MIDI in the rig's bar, beside the audio's In and Out: Connect MIDI until the page hears MIDI,
+  // MIDI in the top bar, beside Start audio: Connect MIDI until the page hears MIDI,
   // then what it hears, lit as each message arrives (a press shows the FC-300 under the pedal)
   const chipLed = h('i', { class: 'midi-led', 'aria-hidden': 'true' }), chipText = h('span', {}, webMidi ? 'Connect MIDI' : 'MIDI');
   const chip = h('button', { type: 'button', class: 'ghost midi-chip', title: webMidi ? 'Connect a MIDI foot controller (an FC-300 through a USB MIDI interface)' : 'MIDI needs Chrome or Edge: Safari has no Web MIDI',
@@ -209,7 +209,7 @@ export function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   }
   // the app's window has no Web MIDI; its program hands the page the bytes
   window.phuzzMidi = (s, d1, d2) => { setStatus('from the app'); feed([s, d1, d2]); };
-  // what the page hears, in the card, the view and the rig's bar (short: the inputs' names)
+  // what the page hears, in the card, the view and the top bar (short: the inputs' names)
   function setStatus(s, short = null) {
     status.textContent = s; viewStatus.textContent = s;
     if (short) chipText.textContent = short;

@@ -134,7 +134,7 @@ have: a few steps, each setting the pedal up and playing the test bass through i
 says what to listen for and which view to watch. Your own settings come back when it ends.
 
 **MIDI pedals.** A MIDI foot controller (a Roland FC-300 through a USB MIDI interface, in Control
-Change mode) plays the page in Chrome or Edge: press **Connect MIDI** in the rig's bar, beside In. Out
+Change mode) plays the page in Chrome or Edge: press **Connect MIDI** in the top bar, beside Start audio. Out
 of the box it is laid out for playing live ([midi/README.md](midi/README.md)): expression pedal 1
 (CC 7) a volume pedal, expression pedal 2 (CC 1) the pedal's expression control and its toe switch
 the footswitch, number pedal 1 the footswitch and 2–10 the pedal's presets, CTL 1 the tuner and

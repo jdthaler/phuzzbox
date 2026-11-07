@@ -650,7 +650,7 @@ body.perform .rack-toggles { display: flex; }
 .rig-io { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); min-width: 0; }
 .rig-io select { max-width: 220px; text-overflow: ellipsis; color: var(--ink); }
 .rig-bar .fold[aria-expanded="false"] svg { transform: rotate(180deg); }
-/* MIDI in the rig's bar: Connect MIDI, then what it hears, its lamp lit while connected and
+/* MIDI in the top bar: Connect MIDI, then what it hears, its lamp lit while connected and
    flashing as each message arrives */
 .midi-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; font-size: 12px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .midi-chip span { overflow: hidden; text-overflow: ellipsis; }
