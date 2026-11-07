@@ -11,6 +11,29 @@ Versions change only when `main` is released to `live`, the branch the site is p
 each pull request into `main` leaves a note in `changes/` (`changes/README.md`), and
 `node tools/release.mjs` gathers them into one entry here, bumping each version once.
 
+## 2026-11-07 — MIDI easy to turn on; no shims for old settings
+
+### PhuzzBox 0.6.1
+- **Connect MIDI in the top bar**, beside Start audio: MIDI's button was only in the MIDI pedals card at
+  the foot of Controls, out of sight. It now names the input it hears (MIDI: UM-ONE), flashes as
+  each message arrives, and shows the FC-300 under the pedal when pressed again; the FC-300 view
+  has a Connect MIDI button too.
+- A page connected once connects by itself on every page after, and a site where MIDI was blocked
+  says how to allow it again.
+- Settings saved by earlier versions are no longer converted, since nothing is promised before 1.0:
+  the MIDI panel keeps whatever layout a page saved, even the old default one (number pedal 2 as
+  Mute), the rig card no longer reads the setting it had when it was the bass card, and the app no
+  longer reads the Buffer's parameters from where the first app kept them.
+- A plugin whose saved state has no MIDI mappings now opens with none, instead of the default
+  layout, so clearing them all sticks.
+- The app's settings folder is spelled as its name, `PhuzzBox`, on macOS and Windows (both ignore
+  case, so it is the same folder).
+- `node tools/release.mjs --check-pr` no longer warns when a change breaks songs saved with a
+  pedal below 1.0; from 1.0 on it still asks for a major note.
+
+### Wah 0.3.2
+- Its notes point to Connect MIDI in the top bar.
+
 ## 2026-11-06 — the Bandgap overdrive; the Bucket Brigade; the Transatlantic Cable; the FC-300 laid out for playing live; Helmholtz's Resonators; the Lamp Vibe; the Gravitational Lens; the Michelson Interferometer; the Neon Tremolo; Open Air; the Crystal Radio; the Ring Modulator; Rubens' Tube; Sabine's Room; the Output Transformer; the Tunnel Diode; the views' readouts read whole
 
 ### PhuzzBox 0.6.0
