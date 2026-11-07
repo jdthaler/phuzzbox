@@ -27,8 +27,8 @@ any name (say, the branch's topic: `spring-pickups.md`), saying what it changes 
   `shared/registry.js`). `major` takes 0.x to 1.0.0.
 - From 1.0 on, a pedal whose contract breaks needs `major`: removing, renaming or rescaling a
   parameter, changing its default, moving or removing a choice's option or a preset, or changing a
-  preset's values (`tools/contract.mjs`; `node tools/contract.mjs` lists them). Below 1.0 the
-  `tests` workflow only warns.
+  preset's values (`tools/contract.mjs`; `node tools/contract.mjs` lists them). Below 1.0 nothing is promised:
+  a break needs no particular note, and nothing keeps old songs or settings working.
 - Changes to the documentation (Markdown at the top level, in `docs/` and in `native/`) and to CI
   need no note. A pedal's README is its page's How it works, so it does.
 

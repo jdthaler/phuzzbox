@@ -491,7 +491,6 @@ bool stateLoad(const clap_plugin_t *pl, const clap_istream_t *stream) {
   if (!(in >> magic >> slug >> version) || magic != "phuzzbox" || slug != pedal->slug) return false;
   Plugin *p = self(pl);
   MidiMap map;
-  bool anyMidi = false;
   std::string line;
   std::getline(in, line);
   while (std::getline(in, line)) {
@@ -512,7 +511,6 @@ bool stateLoad(const clap_plugin_t *pl, const clap_istream_t *stream) {
         m.momentary = momentary != 0; m.invert = invert != 0;
         map.add(m);
       }
-      anyMidi = true;
       continue;
     }
     double v;
@@ -521,7 +519,6 @@ bool stateLoad(const clap_plugin_t *pl, const clap_istream_t *stream) {
     else if (id == "phuzz.volume") p->set(volumeIndex(), v);
     else for (int i = 0; i < pedal->paramCount; i++) if (id == pedal->params[i].id) p->set(i, v);
   }
-  if (!anyMidi) map.defaults(*pedal); // a state from before the MIDI input
   p->midiMain = map;
   p->midiPending = map;
   p->midiNew = true;

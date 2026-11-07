@@ -1219,17 +1219,6 @@ function defaultMappings(PEDAL) {
   return m;
 }
 
-// The layout before this one (number pedal 2 the tuner's mute, latching): a page that saved it,
-// untouched, takes the live layout instead.
-function legacyMappings(PEDAL) {
-  const m = [map(FC300.exp1, 'volume', 'latch')];
-  if (PEDAL.expression) m.push(map(FC300.exp2, `param:${PEDAL.expression}`, 'latch'));
-  m.push(map(FC300.pedals[0], 'bypass', 'latch'), map(FC300.pedals[1], 'mute', 'latch'));
-  return m;
-}
-const same = (a, b) => a.length === b.length && a.every((x, i) => ['cc', 'channel', 'target', 'mode', 'invert'].every((k) => (x[k] ?? map(0, '')[k]) === b[i][k]));
-const isLegacy = (saved, PEDAL) => Array.isArray(saved) && same(saved, legacyMappings(PEDAL));
-
 // Whether a value is a press of a pedal, given the last value the same CC sent: for a momentary
 // pedal, the value rising through 64; for a latching one, every message.
 const pressed = (m, v, last) => (m.mode === 'momentary' ? v >= 64 && !(last >= 64) : true);
@@ -1295,12 +1284,12 @@ class MidiMap {
   }
 }
 
-return { FC300, SWITCH_MODES, audioTaper, expressionOf, targets, defaultMappings, legacyMappings, isLegacy, ccAction, MidiMap };
+return { FC300, SWITCH_MODES, audioTaper, expressionOf, targets, defaultMappings, ccAction, MidiMap };
 })();
 
 // ---- shared/midi-panel.js
 const __m4 = (() => {
-const { MidiMap, FC300, isLegacy, audioTaper, SWITCH_MODES } = __m5;
+const { MidiMap, FC300, audioTaper, SWITCH_MODES } = __m5;
 const { fromUnit } = __m1;
 // midi-panel.js — the MIDI card on a pedal's page: Web MIDI (Chrome and Edge) or the app's own
 // MIDI (window.phuzzMidi(status, d1, d2)), the mappings from control changes to the page's
@@ -1321,8 +1310,7 @@ const { fromUnit } = __m1;
 
 function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   const only = ['volume', 'bypass', 'mute', ...(ui.setTuning ? ['tuner'] : []), ...(ui.tap ? ['tap'] : []), ...(ui.setMetronome ? ['metronome'] : [])];
-  let saved = store.get(`${key}.midi`, null);
-  if (isLegacy(saved, PEDAL)) saved = null; // the old defaults, untouched: the live layout now
+  const saved = store.get(`${key}.midi`, null);
   const map = new MidiMap(PEDAL, saved, { extra: ui.extra?.targets ?? [], only, defaults });
   const all = [...map.targets.values()];
   const save = () => store.set(`${key}.midi`, map.mappings);
