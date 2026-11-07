@@ -58,7 +58,9 @@ Read first:
    six sizes (with How it works open, every view and group on, and audio started), checks the
    pedal's knobs, footswitch, ⓘ buttons, presets and toggles, and lists every count that differs
    from `main`, each of which the change should mean; `node tools/check-pages.mjs phuzz` checks one.
-   The `pages` job in CI runs it against the pull request's base.
+   The `pages` job in CI runs it against the pull request's base. CI builds the plugins on Linux
+   only; a C++ change that could break on macOS or Windows (a system header, a compiler's quirk)
+   gets `native` started by hand from the Actions tab on its branch, which builds all three.
 3. **A release note, not a version.** A pull request into `main` bumps no version (semver, all
    0.x, as Forte's). It adds one note to `changes/` (`changes/README.md`): a `# <topic>` line, then
    a `### PhuzzBox (minor|patch)` or `### <Pedal name> (major|minor|patch|new)` section for each
@@ -84,13 +86,20 @@ Only when the owner asks for a release. Merging into `main` publishes nothing; t
    0.2.0`), open a pull request into `main` whose body is the new changelog entry, and merge it
    once green (the release-note check lets a release, and only a release, move versions).
 2. Open a pull request from `main` into `live` titled `Release YYYY-MM-DD: <what is new>`, whose
-   body is the changelog entry. CI runs on it as on any pull request, and also checks that no
-   notes are left in `changes/`. Whatever fails is fixed on `main` first.
+   body is the changelog entry. CI runs on it as on any pull request (`native` builds the plugins
+   on Linux only, as on every pull request), and also checks that no notes are left in
+   `changes/`. So it is green in minutes, and the site waits on nothing slower. Whatever fails is
+   fixed on `main` first.
 3. Merge it with a merge commit when the owner asks. GitHub Pages publishes `live` at once, and
-   installed copies pick it up on their next load (`sw.js` asks the server first).
-   The `native` run on `live` packs the plugins and the app (`tools/package-plugins.sh`), and the
-   `release-plugins` workflow then publishes them as a GitHub release when anything native or any
-   version changed (`tools/plugin-release.mjs --manifest`). The site's Plugins tab
-   (`shared/plugins.js`) downloads its files directly: the only links to GitHub besides the
-   credits, and never to a page there (Jesse, 2026-11-01).
+   installed copies pick it up on their next load (`sw.js` asks the server first). The plugins
+   follow, as Forte's do (Jesse, 2026-11-06): the push to `live` runs `native` in full (macOS and
+   Windows too, and the app), packing the plugins and the app (`tools/package-plugins.sh`), and
+   when it is green the `release-plugins` workflow publishes them as a GitHub release if anything
+   native or any version changed (`tools/plugin-release.mjs --manifest`). Until then the downloads
+   stay the latest plugin release's. If that run fails, the site stays up with the older plugins:
+   fix it on `main` and release again (a run that failed for no reason of the code's can be re-run
+   on `live`). To build on macOS and Windows before a release, start `native` by hand from the
+   Actions tab on a branch. The site's Plugins tab (`shared/plugins.js`) downloads its files
+   directly: the only links to GitHub besides the credits, and never to a page there (Jesse,
+   2026-11-01).
 4. `live` only ever takes `main`, so it never needs merging back.

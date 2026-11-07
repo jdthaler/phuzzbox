@@ -46,10 +46,10 @@ using choc::value::ValueView;
 fs::path settingsFile() {
 #if defined(__APPLE__)
   const char *home = std::getenv("HOME");
-  fs::path dir = fs::path(home ? home : ".") / "Library" / "Application Support" / "Phuzzbox"; // the folder keeps its first spelling, so saved settings stay
+  fs::path dir = fs::path(home ? home : ".") / "Library" / "Application Support" / "PhuzzBox";
 #elif defined(_WIN32)
   const char *appdata = std::getenv("APPDATA");
-  fs::path dir = fs::path(appdata ? appdata : ".") / "Phuzzbox"; // as on the Mac
+  fs::path dir = fs::path(appdata ? appdata : ".") / "PhuzzBox";
 #else
   const char *xdg = std::getenv("XDG_CONFIG_HOME"), *home = std::getenv("HOME");
   fs::path dir = xdg ? fs::path(xdg) / "phuzzbox" : fs::path(home ? home : ".") / ".config" / "phuzzbox";
@@ -122,11 +122,10 @@ struct Program {
     for (int i = 0; i < pedal->paramCount; i++) if (id == pedal->params[i].id) return i;
     return -1;
   }
-  // where this pedal's parameters are kept; the Buffer's were "params" before the app had others
+  // where this pedal's parameters are kept
   std::string paramsKey() const { return std::string("params-") + pedal->slug; }
   Value params() const {
     Value P = get(paramsKey().c_str());
-    if (!P.isObject() && std::string_view(pedal->slug) == "buffer") P = get("params");
     return P.isObject() ? P : choc::value::createObject("");
   }
   void applySettings() {

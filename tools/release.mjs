@@ -136,7 +136,7 @@ export function versionsAt(ref) {
 const notesAt = (ref) => { try { return git('ls-tree', '--name-only', `${ref}:changes`).split('\n').filter((f) => f.endsWith('.md') && f !== 'README.md'); } catch { return []; } };
 const fileAt = (ref, f) => { try { return git('show', `${ref}:${f}`); } catch { return ''; } };
 
-export function checkPr(base, head = 'HEAD', warnings = []) {
+export function checkPr(base, head = 'HEAD') {
   const target = base.replace(/^origin\//, '');
   const errors = [];
   const files = git('diff', '--name-only', `${base}...${head}`).split('\n').filter(Boolean);
@@ -160,7 +160,7 @@ export function checkPr(base, head = 'HEAD', warnings = []) {
   const added = git('diff', '--name-only', '--diff-filter=AM', `${base}...${head}`, '--', 'changes/').split('\n').filter((f) => f.endsWith('.md') && !f.endsWith('README.md'));
   const site = files.filter((f) => !UNVERSIONED.some((re) => re.test(f)));
   if (site.length && !added.length) errors.push(`this changes the site or the plugins (${site.slice(0, 5).join(', ')}${site.length > 5 ? ', …' : ''}) but adds no note to changes/ (changes/README.md says how)`);
-  // a broken contract (tools/contract.mjs): a major note from 1.0 on, a warning before
+  // a broken contract (tools/contract.mjs): a major note from 1.0 on; before 1.0 nothing is promised
   const kinds = new Map();
   for (const f of added) {
     let n;
@@ -171,8 +171,7 @@ export function checkPr(base, head = 'HEAD', warnings = []) {
     if (!c.breaks.length) continue;
     const p = PEDALS.find((x) => x.id === c.slug), v = before[p?.name] ?? '0.0.0';
     const what = `${p?.name ?? c.slug}: ${c.breaks.join('; ')}`;
-    if (Number(v.split('.')[0]) < 1) warnings.push(`${what}. Saved songs and automation change; from 1.0 on this needs a major note`);
-    else if (!kinds.get(p.name)?.includes('major')) errors.push(`${what}. Saved songs and automation change, so ${p.name} ${v} needs a "### ${p.name} (major)" note (tools/contract.mjs)`);
+    if (Number(v.split('.')[0]) >= 1 && !kinds.get(p.name)?.includes('major')) errors.push(`${what}. Saved songs and automation change, so ${p.name} ${v} needs a "### ${p.name} (major)" note (tools/contract.mjs)`);
   }
   return errors;
 }
@@ -181,8 +180,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2);
   try {
     if (args[0] === '--check-pr') {
-      const warnings = [], errors = checkPr(args[1] ?? 'origin/main', args[2] ?? 'HEAD', warnings);
-      for (const w of warnings) console.log(`::warning::${w}`);
+      const errors = checkPr(args[1] ?? 'origin/main', args[2] ?? 'HEAD');
       for (const e of errors) console.error(`::error::${e}`);
       if (errors.length) process.exit(1);
       console.log('ok');

@@ -650,6 +650,17 @@ body.perform .rack-toggles { display: flex; }
 .rig-io { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); min-width: 0; }
 .rig-io select { max-width: 220px; text-overflow: ellipsis; color: var(--ink); }
 .rig-bar .fold[aria-expanded="false"] svg { transform: rotate(180deg); }
+/* MIDI in the top bar: Connect MIDI, then what it hears, its lamp lit while connected and
+   flashing as each message arrives */
+.midi-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; font-size: 12px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.midi-chip span { overflow: hidden; text-overflow: ellipsis; }
+.midi-chip:not(.on) { border-color: var(--accent); color: var(--accent); }
+.midi-led { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #4a1410; }
+.midi-chip.on .midi-led { background: #7a2018; }
+.midi-led.hit { animation: midi-led 0.25s; }
+@keyframes midi-led { from { background: var(--led); box-shadow: 0 0 8px var(--led); } }
+.fc-connect { margin-left: auto; font-size: 12px; padding: 2px 10px; }
+.fc-connect[hidden] { display: none; }
 .rig-body { border-top: 1px solid var(--line); }
 .rig-body .bass .bass-bar { background: transparent; }
 .rig-chain { display: flex; align-items: stretch; gap: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 10px 14px 12px; scrollbar-width: thin; }

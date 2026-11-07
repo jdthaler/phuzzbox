@@ -266,7 +266,8 @@ async function main(info, carry = {}) {
   } });
   window.phuzzMidi = (status, d1, d2) => midi.feed([status, d1, d2]); // the card's status names the inputs instead
   const midiHelp = midi.el.querySelector('.midi-help');
-  for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
+  for (const b of [...midi.el.querySelectorAll('.midi-bar button'), ...midi.view.querySelectorAll('.fc-connect')]) b.hidden = true; // Web MIDI's Connect: the program connects
+  midi.setStatus('looking for MIDI inputs…');
   midiHelp.textContent = 'A MIDI foot controller works the pedal: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and put it in Control Change mode. The app listens to every MIDI input. The drawing says what each of the FC-300\'s pedals does here; Learn, then move a pedal, teaches a row that pedal.';
 
   midi.el.classList.add('group');

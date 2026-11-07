@@ -99,17 +99,6 @@ export function defaultMappings(PEDAL) {
   return m;
 }
 
-// The layout before this one (number pedal 2 the tuner's mute, latching): a page that saved it,
-// untouched, takes the live layout instead.
-export function legacyMappings(PEDAL) {
-  const m = [map(FC300.exp1, 'volume', 'latch')];
-  if (PEDAL.expression) m.push(map(FC300.exp2, `param:${PEDAL.expression}`, 'latch'));
-  m.push(map(FC300.pedals[0], 'bypass', 'latch'), map(FC300.pedals[1], 'mute', 'latch'));
-  return m;
-}
-const same = (a, b) => a.length === b.length && a.every((x, i) => ['cc', 'channel', 'target', 'mode', 'invert'].every((k) => (x[k] ?? map(0, '')[k]) === b[i][k]));
-export const isLegacy = (saved, PEDAL) => Array.isArray(saved) && same(saved, legacyMappings(PEDAL));
-
 // Whether a value is a press of a pedal, given the last value the same CC sent: for a momentary
 // pedal, the value rising through 64; for a latching one, every message.
 const pressed = (m, v, last) => (m.mode === 'momentary' ? v >= 64 && !(last >= 64) : true);

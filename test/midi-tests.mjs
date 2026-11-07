@@ -5,7 +5,7 @@
 
 import { readFileSync } from 'node:fs';
 import { check, done } from './harness.mjs';
-import { MidiMap, FC300, defaultMappings, legacyMappings, isLegacy, expressionOf, audioTaper, ccAction, targets } from '../shared/midi.js';
+import { MidiMap, FC300, defaultMappings, expressionOf, audioTaper, ccAction, targets } from '../shared/midi.js';
 import { tapTempo } from '../shared/metronome.js';
 import { BOARD_PEDALS } from '../board/src/board-pedals.js';
 import { PEDAL as WAH } from '../wah/src/wah-pedal.js';
@@ -58,10 +58,6 @@ for (const D of Object.values(BOARD_PEDALS)) {
   const ok = p && !p.type && (D.expression ? e === D.expression : p.perform && !/^(level|volume|master|dry|mix|blend|wet)$/i.test(e)) && new Set(ccs).size === ccs.length;
   check(ok, `${D.name}: the expression pedal rocks ${p?.label ?? 'nothing'}, and the layout uses each CC once`);
 }
-// the old defaults, saved untouched, give way to the live layout; changed ones are kept
-check(isLegacy(legacyMappings(WAH), WAH) && !isLegacy([...legacyMappings(WAH), { cc: 70, target: 'volume' }], WAH) && !isLegacy(null, WAH),
-  'a page that saved the old defaults untouched takes the live layout; one changed keeps its own');
-check(isLegacy(JSON.parse(JSON.stringify(legacyMappings(BUFFER))), BUFFER), 'and so does the Buffer\'s, as saved in the browser');
 // a page without a metronome (the app) leaves it out, and a page can add its own targets
 {
   const m = new MidiMap(WAH, null, { only: ['volume', 'bypass', 'mute', 'tuner', 'tap'] });

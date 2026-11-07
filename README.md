@@ -134,7 +134,7 @@ have: a few steps, each setting the pedal up and playing the test bass through i
 says what to listen for and which view to watch. Your own settings come back when it ends.
 
 **MIDI pedals.** A MIDI foot controller (a Roland FC-300 through a USB MIDI interface, in Control
-Change mode) plays the page in Chrome or Edge: press **Connect MIDI** in the MIDI pedals card. Out
+Change mode) plays the page in Chrome or Edge: press **Connect MIDI** in the top bar, beside Start audio. Out
 of the box it is laid out for playing live ([midi/README.md](midi/README.md)): expression pedal 1
 (CC 7) a volume pedal, expression pedal 2 (CC 1) the pedal's expression control and its toe switch
 the footswitch, number pedal 1 the footswitch and 2–10 the pedal's presets, CTL 1 the tuner and
@@ -164,8 +164,9 @@ A MIDI foot controller works in the app as on the pages: the app listens to ever
 which the app has not), each pedal keeping its own mappings.
 
 Download it, or the plugins, from the Plugins tab of How it works on any page (`plugins/README.md`
-says how to install them); CI builds it on every pull request that changes `native/` too (the `native` workflow's
-`PhuzzBox-app-macos-15` artifact).
+says how to install them). CI builds it on every release to `live`, and whenever the `native`
+workflow is started by hand from the Actions tab (its `PhuzzBox-app-macos-15` artifact); pull
+requests build the plugins on Linux only.
 The app isn't notarised, so after unzipping it, clear the quarantine flag macOS puts on downloads
 (`xattr -dr com.apple.quarantine PhuzzBox.app`), then open it. macOS asks once for the
 microphone: that permission covers the interface's inputs too.
