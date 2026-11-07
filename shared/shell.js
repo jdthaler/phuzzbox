@@ -450,7 +450,7 @@ export function createPedal({ PEDAL, worklet, views = [], rack: more = null, loa
   }
 
   let layout = null;
-  setRigOpen(store.get('phuzzbox.rigOpen', store.get('phuzzbox.bassOpen', true)));
+  setRigOpen(store.get('phuzzbox.rigOpen', true));
   layout = createLayout({ id: PEDAL.id, h, store, app, header, rack, views: viewList, groups: groupList, dock });
   api.layout = layout;
 

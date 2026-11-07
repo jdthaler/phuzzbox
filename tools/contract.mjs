@@ -11,7 +11,7 @@
 // parameters, options at the end and presets at the end breaks nothing.
 //
 // From 1.0 on a pedal whose contract breaks needs a major release note (changes/README.md);
-// `node tools/release.mjs --check-pr` enforces it, and warns about the breaks before 1.0.
+// `node tools/release.mjs --check-pr` enforces it. Before 1.0 nothing is promised.
 //
 // Usage: node tools/contract.mjs [<ref>]      the breaks and additions since <ref> (default origin/main)
 

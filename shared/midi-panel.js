@@ -13,13 +13,12 @@
 //          extra: { targets, isOn(id), act(action) } (the Pedalboard's own) }
 //   midi.el is the card, midi.view the FC-300 view's card.
 
-import { MidiMap, FC300, isLegacy, audioTaper, SWITCH_MODES } from './midi.js';
+import { MidiMap, FC300, audioTaper, SWITCH_MODES } from './midi.js';
 import { fromUnit } from './params.js';
 
 export function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   const only = ['volume', 'bypass', 'mute', ...(ui.setTuning ? ['tuner'] : []), ...(ui.tap ? ['tap'] : []), ...(ui.setMetronome ? ['metronome'] : [])];
-  let saved = store.get(`${key}.midi`, null);
-  if (isLegacy(saved, PEDAL)) saved = null; // the old defaults, untouched: the live layout now
+  const saved = store.get(`${key}.midi`, null);
   const map = new MidiMap(PEDAL, saved, { extra: ui.extra?.targets ?? [], only, defaults });
   const all = [...map.targets.values()];
   const save = () => store.set(`${key}.midi`, map.mappings);
