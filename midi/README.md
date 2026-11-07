@@ -24,10 +24,14 @@ as it comes.
 3. **Choose the bank.** In Control Change mode the two bank pedals make the five number pedals
    1–5 or 6–10 (their lights are red for 1–5, green for 6–10). Most of what you need is on 1–5 and
    the control pedals.
-4. **Connect the page.** In Chrome or Edge (Safari has no Web MIDI), open any pedal, show **MIDI pedals** in Controls and
-   press **Connect MIDI**, then allow MIDI. The status says which interface it hears; the **last**
-   readout shows each pedal as it arrives (`EXP 1, CC 7 = 93`). Pick the interface in its menu if
-   you have more than one. The app needs none of this: it listens to every MIDI input by itself.
+4. **Connect the page.** In Chrome or Edge (Safari has no Web MIDI), open any pedal and press
+   **Connect MIDI** in the rig's bar at the foot of the page, beside **In**; the browser asks once
+   to use your MIDI devices: allow it. The button then names what it hears (**MIDI: UM-ONE**), its
+   lamp flashing as each pedal arrives, and every page connects by itself from then on; press it
+   again for the FC-300 drawing under the pedal. If you blocked MIDI once, allow it again from the
+   icon at the left of the address bar. In **MIDI pedals** in Controls, the **last** readout shows
+   each pedal as it arrives (`EXP 1, CC 7 = 93`); pick the interface in its menu if you have more
+   than one. The app needs none of this: it listens to every MIDI input by itself.
 5. **Check the expression pedals.** Rock each one from heel to toe: **last** should run from 0 to 127. If
    one stops short, calibrate it: hold **UTILITY** while switching the FC-300 on, and follow its
    screen (p. 56).

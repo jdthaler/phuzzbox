@@ -17,7 +17,7 @@ Part of [PhuzzBox](../README.md).
 | Input | |
 |---|---|
 | Your audio interface | pick it in the source menu (then **In 1** or **In 2**) |
-| A MIDI foot controller | **Connect MIDI** in the MIDI pedals card: CC 1 the rocker, CC 7 the volume, CC 65 the footswitch |
+| A MIDI foot controller | **Connect MIDI** in the rig's bar: CC 1 the rocker, CC 7 the volume, CC 65 and CC 83 the footswitch |
 | `Z`…`/`, `A`…`;`, `Q`…`P`, `1`…`0` | the test bass's E, A, D and G strings, open to the ninth fret |
 | `Space` | the footswitch |
 

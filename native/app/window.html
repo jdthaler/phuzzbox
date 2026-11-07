@@ -659,6 +659,17 @@ body.perform .rack-toggles { display: flex; }
 .rig-io { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); min-width: 0; }
 .rig-io select { max-width: 220px; text-overflow: ellipsis; color: var(--ink); }
 .rig-bar .fold[aria-expanded="false"] svg { transform: rotate(180deg); }
+/* MIDI in the rig's bar: Connect MIDI, then what it hears, its lamp lit while connected and
+   flashing as each message arrives */
+.midi-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; font-size: 12px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.midi-chip span { overflow: hidden; text-overflow: ellipsis; }
+.midi-chip:not(.on) { border-color: var(--accent); color: var(--accent); }
+.midi-led { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #4a1410; }
+.midi-chip.on .midi-led { background: #7a2018; }
+.midi-led.hit { animation: midi-led 0.25s; }
+@keyframes midi-led { from { background: var(--led); box-shadow: 0 0 8px var(--led); } }
+.fc-connect { margin-left: auto; font-size: 12px; padding: 2px 10px; }
+.fc-connect[hidden] { display: none; }
 .rig-body { border-top: 1px solid var(--line); }
 .rig-body .bass .bass-bar { background: transparent; }
 .rig-chain { display: flex; align-items: stretch; gap: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 10px 14px 12px; scrollbar-width: thin; }
@@ -1315,7 +1326,8 @@ const { fromUnit } = __m1;
 //          and if the page has them: tuning(), setTuning(on), tap() (→ the tempo, or null),
 //          metronome(), setMetronome(on), program(n) (a program change; else the n-th preset),
 //          extra: { targets, isOn(id), act(action) } (the Pedalboard's own) }
-//   midi.el is the card, midi.view the FC-300 view's card.
+//   midi.el is the card, midi.view the FC-300 view's card, midi.chip MIDI's button for the rig's bar
+//   (ui.showView() shows the FC-300 view when it is pressed once MIDI is connected).
 
 
 
@@ -1332,7 +1344,14 @@ function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   const rowEls = [];
 
   const status = h('span', { class: 'midi-status' }, navigator.requestMIDIAccess ? 'not connected' : 'Web MIDI needs Chrome or Edge');
-  const connectBtn = h('button', { type: 'button', class: 'ghost', hidden: !navigator.requestMIDIAccess, onclick: () => connect() }, 'Connect MIDI');
+  const webMidi = !!navigator.requestMIDIAccess;
+  const connectBtn = h('button', { type: 'button', class: 'ghost', hidden: !webMidi, onclick: () => connect() }, 'Connect MIDI');
+  const viewConnect = h('button', { type: 'button', class: 'ghost fc-connect', hidden: !webMidi, onclick: () => { connect(); viewConnect.blur(); } }, 'Connect MIDI');
+  // MIDI in the rig's bar, beside the audio's In and Out: Connect MIDI until the page hears MIDI,
+  // then what it hears, lit as each message arrives (a press shows the FC-300 under the pedal)
+  const chipLed = h('i', { class: 'midi-led', 'aria-hidden': 'true' }), chipText = h('span', {}, webMidi ? 'Connect MIDI' : 'MIDI');
+  const chip = h('button', { type: 'button', class: 'ghost midi-chip', title: webMidi ? 'Connect a MIDI foot controller (an FC-300 through a USB MIDI interface)' : 'MIDI needs Chrome or Edge: Safari has no Web MIDI',
+    onclick: () => { if (webMidi && !access) connect(); else ui.showView?.(); chip.blur(); } }, chipLed, chipText);
   const inSel = h('select', { 'aria-label': 'MIDI input', hidden: true, onchange: () => { store.set('phuzzbox.midiInput', inSel.value); listen(); } });
   const last = h('span', { class: 'pill midi-last', title: 'The last control change that arrived, on any input' }, 'last: –');
   const rowsEl = h('div', { class: 'midi-maps' });
@@ -1347,7 +1366,7 @@ function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   const viewBoard = footboard(false);
   const viewStatus = h('span', { class: 'fc-status' }, '');
   const view = h('figure', { class: 'card fc-card', 'aria-label': 'FC-300', 'data-view': 'FC-300', 'data-keep-text': '' },
-    h('figcaption', {}, h('b', {}, 'FC-300'), viewStatus), viewBoard.el);
+    h('figcaption', {}, h('b', {}, 'FC-300'), viewStatus, viewConnect), viewBoard.el);
 
   // ---- the mappings
   function draw() {
@@ -1495,6 +1514,7 @@ function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
     } else last.textContent = `last: program ${r.program + 1} · ch ${r.channel}`;
     if (r.learned >= 0) { save(); draw(); }
     for (const a of r.actions) act(a);
+    chipLed.classList.remove('hit'); void chipLed.offsetWidth; chipLed.classList.add('hit');
     if (r.cc !== undefined) {
       map.mappings.forEach((m, i) => { if (m.cc === r.cc && rowEls[i]) flash(rowEls[i]); });
       for (const b of boards) for (const c of b.cells) if (c.cc === r.cc && c.line) flash(c.line.closest('.fc-pedal'));
@@ -1503,7 +1523,12 @@ function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
   }
   // the app's window has no Web MIDI; its program hands the page the bytes
   window.phuzzMidi = (s, d1, d2) => { setStatus('from the app'); feed([s, d1, d2]); };
-  const setStatus = (s) => { status.textContent = s; viewStatus.textContent = s; };
+  // what the page hears, in the card, the view and the rig's bar (short: the inputs' names)
+  function setStatus(s, short = null) {
+    status.textContent = s; viewStatus.textContent = s;
+    if (short) chipText.textContent = short;
+    chip.title = s;
+  }
 
   // ---- Web MIDI
   function listen() {
@@ -1514,24 +1539,36 @@ function midiPanel({ PEDAL, h, store, key, ui, defaults = null }) {
     inSel.value = inputs.some((p) => p.id === want) ? want : '';
     inSel.hidden = !inputs.length;
     for (const p of inputs) p.onmidimessage = !inSel.value || inSel.value === p.id ? (e) => feed(e.data) : null;
-    setStatus(inputs.length ? `listening to ${inputs.length === 1 ? inputs[0].name : `${inputs.length} inputs`}` : 'connected, but no MIDI input: plug in the interface');
+    const hearing = inputs.filter((p) => !inSel.value || inSel.value === p.id);
+    setStatus(inputs.length ? `listening to ${hearing.length === 1 ? hearing[0].name : `${hearing.length} inputs`}` : 'connected, but no MIDI input: plug in the interface',
+      inputs.length ? `MIDI: ${hearing.length === 1 ? hearing[0].name : `${hearing.length} inputs`}` : 'MIDI: no input');
+    chip.classList.toggle('on', inputs.length > 0);
   }
-  async function connect() {
-    if (!navigator.requestMIDIAccess) return;
-    try {
-      access = await navigator.requestMIDIAccess({ sysex: false });
+  // Chrome and Edge ask once ("use your MIDI devices"), and remember the answer for the site
+  let asking = null;
+  function connect() {
+    if (!webMidi || access) return Promise.resolve();
+    setStatus('asking the browser for MIDI…', 'MIDI: asking…');
+    asking ??= navigator.requestMIDIAccess({ sysex: false }).then((a) => {
+      access = a;
       access.onstatechange = () => listen();
-      connectBtn.hidden = true;
+      connectBtn.hidden = true; viewConnect.hidden = true;
+      store.set('phuzzbox.midiOn', true);
       listen();
-    } catch (err) {
-      setStatus(`MIDI was not allowed (${err.message})`);
-    }
+    }, (err) => {
+      asking = null;
+      setStatus(`the browser didn't allow MIDI (${err.name === 'SecurityError' || err.name === 'NotAllowedError' ? 'blocked for this site: allow MIDI devices from the icon at the left of the address bar, then Connect MIDI again' : err.message})`, 'MIDI: not allowed');
+    });
+    return asking;
   }
-  setStatus(status.textContent);
-  // connect without asking when the browser already allows it
-  navigator.permissions?.query({ name: 'midi' }).then((s) => { if (s.state === 'granted') connect(); }).catch(() => {});
+  setStatus(webMidi ? 'not connected: press Connect MIDI' : 'Web MIDI needs Chrome or Edge (Safari has none)', webMidi ? 'Connect MIDI' : 'MIDI: needs Chrome');
+  // connect without a press when the browser already allows it, or the page was connected before
+  if (webMidi) {
+    if (store.get('phuzzbox.midiOn', false)) connect();
+    navigator.permissions?.query({ name: 'midi' }).then((s) => { if (s.state === 'granted') connect(); }).catch(() => {});
+  }
 
-  return { el, view, map, feed, setStatus, refresh: drawBoards };
+  return { el, view, chip, map, feed, setStatus, refresh: drawBoards };
 }
 
 return { midiPanel };
@@ -4882,7 +4919,8 @@ async function main(info, carry = {}) {
   } });
   window.phuzzMidi = (status, d1, d2) => midi.feed([status, d1, d2]); // the card's status names the inputs instead
   const midiHelp = midi.el.querySelector('.midi-help');
-  for (const b of midi.el.querySelectorAll('.midi-bar button')) b.hidden = true; // Web MIDI's Connect: the program connects
+  for (const b of [...midi.el.querySelectorAll('.midi-bar button'), ...midi.view.querySelectorAll('.fc-connect')]) b.hidden = true; // Web MIDI's Connect: the program connects
+  midi.setStatus('looking for MIDI inputs…');
   midiHelp.textContent = 'A MIDI foot controller works the pedal: plug it in (an FC-300 through a USB MIDI interface such as a UM-ONE, its switch on TAB) and put it in Control Change mode. The app listens to every MIDI input. The drawing says what each of the FC-300\'s pedals does here; Learn, then move a pedal, teaches a row that pedal.';
 
   midi.el.classList.add('group');
